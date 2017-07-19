@@ -1,0 +1,1 @@
+robocopy . C:\Python35\Lib\site-packages\pack /mir
