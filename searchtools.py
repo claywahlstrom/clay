@@ -94,7 +94,7 @@ class Search(object):
 
 def write_output(obj, filename):
     f = open(filename,'w')
-    f.write('Search results for "{}" in "{}"\n{}'.format(obj.string, obj.folder, obj.raw_text))
+    f.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(obj.string, obj.folder, obj.ext, obj.raw_text))
     f.close()
 
 def executable_search(string, ext='exe'):

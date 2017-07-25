@@ -7,7 +7,7 @@ MAX_BUFFER = 10000
 MAX_CONN = 1
 
 UTF_CHAR = 'utf8'
-FILESEP = b'eof'
+FILESEP = b'eof' + b'eof'
 
 def nextopenport(ip, port):
     found = False

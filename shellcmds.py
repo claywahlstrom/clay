@@ -38,14 +38,6 @@ def chext(filepath, ext):
     except:
         print('Failed rename')
 
-def contains(chars=list(), directory=os.curdir):
-    """Find all files containing "chars" using re.findall. Returns list"""
-    assert 3 > len(chars) > 0
-    from re import findall
-    listing = os.listdir(directory)
-    results = [x for x in listing for char in chars if findall(chars[0], x) and findall(chars[-1], x)]
-    return results
-
 def copy(src, dst):
     """Copy source item to destination using shutil.copy"""
     print('Copying "{}" to "{}"...'.format(src, dst))
@@ -77,6 +69,18 @@ def ls(directory=os.curdir, cmd=False):
         print(subprocess.check_output(['dir', directory], shell=True).decode('utf8', errors='ignore'))
     else:
         return os.listdir(directory)
+
+def lsgrep(chars, directory=os.curdir):
+    """Find all files containing "chars" using re.findall. Returns list"""
+    from re import findall
+    if type(chars) == list:
+        assert 3 > len(chars) > 0
+    listing = os.listdir(directory)
+    if type(chars) == list:
+        results = [x for x in listing for char in chars if findall(chars[0], x) and findall(chars[-1], x)]
+    else:
+        results = [x for x in listing if findall(chars, x)]
+    return results
 
 from os import mkdir # def
 
@@ -168,13 +172,13 @@ def start(program):
     except Exception as e:
         print("Oops, couln't start:", e)
         
-def timeout(seconds, visible=True):
+def timeout(seconds, hide=False):
     """Wait for specified time. Optional visibility"""
     if LINUX:
         command = 'ping -c {} www.google.com'.format(seconds * 2)
     else:
         command = 'timeout {}'.format(seconds)
-    if not(visible):
+    if hide:
         command += ' >nul'
     try:
         os.system(command)

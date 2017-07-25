@@ -23,7 +23,7 @@ def cubrt(x):
     return round((x)**(1/3), 12)
 
 def deriv(f, x, deltax=1e-12):
-    """Return derivative of a function at a point. File version in #Files dir
+    """Return derivative of a function at a point. File version in PyRepo dir
 
     deltax = 1e-12 or 1e-11 works best."""
     return (f(x+deltax)-f(x))/(deltax)
