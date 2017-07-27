@@ -45,7 +45,7 @@ def parsereport(string):
     lst = [(x, int(y.strip())) for x, y in splt]
     return lst
 
-class SSH(object):
+class SSH:
     """Super-class for Server and Client socket handlers"""
 
     def getbin(self, buffer=MAX_BUFFER):
@@ -113,8 +113,53 @@ class SSH(object):
             filename = files[num]
             with open(filename, 'wb') as fp:
                 print(filename, '//', str(fp.write(stream)), 'bytes')
-            streams = streams[streams.index(b'eof')+3:]
+            streams = streams[streams.index(FILESEP)+len(FILESEP):]
         time.sleep(0.2)
+        
+    def getdiffs(self, src, dst):
+        changed = list()
+        removing = list()
+        self.sendbin(dst.encode(UTF_CHAR))
+
+        d_src = self.loaddiff(src)
+
+        print('d_src =', d_src)
+
+        stream = self.getbin()
+        d_dst = eval(stream.decode(UTF_CHAR))
+        # check for changed or added
+        for thing in d_src:
+            if thing in d_dst and d_src[thing] != d_dst[thing] or not(thing in d_dst):
+                changed.append(thing)
+        # check for files to be removed
+        for thing in d_dst:
+            if not(thing in d_src):
+                removing.append(thing)
+
+        self.d_src = d_src
+        print('changed', changed)
+        print('removing', removing)
+
+    def senddiffs(self):
+        import os
+        from subprocess import check_output
+        
+        recv = self.getbin().decode(UTF_CHAR)
+        d_dst = self.loaddiff(recv)
+
+        print('dd =', d_dst)
+        self.sendstream(str(d_dst).encode(UTF_CHAR))
+        self.d_dst = d_dst
+
+    def loaddiff(self, Dir):
+        import os
+        Dict = dict()
+        for root, dirs, files in os.walk(Dir):
+            for file in files:
+                name = os.path.join(root, file)
+                key = name[name.index('\\')+1:]
+                Dict[key] = os.stat(name).st_size
+        return Dict.copy()
 
 class ClientSSH(SSH):
     def __init__(self, ip=None, port=DEF_PORT):

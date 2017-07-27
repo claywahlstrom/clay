@@ -49,6 +49,7 @@ def download(url, title=str(), full_title=False, destination='.', speed=False, l
     from time import time
 
     import requests
+    
     from pack.fileops import get_title
 
     flag = False

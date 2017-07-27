@@ -1,18 +1,19 @@
 """
-Shell commands uses Python to control your system
+Shell commands uses Python to manage your system
 """
 
 import os
 import subprocess
 import sys
-#import shutil
 
 from pack import LINUX
 
 if LINUX:
     TRASH = r'/home/clayton/Desktop/TRASH'
+    TIMEOUT_CMD = 'sleep '
 else:
     TRASH = r'C:\Python35\Lib\site-packages\TRASH'
+    TIMEOUT_CMD = 'timeout '
 
 if not(os.path.exists(TRASH)):
     os.mkdir(TRASH)
@@ -56,16 +57,21 @@ def copy(src, dst):
 
 # nt users
 cwd = os.getcwd # def
-# LINUX users
+# linux users
 pwd = os.getcwd # def
 
-def explorer(directory=os.curdir):
-    """Open File Explorer to the specified directory"""
-    os.system('explorer "{}"'.format(directory))
-    
-def ls(directory=os.curdir, cmd=False):
+def filemanager(directory=os.curdir):
+    """Open the file manager to the specified directory"""
+    if LINUX: # This should work...
+        os.system('xdg-open "{}"'.format(directory))
+    else:
+        os.system('explorer "{}"'.format(directory))
+
+explorer = filemanager # laziness to change incompatible programs 
+
+def ls(directory=os.curdir, shell=False):
     """List contents of the current directory. Use 'cmd' style for Command Prompt's 'dir'"""
-    if cmd:
+    if shell:
         print(subprocess.check_output(['dir', directory], shell=True).decode('utf8', errors='ignore'))
     else:
         return os.listdir(directory)
@@ -73,11 +79,12 @@ def ls(directory=os.curdir, cmd=False):
 def lsgrep(chars, directory=os.curdir):
     """Find all files containing "chars" using re.findall. Returns list"""
     from re import findall
-    if type(chars) == list:
-        assert 3 > len(chars) > 0
     listing = os.listdir(directory)
     if type(chars) == list:
-        results = [x for x in listing for char in chars if findall(chars[0], x) and findall(chars[-1], x)]
+        results = list()
+        for x in listing:
+            if eval(' and '.join(['findall("{}", "{}")'.format(char, x) for char in chars])):
+                results.append(x)
     else:
         results = [x for x in listing if findall(chars, x)]
     return results
@@ -88,7 +95,7 @@ from shutil import move as mv # def
 
 def pause():
     """Pause the script"""
-    if 'idlelib' in sys.modules:
+    if 'idlelib' in sys.modules or LINUX:
         input('Press enter to continue . . . ')
     else:
         subprocess.call('pause', shell=True)
@@ -101,21 +108,34 @@ def ren(src, dst):
     except Exception as e:
         print('Error:', e)
 
-def rm(f, directory=os.curdir):
+def rm(file, directory=os.curdir):
     """Move a file/folder to the TRASH"""
     from shutil import move
-    target = os.path.join(TRASH, f)
+
+    from pack.shellcmds import rm_from_trash
+
     try:
+        target = os.path.join(TRASH, file)
         if os.path.exists(target):
             print('Exists in TRASH, deleting...')
-            if os.path.isfile(target):
-                os.system('del "%s"' % target)
-            else:
-                os.system('rmdir /s "%s"' % target)
-        move(r'{}\{}'.format(directory, f), TRASH)
-        print('"{}" deleted'.format(f))
+            rm_from_trash(target)
+        move(os.path.join(directory, file), TRASH)
+        print('"{}" deleted'.format(file))
     except Exception as e:
         print(e)
+
+def rm_from_trash(target):
+    win32_rm = ['del', 'rmdir /s']
+    linux_rm = ['rm', 'rm -r']
+
+    i = 0
+    if not(os.path.isfile(target)):
+        i = 1
+
+    if LINUX:
+        os.system('{} "{}"'.format(linux_rm[i], target))
+    else:
+        os.system('{} "{}"'.format(win32_rm[i], target))
 
 def roboren(old=None, new=None, directory=os.curdir):
     """Rename all items with old to new using str.replace(old,new)"""
@@ -125,9 +145,9 @@ def roboren(old=None, new=None, directory=os.curdir):
         new = input('Enter new string: ')
     print('Replacing "{}" with "{}"...'.format(old, new))
     x = 0
-    for f in filter(lambda name: old in name, os.listdir(directory)):
+    for file in filter(lambda name: old in name, os.listdir(directory)):
         try:
-            os.rename(f, f.replace(old, new))
+            os.rename(file, file.replace(old, new))
             x += 1
         except:
             print("Couldn't rename")
@@ -143,9 +163,9 @@ def roborm(criteria, prompt=True, directory=os.curdir):
     x = 0
     if sure:
         print('Deleting all w/ "{}"...'.format(criteria))
-        for f in filter(lambda name: criteria.lower() in name.lower(), os.listdir(directory)):
+        for file in filter(lambda name: criteria.lower() in name.lower(), os.listdir(directory)):
             try:
-                move(r'{}\{}'.format(directory, f), TRASH)
+                move(os.path.join(directory, file), TRASH)
                 x += 1
             except:
                 pass
@@ -154,30 +174,30 @@ def roborm(criteria, prompt=True, directory=os.curdir):
 def set_title(title=os.path.basename(list(filter(lambda name: not('python' == name), sys.argv))[0]), add=str(), args=False):
     """Customize the window title. Default is through sys.argv.
     You can use additional text to follow and full for additional sys.argv's"""
-    command = 'title {}'.format(title)
+    name = str()
     if args:
-        command += ' ' + ' '.join(list(filter(lambda name: not('python' == name), sys.argv))[1:])
+        name += ' ' + ' '.join(list(filter(lambda name: not('python' == name), sys.argv))[1:])
     if add:
-        command += ' - {}'.format(add)
-    command = command.replace('<', '^<').replace('>', '^>')
+        name += ' - {}'.format(add)
+    name = name.replace('<', '^<').replace('>', '^>')
     if 'idlelib' in sys.modules or LINUX:
-        print('set title -> {}'.format(command[6:]))
+        print('set title -> {}'.format(name[6:]))
     else:
-        os.system(command)
+        os.system('title ' + command)
 
 def start(program):
     """Start a program"""
     try:
-        os.system('start {}'.format(program))
+        if LINUX:
+            os.system(program)
+        else:
+            os.system('start {}'.format(program))
     except Exception as e:
         print("Oops, couln't start:", e)
-        
+
 def timeout(seconds, hide=False):
     """Wait for specified time. Optional visibility"""
-    if LINUX:
-        command = 'ping -c {} www.google.com'.format(seconds * 2)
-    else:
-        command = 'timeout {}'.format(seconds)
+    command = TIMEOUT_CMD + str(seconds)
     if hide:
         command += ' >nul'
     try:
