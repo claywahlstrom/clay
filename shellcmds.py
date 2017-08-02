@@ -174,7 +174,7 @@ def roborm(criteria, prompt=True, directory=os.curdir):
 def set_title(title=os.path.basename(list(filter(lambda name: not('python' == name), sys.argv))[0]), add=str(), args=False):
     """Customize the window title. Default is through sys.argv.
     You can use additional text to follow and full for additional sys.argv's"""
-    name = str()
+    name = title
     if args:
         name += ' ' + ' '.join(list(filter(lambda name: not('python' == name), sys.argv))[1:])
     if add:
@@ -183,7 +183,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
     if 'idlelib' in sys.modules or LINUX:
         print('set title -> {}'.format(name[6:]))
     else:
-        os.system('title ' + command)
+        os.system('title ' + name)
 
 def start(program):
     """Start a program"""

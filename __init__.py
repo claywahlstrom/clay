@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 __all__ = ['align',
+           'bib',
            'boxes',
            'essay',
            'fileops',
