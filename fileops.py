@@ -4,7 +4,7 @@ File operations. Supports NT and linux-based kernels
 
 import urllib.request, urllib.error, urllib.parse
 
-from pack import LINUX
+from pack import UNIX
 
 LINK = 'http://download.thinkbroadband.com/1MB.zip'
 
@@ -24,6 +24,43 @@ def appendfile(filename, line=str()):
             f.write(line.encode('utf8')) # for str
         except:
             f.write(line) # for binary
+
+class Cache(object):
+
+    """Manages file caching on your local machine, accepts one url
+    The caching system will use the local version of the file if it exists.
+    Otherwise it will be downloaded from the server.
+
+    """
+
+    import os as _os
+
+    from requests import get as _get
+    
+    from pack.fileops import get_title as _get_title
+    
+    def __init__(self, url, alt_title=None):
+        self.url = url
+        self.title = Cache._get_title(url)[0]
+        self.exists = True
+        if not alt_title is None:
+            self.title = alt_title
+        if not(Cache._os.path.exists(self.title)):
+            self.exists = False
+            self.store()
+    def load(self):
+        """Return binary content from self.title"""
+        print('Loading cache...')
+        with open(self.title, 'rb') as fp:
+            r = fp.read()
+        return r
+    def reload(self):
+        self.store()
+    def store(self):
+        """Store binary content of requested url, returns None"""
+        print('Storing cache...')
+        with open(self.title, 'wb') as fp:
+            fp.write(Cache._get(self.url).content)
 
 def countchar(filename, char):
     """Count occurence of char in filename"""
@@ -90,7 +127,7 @@ def download(url, title=str(), full_title=False, destination='.', speed=False, l
                     f.write(chunk)
                     actual += len(chunk)
                     percent = int((actual/size)*100)
-                    if 'idlelib' in sys.modules or LINUX:
+                    if 'idlelib' in sys.modules or UNIX:
                         if percent % 5 == 0: # if multiple of 5 reached...
                             print('{}%'.format(percent), end=' ', flush=True)
                     else:
@@ -106,7 +143,7 @@ def download(url, title=str(), full_title=False, destination='.', speed=False, l
     else:
         taken = time() - before
         print('\ntook {}s'.format(taken))
-        if not('idlelib' in sys.modules or LINUX):
+        if not('idlelib' in sys.modules or UNIX):
             os.system('title Completed {}'.format(title))
         logging = '{} on {} of {} bytes\n'.format(url, datetime.today(), size)
         print('Complete\n')
@@ -177,8 +214,15 @@ def get_html(page, query=None):
         assert type(query) == dict
     import requests
     r = requests.get(page, params=query, headers=HDR)
-    t = r.text.encode('utf-8')
-    return t
+    text = r.text.encode('utf-8')
+    return text
+
+def get_mp3(link, title=str()):
+    """Download mp3juice.cc links"""
+    from pack.fileops import download
+    if not(title):
+        title = link[link.index('=') + 1:] + '.mp3'
+    download(link, title=title)
 
 def get_size(url):
     response = urllib.request.urlopen(urllib.request.Request(url, headers=HDR))
@@ -191,7 +235,7 @@ def get_title(url, full=False):
         nurl, query = url, None
     title = nurl.split('/')[-1]
     ext = True
-    if ('htm' in title) or ('aspx' in title) or ('php' in title) or ('.' in title and url.count('/') > 2):
+    if [x for x in ['htm', 'aspx', 'php'] if x in title] or ('.' in title and url.count('/') > 2):
         ext = False
 
     if full:
@@ -203,13 +247,6 @@ def get_title(url, full=False):
     title = urllib.parse.unquote_plus(title)
     #print('Title', title)
     return title, query
-
-def get_mp3(link, title=str()):
-    """Download mp3juice.cc links"""
-    from pack.fileops import download
-    if not(title):
-        title = link[link.index('=')+1:]+'.mp3'
-    download(link, title=title)
 
 def get_vid(v, vid_type='mp4'):
     """Download using yt-down.tk"""
@@ -227,7 +264,7 @@ def printfile(name):
     with open(name) as f:
         print(f.read())
 
-def RoboTR(folder, old, new):
+def robotr(folder, old, new):
     sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(folder, old, new)))
 
     if sure:
@@ -243,7 +280,25 @@ def RoboTR(folder, old, new):
     else:
         print('Aborted')
 
-def TextReplace(filename, old, new):
+def switch_lf(filename):
+    """Switch versions of linefeed from a UNIX machine to Windows and vice versa"""
+    with open(filename, 'rb') as fp:
+        fread = fp.read()
+        to_linux = False
+        if b'\r' in fread:
+            to_linux = True
+    with open(filename, 'wb') as fp:
+        if to_linux:
+            binary = fread.replace(b'\r', b'')
+        else:
+            binary = fread.replace(b'\n', b'\r\n')
+        fp.write(binary)
+    if to_linux:
+        print('Converted to lf')
+    else:
+        print('Converted to crlf')
+
+def text_replace(filename, old, new):
     """http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing"""
     try:
         f = open(filename,'rb+')
@@ -256,44 +311,6 @@ def TextReplace(filename, old, new):
         print('Error:', e)
     finally:
         f.close()
-
-class Cache(object):
-
-    """Manages file caching on your local machine, accepts one url
-    The caching system will use the local version of the file if it exists.
-    Otherwise it will be downloaded from the server.
-
-    """
-
-    import os as _os
-
-    from requests import get as _get
-    
-    from pack.fileops import get_title as _get_title
-    
-    def __init__(self, url, alt_title=None):
-        self.url = url
-        self.title = Cache._get_title(url)[0]
-        self.exists = True
-        if not alt_title is None:
-            self.title = alt_title
-        if not(Cache._os.path.exists(self.title)):
-            self.exists = False
-            self.store()
-    def load(self):
-        """Return binary content from self.title"""
-        print('Loading cache...')
-        with open(self.title, 'rb') as fp:
-            r = fp.read()
-        return r
-    def reload(self):
-        self.store()
-    def store(self):
-        """Store binary content of requested url, returns None"""
-        print('Storing cache...')
-        with open(self.title, 'wb') as fp:
-            fp.write(Cache._get(self.url).content)
-
 
 if __name__ == '__main__':
     get_title('https://www.minecraft.net/change-language?next=/en/', full=False)

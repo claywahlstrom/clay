@@ -6,9 +6,9 @@ import os
 import subprocess
 import sys
 
-from pack import LINUX
+from pack import UNIX
 
-if LINUX:
+if UNIX:
     TRASH = r'/home/clayton/Desktop/TRASH'
     TIMEOUT_CMD = 'sleep '
 else:
@@ -25,7 +25,7 @@ def cls():
     """Clear the screen"""
     if 'idlelib' in sys.modules:
         print('\n'*40)
-    elif LINUX:
+    elif UNIX:
         os.system('clear')
     else:
         os.system('cls')
@@ -62,7 +62,7 @@ pwd = os.getcwd # def
 
 def filemanager(directory=os.curdir):
     """Open the file manager to the specified directory"""
-    if LINUX: # This should work...
+    if UNIX: # This should work...
         os.system('xdg-open "{}"'.format(directory))
     else:
         os.system('explorer "{}"'.format(directory))
@@ -95,7 +95,7 @@ from shutil import move as mv # def
 
 def pause():
     """Pause the script"""
-    if 'idlelib' in sys.modules or LINUX:
+    if 'idlelib' in sys.modules or UNIX:
         input('Press enter to continue . . . ')
     else:
         subprocess.call('pause', shell=True)
@@ -132,7 +132,7 @@ def rm_from_trash(target):
     if not(os.path.isfile(target)):
         i = 1
 
-    if LINUX:
+    if UNIX:
         os.system('{} "{}"'.format(linux_rm[i], target))
     else:
         os.system('{} "{}"'.format(win32_rm[i], target))
@@ -180,7 +180,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
     if add:
         name += ' - {}'.format(add)
     name = name.replace('<', '^<').replace('>', '^>')
-    if 'idlelib' in sys.modules or LINUX:
+    if 'idlelib' in sys.modules or UNIX:
         print('set title -> {}'.format(name[6:]))
     else:
         os.system('title ' + name)
@@ -188,7 +188,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
 def start(program):
     """Start a program"""
     try:
-        if LINUX:
+        if UNIX:
             os.system(program)
         else:
             os.system('start {}'.format(program))

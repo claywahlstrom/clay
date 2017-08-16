@@ -7,7 +7,7 @@ from subprocess import call as _call
 from requests import get as _get
 from bs4 import BeautifulSoup as _BS
 
-from pack import LINUX as _LINUX
+from pack import UNIX as _UNIX
 
 def get_web_title(url):
     soup = _BS(_get(url).content, 'html.parser')
@@ -20,23 +20,24 @@ def openweb(url, browser='firefox'):
         url = [url]
     if type(url) == list:
         for link in url:
-            if _LINUX:
+            if _UNIX:
                 _call(['google-chrome', link], shell=True)
             else:
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
 class WebElements:
-    def __init__(self, element=str(), page=str(), method='find_all'):
-        if not(page) or not(element):
+    def __init__(self, page=str(), element=str(), method='find_all'):
+        if not(page) and not(element):
             page = 'https://www.google.com'
             element = 'a'
 
         self.source = _get(page)
-        try:
-            self.soup = _BS(((self.source).content).decode('utf8'), 'html.parser')
-        except:
-            self.soup = _BS((self.source).content, 'html.parser')
-        self.__found = eval('self.soup.{}("{}")'.format(method, element))
+        self.soup = _BS(self.source.content, 'html.parser')
+        self.method = method
+        self.element = element
+    def get_element(self, element):
+        self.__found = eval('self.soup.{}("{}")'.format(self.method, element))
+        return self.__found
 
     def show(self):
         print('Elements:')

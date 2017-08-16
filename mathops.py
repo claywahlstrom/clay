@@ -5,9 +5,9 @@ Collection of math operations
 import math
 import statistics
 
-from pack import LINUX
+from pack import UNIX
 
-if LINUX:
+if UNIX:
     LIMPATH = r'/home/clayton/Desktop/limtoinf.log'
 else:
     LIMPATH = r'C:\Python35\Lib\site-packages\pack\limtoinf.log'

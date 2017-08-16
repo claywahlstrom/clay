@@ -3,7 +3,7 @@
 misc: imports that don't have their own module
 """
 
-from pack import LINUX
+from pack import UNIX
 
 def define(words):
     """Display Cambridge dictionary definitions"""
@@ -57,7 +57,7 @@ class MVAverage(object):
     def get_average(self):
         return self.__av
 
-if LINUX:
+if UNIX:
     print("<module 'winsound'> not available")
 else:
     from winsound import Beep as note # def

@@ -50,9 +50,9 @@ __all__ = ['align',
 import sys as _sys
 import os as _os
 
-LINUX = _sys.platform.startswith('linux')
+UNIX = _sys.platform.startswith('linux') or _sys.platform.startswith('darwin') # darwin for macOS
 
-if LINUX:
+if UNIX:
     HOME_DIR = _os.environ['HOME']
 else:
     HOME_DIR = _os.environ['USERPROFILE']
