@@ -2,13 +2,16 @@
 File operations. Supports NT and linux-based kernels
 """
 
+import os as _os
+import requests as _requests
+import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
-from pack import UNIX, WEB_HDR as _WEB_HDR
+from pack import WEB_HDR as _WEB_HDR
 
 def appendfile(filename, line=str()):
     """Appends line to a file"""
-    if not(line):
+    while not(line):
         line = input('line: ')
     with open(filename, 'ab') as fp:
         try:
@@ -16,7 +19,7 @@ def appendfile(filename, line=str()):
         except:
             f.write(line) # for binary
 
-class Cache(object):
+class Cache:
 
     """Manages file caching on your local machine, accepts one url
     The caching system will use the local version of the file if it exists.
@@ -24,15 +27,14 @@ class Cache(object):
 
     """
 
-    import os as _os
 
-    from requests import get as _get
-    
-    from pack.web import get_title as _get_title
-    
-    def __init__(self, url, alt_title=None):
-        self.url = url
-        self.title = Cache._get_title(url)[0]
+
+    def __init__(self, uri, alt_title=None):
+
+        from pack.web import get_title as _get_title
+
+        self.uri = uri
+        self.title = _get_title(uri)[0]
         self.exists = True
         if not alt_title is None:
             self.title = alt_title
@@ -51,12 +53,12 @@ class Cache(object):
         """Store binary content of requested url, returns None"""
         print('Storing cache...')
         with open(self.title, 'wb') as fp:
-            fp.write(Cache._get(self.url).content)
+            fp.write(_requests.get(self.uri).content)
 
 def countchar(filename, char):
     """Count occurence of char in filename"""
     with open(filename) as fp:
-        fcount = int(fp.read().count(char))
+        fcount = fp.read().count(char)
     return fcount
 
 def countwords(filename):
@@ -65,24 +67,22 @@ def countwords(filename):
         fcount = len(fp.read().split())
     return fcount
 
-
-
 def fix_quotes(filename):
     """Fix UTF-8 quotes to ANSI"""
     try:
-        f = open(filename,'rb+')
-        r = fp.read()
-        f.seek(0)
-        r = r.replace(b'\xe2\x80', b'')
+        fp = open(filename,'rb+')
+        fread = fp.read()
+        fp.seek(0)
+        fread = fread.replace(b'\xe2\x80', b'')
         for i in (b'\x93', b'\x94', b'\x9c', b'\x9d'):
-            r = r.replace(i, b'"')
-        f.write(r)
-        f.truncate() # adds str terminator
+            fread = fread.replace(i, b'"')
+        fp.write(fread)
+        fp.truncate() # adds str terminator
         print('FixQuotes complete')
     except Exception as e:
         print('Error:', e)
     finally:
-        f.close()
+        fp.close()
 
 def get_content(filename, binary=False):
     """Get file content"""
@@ -90,66 +90,80 @@ def get_content(filename, binary=False):
     if binary:
         mode += 'b'
     with open(filename, mode) as fp:
-        r = fp.read()
-    return r
+        fread = fp.read()
+    return fread
 
 def get_size(name):
     """Get the size of a file or url"""
-    import os
-    if os.path.exists(name):
-        size = os.stat(name).st_size
+    from requests import head
+    if _os.path.exists(name):
+        size = _os.path.getsize(name)
     else:
-        try:
-            from requests import head
-            headers = _WEB_HDR
-            r = head(name, headers=headers)
-            size = int(r.headers['Content-Length'])
-        except Exception as e:
-            print(e)
+        if _os.path.basename(name):
+            try:
+                response = head(name, headers=_WEB_HDR)
+                size = int(response.headers['Content-Length'])
+            except Exception as e:
+                _traceback.print_exc()
+                size = 0
+        else:
+            print('Basename not found. Need an absolute url path')
             size = 0
     return size
 
 def parsefile(filename, delim='\n'):
     """Parse a file by it's delimiter"""
-    f = open(filename, 'r')
-    spl = fp.read().split(delim)
-    f.close()
+    with open(filename, 'r') as fp:
+        spl = fp.read().split(delim)
     return spl
 
-def printfile(name):
-    with open(name) as fp:
+def printfile(filename):
+    with open(filename) as fp:
         print(fp.read())
 
 def robotr(folder, old, new):
     sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(folder, old, new)))
 
     if sure:
-        from os import walk, sep
-        from pack.fileops import TextReplace
-        for root, dirs, files in walk(folder):
+        from pack.fileops import text_replace
+        for root, dirs, files in _os.walk(folder):
             for f in files:
-                fp = open(root+sep+f, 'rb')
+                fp = open(_os.path.join(root, f), 'rb')
                 if old in fp.read():
-                    TextReplace(root+sep+f, old, new)
+                    text_replace(_os.path.join(root, f), old, new)
                 fp.close()
         print('Done')
     else:
         print('Aborted')
 
+def save(text, name='text.txt'):
+    """Save to file with file numbering"""
+    from os.path import exists
+    SP = name.split('.')
+    x = 1
+    while True:
+        name = SP[0]+str(x)+''.join(SP[1:-1])+'.'+SP[-1]
+        if not exists(name):
+            break
+        x += 1
+    with open(name,'w') as s:
+        s.write(str(text))
+    return name
+        
 def switch_lf(filename):
     """Switch versions of linefeed from a UNIX machine to Windows and vice versa"""
     with open(filename, 'rb') as fp:
         fread = fp.read()
-        to_linux = False
+        to_unix = False
         if b'\r' in fread:
-            to_linux = True
+            to_unix = True
     with open(filename, 'wb') as fp:
-        if to_linux:
-            binary = fread.replace(b'\r', b'')
+        if to_unix:
+            fwrite = fread.replace(b'\r', b'')
         else:
-            binary = fread.replace(b'\n', b'\r\n')
-        fp.write(binary)
-    if to_linux:
+            fwrite = fread.replace(b'\n', b'\r\n')
+        fp.write(fwrite)
+    if to_unix:
         print('Converted to lf')
     else:
         print('Converted to crlf')
@@ -157,12 +171,12 @@ def switch_lf(filename):
 def text_replace(filename, old, new):
     """http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing"""
     try:
-        fp = open(filename,'rb+')
-        r = fp.read()
+        fp = open(filename, 'rb+')
+        fread = fp.read()
         fp.seek(0)
-        fp.write(r.replace(old, new))
-        fp.truncate() # add terminator
-        print('TextReplace on "{}" complete'.format(filename))
+        fp.write(fread.replace(old, new))
+        fp.truncate() # add NULL terminator
+        print('text_replace on "{}" complete'.format(filename))
     except Exception as e:
         print('Error:', e)
     finally:

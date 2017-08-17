@@ -2,16 +2,16 @@
 Analyzer for essays
 """
 
-__all__ = ['Essay', 'firstnlast', 'fix_space', 'gather', 'savetopics']
+__all__ = ['Essay', 'firstnlast', 'savetopics']
 
 # ! fix topics method for 'e.g.', 'et al. author' and other abbreviations, list in EXCEPTIONS
 EXCEPTIONS = ['e.g.', 'et al.', 'i.e.'] # work in progress, may not be needed if not many in essay
 
-from re import findall
+from re import findall as _findall
 
-from pack.listops import rmdup # pack dependency
+from pack.listops import rmdup as _rmdup
 
-class Essay(object):
+class Essay:
     r"""For analytics of essays. Don't use line_start as first sentence Converts line_sep to single '\n'"""
     def __init__(self, source, line_start=1, line_sep='\n'):
         self.line_start = line_start
@@ -34,8 +34,8 @@ class Essay(object):
         
     def extract_paren(self, page_num=True, http_only=False):
         """Return citations extracted from essay.\nFound using parenthetical standards"""
-        parens = findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
-        parens = rmdup(parens)
+        parens = _findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
+        parens = _rmdup(parens)
         if http_only:
             parens = [x for x in parens if 'http' in x]
         if not(page_num):
@@ -45,12 +45,32 @@ class Essay(object):
     def extraspace(self):
         """Find extra spaces, ex. ' .' and '  '"""
         print('Extraspace')
-        print(findall('(.{5}  .{5})|(.{5} \.[ \w\n]{5})', self.text))
+        print(_findall('(.{6}  .{6})|(.{6} \.[ \w\n]{6})', self.text))
+
+    def firstnlast(self, pdelim='\n'):
+        """Simplify long texts"""
+        spl = self.text.split(pdelim)
+        if '' in spl: # if parsed incorrectly
+            print('Please check your pdelim arg')
+            return
+        for p in spl:
+            f = _findall('[A-Z][^\.!?]*[\.!?]', p)
+            try:
+                first, last = '[0] ' + f[0], '[-1] ' + f[-1]
+                print(first, last)
+            except: # if heading of section
+                print(p)
+
+    def fix_spaces(self):
+        """Fix bad spaces"""
+        self.text = self.text.replace('  ', ' ') # xtra sp
+        self.text = self.text.replace(' .', '.') # per bef
+        self.text = self.text.replace('.  ', '. ') # sp aft
 
     def midcaps(self):
         """Find unexpected capitals"""
         print('Mid caps')
-        mids = list(filter(lambda sent: not('I' in sent), list(findall('\w+ [A-Z]+.{5}', self.text)))) # range for context
+        mids = list(filter(lambda sent: not('I' in sent), list(_findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
         print(mids)
 
     def paragraphs(self):
@@ -68,15 +88,23 @@ class Essay(object):
     def pronouns(self):
         """Find uncapitalized I's"""
         print('Pronouns (I\'s)')
-        print(findall('.{5} i .{5}', self.text))
+        print(_findall('.{6} i .{6}', self.text))
 
     def sents(self):
         """Return # of sentences"""
-        return len(findall('\.\s', self.text))
+        return len(_findall('\.\s', self.text))
+
+    def stats(self):
+        """Display basic stats"""
+        print(self)
+        print('para', self.paragraphs())
+        print('per', self.periods())
+        print('sents', self.sents())
+        print('words', self.words())
 
     def topics(self):
         """Return list of topic sentences"""
-        return findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text)
+        return _findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text)
 
     def words(self):
         """Return # of words"""
@@ -85,37 +113,7 @@ class Essay(object):
     def wrongcaps(self):
         """Display unexpected capitals"""
         print('Wrong caps')
-        print(findall('.{5}\. [a-z0-9].{5}', self.text))
-
-def firstnlast(text, pdelim='\n'):
-    """Simplify long texts"""
-    from re import findall
-    spl = text.split(pdelim)
-    if '' in spl:
-        print('Please check pdelim')
-        return
-    for p in spl:
-        f = findall('[A-Z][^\.!?]*[\.!?]', p)
-        try:
-            first, last = '[0] '+f[0], '[-1] '+f[-1]
-            print(first, last)
-        except: # if heading of section
-            print(p)
-        
-
-def fix_space(essay):
-    """Fix bad spaces"""
-    essay.text = essay.text.replace('  ', ' ') # xtrasp
-    essay.text = essay.text.replace(' .', '.') # perbef
-    essay.text = essay.text.replace('.  ', '. ') # spaft
-
-def gather(essay):
-    """Display basic stats"""
-    print(essay)
-    print('para', essay.paragraphs())
-    print('per', essay.periods())
-    print('sents', essay.sents())
-    print('words', essay.words())
+        print(_findall('.{5}\. [a-z0-9].{5}', self.text))
 
 def savetopics(essay, filename='savedtopics.txt'):
     with open(filename,'w') as f:
@@ -124,14 +122,14 @@ def savetopics(essay, filename='savedtopics.txt'):
 
 if __name__ == '__main__':
     with open('essay.txt') as f:
-        r = f.read()
-    e = Essay(r, line_start=3, line_sep='\n')
-    gather(e)
+        fread = f.read()
+    e = Essay(fread, line_start=3, line_sep='\n')
+    e.stats()
     e.wrongcaps()
     e.midcaps()
     e.extraspace()
     print('Topics')
     print(e.topics())
-    fix_space(e)
+    e.fix_spaces()
     with open('essayfixper.txt','w') as f:
         f.write(e.text)

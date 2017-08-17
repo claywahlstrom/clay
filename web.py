@@ -5,14 +5,16 @@ web module
 from subprocess import call as _call
 import urllib.request, urllib.error, urllib.parse
 
-from requests import get as _get
+import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from pack import UNIX as _UNIX, WEB_HDR
+from pack import UNIX as _UNIX
 
+# data vars
+from pack import WEB_HDR
 LINK = 'http://download.thinkbroadband.com/1MB.zip'
 
-def download(url, title=str(), full_title=False, destination='.', log='DL_log.txt', speed=False):
+def download(url, title=str(), full_title=False, destination='.', log_name='DL_log.txt', speed=False):
     """Downloads a url and logs the relevant information"""
 
     # http://stackoverflow.com/a/16696317/5645103
@@ -24,13 +26,12 @@ def download(url, title=str(), full_title=False, destination='.', log='DL_log.tx
     import sys
     from time import time
 
-    import requests
-
+    from pack.shellcmds import set_title
     from pack.web import get_title
 
     flag = False
-    if log:
-        logloc = destination+'/'+log
+    if log_name:
+        log_path = os.path.join(destination, log_name)
     current = os.getcwd()
     os.chdir(destination) # better file handling
     print('curdir', os.getcwd())
@@ -39,22 +40,22 @@ def download(url, title=str(), full_title=False, destination='.', log='DL_log.tx
         title, query = get_title(url, full_title)
     else:
         query = None
-    f = open(title, 'wb')
+    fp = open(title, 'wb')
     print('Retrieving "{}"...\ntitle {}\nquery {}...'.format(url, title, query))
     try:
         print('size', end=' ')
         if not('.' in title) or 'htm' in title or 'php' in title:
-            response = requests.get(url, params=query, headers=WEB_HDR)
+            response = _requests.get(url, params=query, headers=WEB_HDR)
             before = time() # start timer
             size = len(response.text)
             print(size, 'bytes')
-            f.write(response.text.encode('utf-8'))
-            f.close()
+            fp.write(response.text.encode('utf-8'))
+            fp.close()
         else:
-            response = requests.get(url, params=query, headers=WEB_HDR, stream=True)# previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
+            response = _requests.get(url, params=query, headers=WEB_HDR, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
             before = time() # start timer
             size = int(response.headers.get('content-length'))
-            CHUNK = size//100
+            CHUNK = size // 100
             if CHUNK > 1000000: # place chunk cap on files >1MB
                 CHUNK = 100000 # 0.1MB
             print(size, 'bytes')
@@ -63,51 +64,49 @@ def download(url, title=str(), full_title=False, destination='.', log='DL_log.tx
             try:
                 for chunk in response.iter_content(chunk_size=CHUNK):
                     if not chunk: break
-                    f.write(chunk)
+                    fp.write(chunk)
                     actual += len(chunk)
                     percent = int((actual/size)*100)
                     if 'idlelib' in sys.modules or UNIX:
                         if percent % 5 == 0: # if multiple of 5 reached...
                             print('{}%'.format(percent), end=' ', flush=True)
                     else:
-                        os.system('title {}% {}/{}'.format(percent, actual, size))
+                        set_title('{}% {}/{}'.format(percent, actual, size))
             except Exception as e:
                 print(e)
             finally:
-                f.close()
+                fp.close()
     except Exception as e:
         print('\n'+type(e).__name__, e.args)
-        logging = url+' failed\n'
+        log_string = url+' failed\n'
         flag = True
     else:
         taken = time() - before
         print('\ntook {}s'.format(taken))
         if not('idlelib' in sys.modules or UNIX):
-            os.system('title Completed {}'.format(title))
-        logging = '{} on {} of {} bytes\n'.format(url, datetime.today(), size)
+            set_title('Completed {}'.format(title))
+        log_string = '{} on {} of {} bytes\n'.format(url, datetime.today(), size)
         print('Complete\n')
     finally:
-        if not f.closed:
-            f.close()
+        if not(fp.closed):
+            fp.close()
     if log:
-        with open(logloc,'a+') as L:
-            L.write(logging)
+        with open(log_path,'a+') as lp:
+            lp.write(log_stringplay)
     else:
-        print(logging.strip())
+        print(log_string.strip())
     os.chdir(current) # better file handling
     if speed and not(flag):
-        return size/taken
+        return size / taken
 
-def find_href(location, query={}, internal=True, php=False):
+def find_anchors(location, query={}, internal=True, php=False):
     """Extract links. Accepts filename or url"""
-    from bs4 import BeautifulSoup as bs
     if not('://' in location):
         with open(location,'r') as bc:
-            Read = bc.read()
+            fread = bc.read()
     else:
-        from requests import get
-        Read = get(location, headers=WEB_HDR, params=query).content
-    soup = bs(Read, 'html.parser')
+        fread = _requests.get(location, headers=WEB_HDR, params=query).content
+    soup = _BS(fread, 'html.parser')
     raw_links = soup.find_all('a')
     print(raw_links)
     if php or internal:
@@ -127,9 +126,8 @@ def get_html(page, query=None):
     """Read binary response from webpage"""
     if query is not None:
         assert type(query) == dict
-    import requests
-    r = requests.get(page, params=query, headers=WEB_HDR)
-    text = r.text.encode('utf-8')
+    fread = _requests.get(page, params=query, headers=WEB_HDR)
+    text = fread.text.encode('utf-8')
     return text
 
 def get_mp3(link, title=str()):
@@ -139,42 +137,43 @@ def get_mp3(link, title=str()):
         title = link[link.index('=') + 1:] + '.mp3'
     download(link, title=title)
 
-def get_title(url, full=False):
-    if '?' in url:
-        nurl, query = url.split('?')
+def get_title(uri, full=False):
+    if '?' in uri:
+        url, query = uri.split('?')
     else:
-        nurl, query = url, None
-    title = nurl.split('/')[-1]
-    ext = True
-    if [x for x in ['htm', 'aspx', 'php'] if x in title] or ('.' in title and url.count('/') > 2):
-        ext = False
+        url, query = uri, None
+    title = _os.path.basename(url)
+    print(title)
+    add_ext = True
+    if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
+        add_ext = False
 
     if full:
-        title = nurl.replace('://', '_').replace('/', '_')
+        title = url.replace('://', '_').replace('/', '_')
     if not(title):
         title = 'index'
-    if ext:
+    if add_ext:
         title += '.html'
     title = urllib.parse.unquote_plus(title)
     #print('Title', title)
     return title, query
+
+def get_web_title(uri):
+    soup = _BS(_requests.get(uri).content, 'html.parser')
+    return soup.html.title.text
 
 def get_vid(v, vid_type='mp4'):
     """Download using yt-down.tk"""
     from pack.fileops import download
     download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, v), title='.'.join([v, vid_type]))
 
-def get_web_title(url):
-    soup = _BS(_get(url).content, 'html.parser')
-    return soup.html.title.text
-
-def openweb(url, browser='firefox'):
+def openweb(uri, browser='firefox'):
     """Open pages in web browsers. "url" can be a list of urls"""
 
-    if type(url) == str:
-        url = [url]
-    if type(url) == list:
-        for link in url:
+    if type(uri) == str:
+        uri = [uri]
+    if type(uri) == list:
+        for link in uri:
             if _UNIX:
                 _call(['google-chrome', link], shell=True)
             else:
@@ -186,8 +185,9 @@ class WebElements:
             page = 'https://www.google.com'
             element = 'a'
 
-        self.source = _get(page)
+        self.source = _requests.get(page)
         self.soup = _BS(self.source.content, 'html.parser')
+        self.method = method
         self.method = method
         self.element = element
     def find_element(self, element):

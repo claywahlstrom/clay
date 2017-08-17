@@ -12,7 +12,7 @@ if UNIX:
 else:
     LIMPATH = r'C:\Python35\Lib\site-packages\pack\limtoinf.log'
 
-with open(LIMPATH, 'w') as f:
+with open(LIMPATH, 'w') as fp:
     pass
 
 
@@ -26,16 +26,17 @@ def deriv(f, x, deltax=1e-12):
     """Return derivative of a function at a point. File version in PyRepo dir
 
     deltax = 1e-12 or 1e-11 works best."""
-    return (f(x+deltax)-f(x))/(deltax)
+    return (f(x + deltax) - f(x)) / (deltax)
 
-def fracsimp(*args):
+def fracsimp(*args, show=False):
     """Simplify fractions"""
     from fractions import Fraction
     f = Fraction(*args)
     top, bottom = f.numerator, f.denominator
-##    print(top)
-##    print('-'*max(map(len, map(str, [top, bottom]))))
-##    print(bottom)
+    if show:
+        print(top)
+        print('-'*max(map(len, map(str, [top, bottom]))))
+        print(bottom)
     return top, bottom
 
 def integral(func, interval=None, rects=10000):
@@ -147,12 +148,15 @@ class Radical(object):
         self.__out = self.__least_div()
         self.left *= self.__out
         self.right = int(self.right/(self.__out**2))
+        
     def __repr__(self):
         if not self:
             return '%s()' % (self.__class__.__name__,)
         return '%s(%r)' % (self.__class__.__name__, (self.left, self.right))
+    
     def __str__(self):
         return (len(str(self.left))+2)*' '+len(str(self.right))*'_'+'\n'+'{}-/{}'.format(self.left, self.right)
+    
     def __least_div(self):
         div = list()
         for i in range(2, 1000):
@@ -210,7 +214,7 @@ def test_k(n):
 
 if __name__ == '__main__':
     print('FRACSIMP')
-    top, bottom = fracsimp(3, 39)
+    top, bottom = fracsimp(3, 39, show=True)
     print('INTEGRAL', integral(test_g, (0, 1)))
     print('LIMIT OF test_h, expected 0.5')
     lim = limit(test_h, num=2, side='right', step=0.001, dist=2)

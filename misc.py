@@ -1,19 +1,9 @@
 
 """
-misc: imports that don't have their own module
+misc: imports that don't have their own module yet
 """
 
 from pack import UNIX
-
-def define(words):
-    """Display Cambridge dictionary definitions"""
-    from bs4 import BeautifulSoup as bs
-    from requests import get
-    f = get('https://dictionary.cambridge.org/us/dictionary/english/' + words.split()[0] + '?q=' + words.replace(' ','+')).content
-    soup = bs(f, 'html.parser')
-    print('definitions for', words.capitalize())
-    for i in [g.text for g in soup.select('.entry-body__el .def')]:
-        print('    ' + i)
 
 def human_hex(dec):
     """Convert decimal values to human readable hex.
@@ -62,20 +52,6 @@ if UNIX:
 else:
     from winsound import Beep as note # def
 
-def save(text, name='text.txt'):
-    """Save to file with file numbering"""
-    from os.path import exists
-    SP = name.split('.')
-    x = 1
-    while True:
-        name = SP[0]+str(x)+''.join(SP[1:-1])+'.'+SP[-1]
-        if not exists(name):
-            break
-        x += 1
-    with open(name,'w') as s:
-        s.write(str(text))
-    return name
-
 import collections
 class SortableDict(collections.OrderedDict):
     """Sortable dict, child of collections.OrderedDict"""
@@ -89,29 +65,8 @@ class SortableDict(collections.OrderedDict):
         for key in part:
             self[key] = copy[key]
 
-class Title(object):
-    """Create proper book titles"""
-    skip_list = ['a','am','an','and',
-                 'for','in','of',
-                 'on','the','to']
-    def __init__(self, title):
-        self.title = title
-        self.create()
-    def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__,self.title)
-    def __xcaptilize(self, word):
-        if word.lower() not in self.skip_list:
-            return word.capitalize()
-        return word.lower()
-    def create(self):
-        words = self.title.split(' ')
-        self.__get = ' '.join(map(self.__xcaptilize, words))
-        self.__get = self.__get[0].upper() + self.__get[1:]
-    def get(self):
-        return self.__get
-
 if __name__ == '__main__':
-    define('vector quantity')
+
     print(human_hex(2700))
 
     def func(x, y = 2, z = 3):
@@ -133,6 +88,4 @@ if __name__ == '__main__':
     celia = SortableDict(skeleton)
     print(celia, type(celia))
 
-    bt = Title('the best hot dog on a stick')
-    print(bt.get())
 
