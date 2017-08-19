@@ -4,7 +4,7 @@ Histogram development. Still in the early stages
 
 from pack.misc import SortableDict
 
-class HG(object):
+class HG:
     """Count text into columns for histogram analysis.
 
     Consumes str or bytes as text
@@ -15,17 +15,20 @@ class HG(object):
             text = text.decode('utf8', errors='ignore')
         self.cols = columns
         self.text = text
-        self.d = SortableDict({col: self.text.count(col) for col in self.cols})
+        self.sd = SortableDict({col: self.text.count(col) for col in self.cols})
         
     def build(self):
-        m_val = max(list(self.d.values()))
-        large_key = len(max(list(self.d.keys())))
+        large_key = len(max(list(self.sd.keys())))
+        max_val = max(list(self.sd.values()))
         width = 80 - 1 - large_key
-        print('wd', width)
-        for (k, v) in self.d.items():
-            print('{:>{}}'.format(k, large_key), '0'*int(width*v/m_val))
-
+        print('width', width)
+        print('max val', max_val)
+        for (k, v) in self.sd.items():
+            print('{:>{}}'.format(k, large_key), '0'*int(width*v/max_val))
+        self.max_val = max_val
+        self.large_key = large_key
+        self.width = width
 
 if __name__ == '__main__':
-    s = HG(('bc', 'sac', 'c'), 'abbcssaaaacccssacbbcaddsacc')
+    s = HG(('bc', 'sac', 'aaa'), 'abbcssaaaacccssacbbcaddsacc')
     s.build()

@@ -181,7 +181,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
         name += ' - {}'.format(add)
     name = name.replace('<', '^<').replace('>', '^>')
     if 'idlelib' in sys.modules or UNIX:
-        print('set title -> {}'.format(name[6:]))
+        print('set title -> {}'.format(name))
     else:
         os.system('title ' + name)
 

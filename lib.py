@@ -1,7 +1,7 @@
 """
 lib: a librarian's library
 
-The function 'define' has probles ATM...
+The function 'define' has problems ATM...
 
 """
 
@@ -138,6 +138,21 @@ class Title:
 
     def get(self):
         return self.__get
+
+def sort_bib(filename):
+    """Sort a bibilography lexigraphically, no stdout required
+
+    You need to sort quoted titles manually though
+    """
+
+    with open(filename) as fp:
+        lines = fp.read().strip().split('\n')
+
+    lines.sort()
+    content = '\n'.join(lines)
+
+    with open('sorted_' + filename, 'w') as cont:
+        cont.write(content)
 
 if __name__ == '__main__':
     if len(_sys.argv) > 1:

@@ -13,10 +13,10 @@ def jnrows(arg, sep=', '):
     if type(arg) == list:
         return sep.join(arg)
     elif arg.__class__.__module__ == '_io':
-        f = arg
+        fp = arg
     elif type(arg) == str:
-        f = open(arg, 'r')
-    return f.read().replace('\n', sep)
+        fp = open(arg, 'r')
+    return fp.read().replace('\n', sep)
 
 def printall(Items):
     """Print all items in Items"""
@@ -27,22 +27,23 @@ def printall(Items):
         for item in Items:
             print(item)
 
-def readmeat(meat, ltr=False, numbers=True):
+def readmeat(meat, lines=0, numbers=True):
     """Read meat (list or str), w/ or w/o line numbers."""
     if type(meat) == str:
         with open(meat,'r') as f:
-            lines = [x.rstrip() for x in f.readlines()]
+            chunks = [x.rstrip() for x in f.readlines()]
     elif type(meat) == list:
-        lines = [line.rstrip() for line in lines]
-    assert type(lines) == list
+        chunks = [line.rstrip() for line in lines]
+    assert type(chunks) == list
     
-    if not(ltr):
-        ltr = len(lines)
-    for line in range(ltr):
+    if not(lines):
+        lines = len(chunks)
+    chunks = chunks[:lines]
+    for num, line in enumerate(chunks):
         if numbers:
-            print(str(line).rjust(len(str(ltr))), lines[line])
+            print(str(num).rjust(len(str(lines))), line)
         else:
-            print(lines[line])
+            print(line)
 
 def rmdup(lizt):
     """Return non-duplicated list. Note: NOT A METHOD"""

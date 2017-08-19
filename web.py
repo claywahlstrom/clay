@@ -2,6 +2,7 @@
 web module
 """
 
+import os as _os
 from subprocess import call as _call
 import urllib.request, urllib.error, urllib.parse
 
@@ -14,6 +15,52 @@ from pack import UNIX as _UNIX
 from pack import WEB_HDR
 LINK = 'http://download.thinkbroadband.com/1MB.zip'
 
+class Cache:
+
+    """Manages file caching on your local machine, accepts one uri
+    The caching system will use the local version of the file if it exists.
+    Otherwise it will be downloaded from the server.
+
+    The main advantage is saving time by eliminating downloads
+
+    """
+
+    def __init__(self, uri, alt_title=None):
+
+        from pack.web import get_title as _get_title
+
+        self.title = _get_title(uri)[0]
+        self.uri = uri
+        
+        if not alt_title is None:
+            self.title = alt_title
+        if _os.path.exists(self.title):
+            self.exists = True
+        else:
+            self.exists = False
+            self.store()
+            
+    def load(self):
+        """Return binary content from self.title"""
+        print('Loading cache "{}"...'.format(self.title))
+        with open(self.title, 'rb') as fp:
+            fread = fp.read()
+        return fread
+    
+    def reload(self):
+        """Alias for `store`, but easier to remember for humans
+        Commonly performed outside of a script
+        """
+        print('Performing a cache reload...')
+        self.store()
+        
+    def store(self):
+        """Store binary content of requested uri, returns None"""
+        print('Storing cache "{}"...'.format(self.title))
+        with open(self.title, 'wb') as fp:
+            fp.write(_requests.get(self.uri).content)
+        self.exists = True
+
 def download(url, title=str(), full_title=False, destination='.', log_name='DL_log.txt', speed=False):
     """Downloads a url and logs the relevant information"""
 
@@ -22,7 +69,6 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     assert type(url) == str, 'Lists not supported'
 
     from datetime import datetime
-    import os # for less 'pack' dependencies
     import sys
     from time import time
 
@@ -31,10 +77,10 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
 
     flag = False
     if log_name:
-        log_path = os.path.join(destination, log_name)
-    current = os.getcwd()
-    os.chdir(destination) # better file handling
-    print('curdir', os.getcwd())
+        log_path = _os.path.join(destination, log_name)
+    current = _os.getcwd()
+    _os.chdir(destination) # better file handling
+    print('curdir', _os.getcwd())
 
     if not title:
         title, query = get_title(url, full_title)
@@ -95,7 +141,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
             lp.write(log_stringplay)
     else:
         print(log_string.strip())
-    os.chdir(current) # better file handling
+    _os.chdir(current) # better file handling
     if speed and not(flag):
         return size / taken
 
@@ -130,6 +176,10 @@ def get_html(page, query=None):
     text = fread.text.encode('utf-8')
     return text
 
+def get_markup_title(uri):
+    soup = _BS(_requests.get(uri).content, 'html.parser')
+    return soup.html.title.text
+
 def get_mp3(link, title=str()):
     """Download mp3juice.cc links"""
     from pack.web import download
@@ -137,7 +187,7 @@ def get_mp3(link, title=str()):
         title = link[link.index('=') + 1:] + '.mp3'
     download(link, title=title)
 
-def get_title(uri, full=False):
+def get_title(uri, full=False, show=False):
     if '?' in uri:
         url, query = uri.split('?')
     else:
@@ -155,12 +205,9 @@ def get_title(uri, full=False):
     if add_ext:
         title += '.html'
     title = urllib.parse.unquote_plus(title)
-    #print('Title', title)
+    if show:
+        print('Title', title)
     return title, query
-
-def get_web_title(uri):
-    soup = _BS(_requests.get(uri).content, 'html.parser')
-    return soup.html.title.text
 
 def get_vid(v, vid_type='mp4'):
     """Download using yt-down.tk"""
@@ -185,19 +232,28 @@ class WebElements:
             page = 'https://www.google.com'
             element = 'a'
 
-        self.source = _requests.get(page)
-        self.soup = _BS(self.source.content, 'html.parser')
-        self.method = method
-        self.method = method
+        if _os.path.exists(page):
+            with open(page, 'rb') as fp:
+                self.source = fp.read()
+        else:
+            self.source = _requests.get(page).content
+        self.soup = _BS(self.source, 'html.parser')
         self.element = element
-    def find_element(self, element):
-        self.__found = eval('self.soup.{}("{}")'.format(self.method, element))
+        self.method = method
+    def find_element(self):
+        self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
     def get_found(self):
         return self.__found
-    def show(self):
+    def set_element(self, element):
+        self.element = element
+    def show(self, inner='text'):
         print('Elements:')
-        for i in self.get_found(self.element):
-            print(i.text)
+        for i in self.get_found():
+            if inner in ('string', 'text'):
+                print(eval('i.{}'.format(inner)))
+            else:
+                print(eval('i["{}"]'.format(inner)))
+            
 
 if __name__ == '__main__':
     print(download(LINK, destination=r'E:\Docs', speed=True), 'bytes per second')

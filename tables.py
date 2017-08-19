@@ -4,7 +4,7 @@ tables. Makes basic tables and plots
 
 __all__ = ['basic', 'table', 'test_function']
 
-import sys
+import sys as _sys
 
 def basic(dictionary, name=str()):
     assert type(dictionary) != list
@@ -15,7 +15,7 @@ def basic(dictionary, name=str()):
     for i in dictionary:
         print(str(i) + ' '*(largestlen-len(i)), ':', dictionary[i])
 
-def table(func, start=-5, end=5, step=1, spacing=9, precision=10, file=sys.stdout):
+def table(func, start=-5, end=5, step=1, spacing=9, precision=10, file=_sys.stdout):
     print(str(func), file=file)
     print('-'*30, file=file)
     mapstr = map(str, [start, end, step])

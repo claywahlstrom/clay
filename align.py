@@ -1,5 +1,5 @@
 """
-Align text on screen based on console size. Default WIDTH is 80px
+Align text on screen based on console size. Default WIDTH is 80 characters
 """
 
 WIDTH = 80
@@ -20,4 +20,4 @@ def left(text):
 if __name__ == '__main__':
     print(left('hello'))
     print(center('world'))
-    print(right('My name is Clay'))
+    print(right('My name is Clay. What\'s yours?'))

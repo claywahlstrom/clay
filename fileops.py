@@ -19,42 +19,6 @@ def appendfile(filename, line=str()):
         except:
             f.write(line) # for binary
 
-class Cache:
-
-    """Manages file caching on your local machine, accepts one url
-    The caching system will use the local version of the file if it exists.
-    Otherwise it will be downloaded from the server.
-
-    """
-
-
-
-    def __init__(self, uri, alt_title=None):
-
-        from pack.web import get_title as _get_title
-
-        self.uri = uri
-        self.title = _get_title(uri)[0]
-        self.exists = True
-        if not alt_title is None:
-            self.title = alt_title
-        if not(Cache._os.path.exists(self.title)):
-            self.exists = False
-            self.store()
-    def load(self):
-        """Return binary content from self.title"""
-        print('Loading cache...')
-        with open(self.title, 'rb') as fp:
-            r = fp.read()
-        return r
-    def reload(self):
-        self.store()
-    def store(self):
-        """Store binary content of requested url, returns None"""
-        print('Storing cache...')
-        with open(self.title, 'wb') as fp:
-            fp.write(_requests.get(self.uri).content)
-
 def countchar(filename, char):
     """Count occurence of char in filename"""
     with open(filename) as fp:
@@ -89,6 +53,8 @@ def get_content(filename, binary=False):
     mode = 'r'
     if binary:
         mode += 'b'
+    if not(_os.path.exists(filename)):
+        raise FileNotFoundError()
     with open(filename, mode) as fp:
         fread = fp.read()
     return fread
@@ -107,8 +73,7 @@ def get_size(name):
                 _traceback.print_exc()
                 size = 0
         else:
-            print('Basename not found. Need an absolute url path')
-            size = 0
+            raise Exception('Basename not found. Need an absolute url path')
     return size
 
 def parsefile(filename, delim='\n'):
@@ -120,21 +85,6 @@ def parsefile(filename, delim='\n'):
 def printfile(filename):
     with open(filename) as fp:
         print(fp.read())
-
-def robotr(folder, old, new):
-    sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(folder, old, new)))
-
-    if sure:
-        from pack.fileops import text_replace
-        for root, dirs, files in _os.walk(folder):
-            for f in files:
-                fp = open(_os.path.join(root, f), 'rb')
-                if old in fp.read():
-                    text_replace(_os.path.join(root, f), old, new)
-                fp.close()
-        print('Done')
-    else:
-        print('Aborted')
 
 def save(text, name='text.txt'):
     """Save to file with file numbering"""
@@ -168,7 +118,7 @@ def switch_lf(filename):
     else:
         print('Converted to crlf')
 
-def text_replace(filename, old, new):
+def _tr_base(filename, old, new):
     """http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing"""
     try:
         fp = open(filename, 'rb+')
@@ -182,5 +132,30 @@ def text_replace(filename, old, new):
     finally:
         fp.close()
 
+def text_replace(filename, old, new, recurse=False):
+    from pack.fileops import _tr_base
+    if recurse:
+        sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(folder, old, new)))
+
+        if sure:
+            from pack.fileops import text_replace
+            for root, dirs, files in _os.walk(folder):
+                for f in files:
+                    fp = open(_os.path.join(root, f), 'rb')
+                    if old in fp.read():
+                        _tr_base(_os.path.join(root, f), old, new)
+                    fp.close()
+            print('Done')
+        else:
+            print('Aborted')
+
+    else:
+        _tr_base(filename, old, new)
+
 if __name__ == '__main__':
-    print(get_size('http://www.google.com/'))
+    try:
+        print(get_size('http://www.google.com/'))
+    except Exception as e:
+        _traceback.print_exc()
+    from pack.web import LINK as _LINK
+    print(get_size(_LINK))

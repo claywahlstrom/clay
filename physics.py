@@ -23,9 +23,8 @@ class Position:
                                  (self.dt[i]) for (i,t) in enumerate(self.time[:-2])})
         return self.accel
 
-
 if __name__ == '__main__':
-    pos = Position([0,4.905,19.62,44.145,78.48,122.625], step=1)
+    pos = Position([0, 4.905, 19.62, 44.145, 78.48, 122.625], step=1)
     print('vel =', pos.vel())
     print('accel =', pos.accel())
     POS = Position([1, 4, 9, 16, 25, 36])
