@@ -132,14 +132,13 @@ def _tr_base(filename, old, new):
     finally:
         fp.close()
 
-def text_replace(filename, old, new, recurse=False):
+def text_replace(name, old, new, recurse=False):
     from pack.fileops import _tr_base
     if recurse:
-        sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(folder, old, new)))
+        sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(name, old, new)))
 
         if sure:
-            from pack.fileops import text_replace
-            for root, dirs, files in _os.walk(folder):
+            for root, dirs, files in _os.walk(name):
                 for f in files:
                     fp = open(_os.path.join(root, f), 'rb')
                     if old in fp.read():
@@ -150,12 +149,14 @@ def text_replace(filename, old, new, recurse=False):
             print('Aborted')
 
     else:
-        _tr_base(filename, old, new)
+        _tr_base(name, old, new)
 
 if __name__ == '__main__':
+    print('Expect basename not to exist')
     try:
         print(get_size('http://www.google.com/'))
     except Exception as e:
         _traceback.print_exc()
     from pack.web import LINK as _LINK
+    print('Expect basename to exist')
     print(get_size(_LINK))
