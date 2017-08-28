@@ -11,7 +11,7 @@ if UNIX:
     LIMPATH = r'/home/clayton/Desktop/limtoinf.log'
 else:
     LIMPATH = r'C:\Python35\Lib\site-packages\pack\limtoinf.log'
-
+# finally
 with open(LIMPATH, 'w') as fp:
     pass
 

@@ -20,7 +20,7 @@ class MVAverage(object):
     A simple example seen here:
         from random import randint
         from time import sleep
-        myav = MVAverage(Max=10)
+        myav = MVAverage(max_size=10)
         while True:
             myav.append(randint(0, 20))
             print('len', len(myav))
@@ -28,20 +28,20 @@ class MVAverage(object):
             sleep(1)
 
     """
-    def __init__(self, List=[], Max=10):
-        self.List = List[:]
-        self.Max = Max
-        if len(self.List):
+    def __init__(self, ls=[], max_size=10):
+        self.ls = ls[:]
+        self.max_size = max_size
+        if len(self.ls):
             self.__set_average()
     def __len__(self):
-        return len(self.List)
+        return len(self.ls)
     def __clean(self):
-        while len(self.List) > self.Max:
-            (self.List).pop(0)
+        while len(self.ls) > self.max_size:
+            (self.ls).pop(0)
     def __set_average(self):
-        self.__av = sum(self.List)/len(self.List)
+        self.__av = sum(self.ls)/len(self.ls)
     def append(self, item):
-        (self.List).append(item)
+        (self.ls).append(item)
         self.__clean()
         self.__set_average()
     def get_average(self):

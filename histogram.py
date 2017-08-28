@@ -9,18 +9,30 @@ class HG:
 
     Consumes str or bytes as text
     """
-    def __init__(self, columns, text):
-        assert type(columns) == tuple, 'columns need to be tuple'
+    def __init__(self, columns=None, text=str()):
+        if not columns is None:
+            assert type(columns) == tuple or type(columns) == list, 'columns need to be tuple'
         if type(text) == bytes:
             text = text.decode('utf8', errors='ignore')
+        if columns and not text:
+            sd = SortableDict({col: 0 for col in columns})
+        else:
+            sd = SortableDict({col: text.count(col) for col in columns})
         self.cols = columns
+        self.sd = sd
         self.text = text
-        self.sd = SortableDict({col: self.text.count(col) for col in self.cols})
-        
+
     def build(self):
-        large_key = len(max(list(self.sd.keys())))
+        max_element = max(list(self.sd.keys()))
+        if type(max_element) == str:
+            large_key = len(max_element)
+            width = 80 - 1 - large_key
+        else: # for ints and floats
+            large_key = len(str(max_element))
+            width = 80 - 1 - len(str(large_key))
+
         max_val = max(list(self.sd.values()))
-        width = 80 - 1 - large_key
+        
         print('width', width)
         print('max val', max_val)
         for (k, v) in self.sd.items():
@@ -30,5 +42,5 @@ class HG:
         self.width = width
 
 if __name__ == '__main__':
-    s = HG(('bc', 'sac', 'aaa'), 'abbcssaaaacccssacbbcaddsacc')
+    s = HG(('bc', 'sac', 'aaa'), 'abbcssaaaaaaaaaaacccssacbbcaddsaacc')
     s.build()

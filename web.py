@@ -29,11 +29,13 @@ class Cache:
 
         from pack.web import get_title as _get_title
 
-        self.title = _get_title(uri)[0]
         self.uri = uri
         
-        if not alt_title is None:
+        if alt_title is None:
+            self.title = _get_title(uri)[0]
+        else:
             self.title = alt_title
+
         if _os.path.exists(self.title):
             self.exists = True
         else:
@@ -59,7 +61,9 @@ class Cache:
         print('Storing cache "{}"...'.format(self.title))
         with open(self.title, 'wb') as fp:
             fp.write(_requests.get(self.uri).content)
+
         self.exists = True
+        return
 
 def download(url, title=str(), full_title=False, destination='.', log_name='DL_log.txt', speed=False):
     """Downloads a url and logs the relevant information"""
@@ -113,7 +117,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
                     fp.write(chunk)
                     actual += len(chunk)
                     percent = int((actual/size)*100)
-                    if 'idlelib' in sys.modules or UNIX:
+                    if 'idlelib' in sys.modules or _UNIX:
                         if percent % 5 == 0: # if multiple of 5 reached...
                             print('{}%'.format(percent), end=' ', flush=True)
                     else:
@@ -129,16 +133,16 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     else:
         taken = time() - before
         print('\ntook {}s'.format(taken))
-        if not('idlelib' in sys.modules or UNIX):
+        if not('idlelib' in sys.modules or _UNIX):
             set_title('Completed {}'.format(title))
         log_string = '{} on {} of {} bytes\n'.format(url, datetime.today(), size)
         print('Complete\n')
     finally:
         if not(fp.closed):
             fp.close()
-    if log:
+    if log_name:
         with open(log_path,'a+') as lp:
-            lp.write(log_stringplay)
+            lp.write(log_string)
     else:
         print(log_string.strip())
     _os.chdir(current) # better file handling
@@ -193,7 +197,6 @@ def get_title(uri, full=False, show=False):
     else:
         url, query = uri, None
     title = _os.path.basename(url)
-    print(title)
     add_ext = True
     if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
         add_ext = False

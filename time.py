@@ -25,7 +25,7 @@ def get_time_struct():
 
 class SunInfo:
     """Get Sun data from timeanddate.com (c) in the following form:
-         Rise/Set    |     Daylength       |   Solar Noon
+    |    Rise/Set    |     Daylength       |   Solar Noon
     Sunrise | Sunset | Length | Difference | Time | Million Miles
 
     Countries with more than one occurence of a city require state abbrev.s,
@@ -88,7 +88,8 @@ def time_until(year, month, day):
 
 if __name__ == '__main__':
     print(get_time_struct())
-    print(get_sunset())
+    suninfo = SunInfo()
+    print(suninfo.get_sunset())
     
     print(time_until(2017, 6, 26)) # france!!!
     print(time_until(2017, 11, 6))
