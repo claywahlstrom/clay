@@ -180,10 +180,6 @@ def get_html(page, query=None):
     text = fread.text.encode('utf-8')
     return text
 
-def get_markup_title(uri):
-    soup = _BS(_requests.get(uri).content, 'html.parser')
-    return soup.html.title.text
-
 def get_mp3(link, title=str()):
     """Download mp3juice.cc links"""
     from pack.web import download
@@ -191,26 +187,30 @@ def get_mp3(link, title=str()):
         title = link[link.index('=') + 1:] + '.mp3'
     download(link, title=title)
 
-def get_title(uri, full=False, show=False):
-    if '?' in uri:
-        url, query = uri.split('?')
+def get_title(uri, full=False, show=False, frommarkup=False):
+    if frommarkup:
+        soup = _BS(_requests.get(uri).content, 'html.parser')
+        return soup.html.title.text
     else:
-        url, query = uri, None
-    title = _os.path.basename(url)
-    add_ext = True
-    if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
-        add_ext = False
+        if '?' in uri:
+            url, query = uri.split('?')
+        else:
+            url, query = uri, None
+        title = _os.path.basename(url)
+        add_ext = True
+        if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
+            add_ext = False
 
-    if full:
-        title = url.replace('://', '_').replace('/', '_')
-    if not(title):
-        title = 'index'
-    if add_ext:
-        title += '.html'
-    title = urllib.parse.unquote_plus(title)
-    if show:
-        print('Title', title)
-    return title, query
+        if full:
+            title = url.replace('://', '_').replace('/', '_')
+        if not(title):
+            title = 'index'
+        if add_ext:
+            title += '.html'
+        title = urllib.parse.unquote_plus(title)
+        if show:
+            print('Title', title)
+        return title, query
 
 def get_vid(v, vid_type='mp4'):
     """Download using yt-down.tk"""
@@ -230,12 +230,13 @@ def openweb(uri, browser='firefox'):
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
 class WebElements:
-    def __init__(self, page=str(), element=str(), method='find_all'):
-        if not(page) and not(element):
+    def __init__(self, page=None, element=None, method='find_all'):
+        if page is None and element is None:
             page = 'https://www.google.com'
             element = 'a'
-
-        if _os.path.exists(page):
+        if type(page) == bytes:
+            self.source = page
+        elif _os.path.exists(page):
             with open(page, 'rb') as fp:
                 self.source = fp.read()
         else:
@@ -264,7 +265,7 @@ if __name__ == '__main__':
     print(get_title('http://www.google.com/'))
     print(get_title('http://www.google.com'))
     print(get_title(LINK, full=True))
-    print('Title:', get_web_title('https://www.google.com'))
+    print('title from markup:', get_title('https://www.google.com', frommarkup=True))
     we = WebElements()
     we.find_element()
     we.show()

@@ -76,17 +76,17 @@ def ls(directory=os.curdir, shell=False):
     else:
         return os.listdir(directory)
 
-def lsgrep(chars, directory=os.curdir):
-    """Find all files containing "chars" using re.findall. Returns list"""
+def lsgrep(regex, directory=os.curdir):
+    """Find all files containing "regex" using re.findall. Returns list"""
     from re import findall
     listing = os.listdir(directory)
-    if type(chars) == list:
+    if type(regex) == list:
         results = list()
         for x in listing:
-            if eval(' and '.join(['findall("{}", "{}")'.format(char, x) for char in chars])):
+            if eval(' and '.join(['findall("{}", "{}")'.format(char, x) for char in regex])):
                 results.append(x)
     else:
-        results = [x for x in listing if findall(chars, x)]
+        results = [x for x in listing if findall(regex, x)]
     return results
 
 from os import mkdir # def

@@ -5,22 +5,25 @@ Histogram development. Still in the early stages
 from pack.misc import SortableDict
 
 class HG:
-    """Count text into columns for histogram analysis.
+    """Counts objects into groups for histogram analysis.
 
-    Consumes str or bytes as text
+    Consumes columns as a range of values, required
+    Consumes str or bytes as text, optional
+
+    Initial values for each groups is zero if no text is supplied
     """
-    def __init__(self, columns=None, text=str()):
+    def __init__(self, columns=None, iterable=None):
         if not columns is None:
             assert type(columns) == tuple or type(columns) == list, 'columns need to be tuple'
-        if type(text) == bytes:
-            text = text.decode('utf8', errors='ignore')
-        if columns and not text:
+        if type(iterable) == bytes:
+            iterable = iterable.decode('utf8', errors='ignore')
+        if columns and not iterable:
             sd = SortableDict({col: 0 for col in columns})
         else:
-            sd = SortableDict({col: text.count(col) for col in columns})
+            sd = SortableDict({col: iterable.count(col) for col in columns})
         self.cols = columns
         self.sd = sd
-        self.text = text
+        self.iterable = iterable
 
     def build(self):
         max_element = max(list(self.sd.keys()))
