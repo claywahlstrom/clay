@@ -7,6 +7,14 @@ from pack.mathops import average
 from pack.misc import SortableDict
 
 class Attendance:
+    """Analyzes CSV time-sheets for jobs in the following format:
+         month day year,time in,time out,hours worked
+         
+    Attendance sheet is read from 'attendance.csv', so it must exist for
+    anything to work.
+    """
+
+
     def __init__(self, job_ratio, perhour):
         import os
         assert os.path.exists('attendance.csv'), 'file attendance.csv doesn\'t exist'

@@ -104,5 +104,5 @@ def executable_search(string, ext='exe'):
     return dict({s.folder: s.get_results(), t.folder: t.get_results()})
 
 if __name__ == '__main__':
-    s = Search('cont', r'E:\Docs\Clay\General notes', 'the')
+    s = Search('cont', r'E:\Docs\Clay\Notes', 'the')
     print(executable_search('chrome'))

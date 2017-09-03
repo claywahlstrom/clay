@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 
-
-__all__ = ['align',
+__all__ = ['advancedsocket',
+           'align',
            'bib',
            'boxes',
            'essay',
@@ -36,13 +36,13 @@ __all__ = ['align',
            'google',
            'group',
            'histogram',
+           'jobs',
            'listops',
            'mathops',
            'misc',
            'physics',
            'searchtools',
            'shellcmds',
-           'ssh',
            'tables',
            'time',
            'web']
@@ -58,8 +58,8 @@ else:
     HOME_DIR = _os.environ['USERPROFILE']
 
 WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.60 Safari/537.36',
-       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-       'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
-       'Accept-Encoding': 'gzip, deflate, br',
-       'Accept-Language': 'en-US,en;q=0.8',
-       'Connection': 'keep-alive'}
+           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+           'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
+           'Accept-Encoding': 'gzip, deflate, br',
+           'Accept-Language': 'en-US,en;q=0.8',
+           'Connection': 'keep-alive'}
