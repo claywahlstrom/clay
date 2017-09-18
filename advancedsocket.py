@@ -25,27 +25,33 @@ def nextopenport(ip, port):
     print('port selected ->', port)
     return port
 
-def generatereport(directory):
-    import os
+class Report:
+    def __init__(self, directory='.'):
+        self.directory = directory
+        self.generate()
 
-    report = list()
-    Walk = os.walk(directory)
+    def generate(self):
+        import os
 
-    for root, dirs, files in Walk:
-        for file in files:
-            filename = os.path.join(root, file)
-            report.append((filename, os.stat(filename).st_size))
-    return report
+        report = list()
+        Walk = os.walk(self.directory)
 
-def reportasstr(report):
-    return '\n'.join(['{} | {}'.format(x, y) for x,y in report])
+        for root, dirs, files in Walk:
+            for file in files:
+                filename = os.path.join(root, file)
+                report.append((filename, os.stat(filename).st_size))
+        self.report = report
 
-def parsereport(string):
-    splt = [x.split(' | ') for x in string.strip().split('\n')]
-    lst = [(x, int(y.strip())) for x, y in splt]
-    return lst
+    def tostring(self):
+        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
+        return self.string
 
-class SSH:
+    def parse(self):
+        splt = [x.split(' | ') for x in self.string.strip().split('\n')]
+        lst = [(x, int(y.strip())) for x, y in splt]
+        return lst
+
+class AdvancedSocket:
     """Super-class for Server and Client socket handlers"""
 
     def getbin(self, buffer=MAX_BUFFER):
@@ -115,7 +121,7 @@ class SSH:
                 print(filename, '//', str(fp.write(stream)), 'bytes')
             streams = streams[streams.index(FILESEP)+len(FILESEP):]
         time.sleep(0.2)
-        
+
     def getdiffs(self, src, dst):
         changed = list()
         removing = list()
@@ -143,7 +149,7 @@ class SSH:
     def senddiffs(self):
         import os
         from subprocess import check_output
-        
+
         recv = self.getbin().decode(UTF_CHAR)
         d_dst = self.loaddiff(recv)
 
@@ -157,11 +163,11 @@ class SSH:
         for root, dirs, files in os.walk(Dir):
             for file in files:
                 name = os.path.join(root, file)
-                key = name[name.index('\\')+1:]
+                key = name[name.index(os.path.sep)+1:]
                 Dict[key] = os.stat(name).st_size
         return Dict.copy()
 
-class ClientSSH(SSH):
+class Client(AdvancedSocket):
     def __init__(self, ip=None, port=DEF_PORT):
         if ip is None:
             ip = input('ip? ')
@@ -170,7 +176,7 @@ class ClientSSH(SSH):
         print('client connected')
         self.sock = sock
 
-class ServerSSH(SSH):
+class Server(AdvancedSocket):
     def __init__(self, ip='0.0.0.0', port=DEF_PORT, maxcon=MAX_CONN):
         port = nextopenport(ip, port)
         serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -183,7 +189,7 @@ class ServerSSH(SSH):
         self.addr = addr
 
 if __name__ == '__main__':
-    report = generatereport('.')
+    report = Report(directory='.')
     print(report)
-    string = reportasstr(report)
-    print(parsereport(string))
+    report.tostring()
+    print(report.parse())

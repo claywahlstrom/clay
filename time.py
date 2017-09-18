@@ -75,6 +75,10 @@ class SunInfo:
         """Return string of sunset time"""
         sunset = self.data[day][1]
         return sunset
+
+    def rebuild(self):
+        """Alias for `build` method"""
+        self.build()
         
 def time_until(year, month, day):
     """Find time until year, month, day.

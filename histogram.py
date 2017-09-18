@@ -2,7 +2,7 @@
 Histogram development. Still in the early stages
 """
 
-from pack.misc import SortableDict
+from clay.misc import SortableDict
 
 class HG:
     """Counts objects into groups for histogram analysis.

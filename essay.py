@@ -9,7 +9,7 @@ EXCEPTIONS = ['e.g.', 'et al.', 'i.e.'] # work in progress, may not be needed if
 
 from re import findall as _findall
 
-from pack.listops import rmdup as _rmdup
+from clay.listops import rmdup as _rmdup
 
 class Essay:
     r"""For analytics of essays. Don't use line_start as first sentence Converts line_sep to single '\n'"""

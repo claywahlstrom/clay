@@ -5,12 +5,12 @@ Collection of math operations
 import math
 import statistics
 
-from pack import UNIX
+from clay import UNIX
 
 if UNIX:
     LIMPATH = r'/home/clayton/Desktop/limtoinf.log'
 else:
-    LIMPATH = r'C:\Python35\Lib\site-packages\pack\limtoinf.log'
+    LIMPATH = r'C:\Python35\Lib\site-clayages\clay\limtoinf.log'
 # finally
 with open(LIMPATH, 'w') as fp:
     pass
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     print('LIMITS FOR SERIES')
     print(series(test_i, log=True))
 
-    import pack.tables as t
+    import clay.tables as t
     t.table(test_i, 0, 30)
 
     print(series(test_j, a=0))

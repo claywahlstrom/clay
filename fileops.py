@@ -7,7 +7,7 @@ import requests as _requests
 import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
-from pack import WEB_HDR as _WEB_HDR
+from clay import WEB_HDR as _WEB_HDR
 
 def appendfile(filename, line=str()):
     """Appends line to a file"""
@@ -132,18 +132,23 @@ def _tr_base(filename, old, new):
     finally:
         fp.close()
 
-def text_replace(name, old, new, recurse=False):
-    from pack.fileops import _tr_base
+def text_replace(name, old, new, recurse=False, ext=str()):
+    """Replace name with binary params old and new"""
+    from clay.fileops import _tr_base
     if recurse:
         sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(name, old, new)))
 
         if sure:
             for root, dirs, files in _os.walk(name):
                 for f in files:
-                    fp = open(_os.path.join(root, f), 'rb')
-                    if old in fp.read():
-                        _tr_base(_os.path.join(root, f), old, new)
-                    fp.close()
+                    try:
+                        fp = open(_os.path.join(root, f), 'rb')
+                        if old in fp.read() and f.endswith(ext):
+                            _tr_base(_os.path.join(root, f), old, new)
+                    except Exception as e:
+                        raise e
+                    finally:
+                        fp.close()
             print('Done')
         else:
             print('Aborted')
@@ -157,6 +162,6 @@ if __name__ == '__main__':
         print(get_size('http://www.google.com/'))
     except Exception as e:
         _traceback.print_exc()
-    from pack.web import LINK as _LINK
+    from clay.web import LINK as _LINK
     print('Expect basename to exist')
     print(get_size(_LINK))

@@ -1,10 +1,12 @@
 
+
 from collections import OrderedDict
 import datetime
+import math
 
-from pack.histogram import HG
-from pack.mathops import average
-from pack.misc import SortableDict
+from clay.histogram import HG
+from clay.maths import average
+from clay.misc import SortableDict
 
 class Attendance:
     """Analyzes CSV time-sheets for jobs in the following format:
@@ -15,7 +17,7 @@ class Attendance:
     """
 
 
-    def __init__(self, job_ratio, perhour):
+    def __init__(self, pay_ratio, perhour):
         import os
         assert os.path.exists('attendance.csv'), 'file attendance.csv doesn\'t exist'
         with open('attendance.csv') as fp:
@@ -30,7 +32,7 @@ class Attendance:
         self.hours = hours
         self.total_hours = total_hours
         self.cum_average = cum_average
-        self.ratio = job_ratio
+        self.ratio = pay_ratio
         self.perhour = perhour
         
         self.pt = dict()
@@ -54,18 +56,32 @@ class Attendance:
         hg.build()
         self.hg = hg
 
+    def removebreaks(self, lunches=False):
+        """Remove breaks from the punchcard, allows for accurate money calculations"""
+        for i, hour in enumerate(self.hours):
+            self.hours[i] -= 0.25 * math.floor(self.hours[i] / 3) # small breaks every 3 hours
+            if hour > 5.0 and lunches:
+                self.hours[i] -= 0.5 # lunch break
+            self.file[i][-1] = str(self.hours[i])
+        total_hours = sum(self.hours)
+        cum_average = average(list(self.hours))
+        self.total_hours = total_hours
+        self.cum_average = cum_average
+
     def setup_pt(self, by=None):
         """Set up the 'Pivot Table' for each month"""
         if by == 'month':
             # parse file
             months = OrderedDict()
+            fp = open('months.log', 'w')
             for line in self.file:
                 mon = line[0].split()[0]
                 if not(mon in months):
-                    print('new', mon)
+                    print('new', mon, file=fp)
                     months[mon] = list()
-                print('adding', line[-1], 'to', mon)
+                print('adding', line[-1], 'to', mon, file=fp)
                 months[mon].append(float(line[-1]))
+            fp.close()
             pt_months = OrderedDict()
             for month in months:
                 pt_months[month] = sum(months[month])
@@ -101,7 +117,7 @@ class Attendance:
                     prev = date
                 print(' '*4, end=str(), file=fp)
                 print(weeks[-1], 'average', average(weeks[-1]), file=fp)
-
+            fp.close()
             pt_weeks = OrderedDict()
             for i, line in enumerate(weeks):
                 pt_weeks[i] = sum(line)

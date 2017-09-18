@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 
-from pack import UNIX
+from clay import UNIX
 
 if UNIX:
     TRASH = r'/home/clayton/Desktop/TRASH'
@@ -32,7 +32,7 @@ def cls():
 
 def chext(filepath, ext):
     """Change file extension"""
-    new = '.'.join(os.path.splitext(filepath)[0]+[ext]) # split into chunks and add list to name
+    new = '.'.join(os.path.splitext(filepath)[:-1]+[ext]) # split into chunks and add list to name
     try:
         os.rename(filepath, new)
         print('Ext changed')
@@ -93,36 +93,71 @@ from os import mkdir # def
 
 from shutil import move as mv # def
 
-def pause():
+def pause(consoleonly=False):
     """Pause the script"""
-    if 'idlelib' in sys.modules or UNIX:
+    if ('idlelib' in sys.modules or UNIX) and not(consoleonly):
         input('Press enter to continue . . . ')
-    else:
+    elif not('idlelib' in sys.modules):
         subprocess.call('pause', shell=True)
 
-def ren(src, dst):
-    """Rename src to dst"""
-    try:
-        os.rename(src, dst)
-        print('"{}" renamed to "{}"'.format(src, dst))
-    except Exception as e:
-        print('Error:', e)
+def ren(src, dst, directory=os.curdir, recurse=False):
+    """Rename src to dst, or with recurse=True...
+    Rename all items with old to new using str.replace(old,new)"""
+    if recurse:
+        print('Replacing all "{}" with "{}"...'.format(src, dst))
+        x = 0
+        for file in filter(lambda name: src in name, os.listdir(directory)):
+            try:
+                os.rename(file, file.replace(src, dst))
+                x += 1
+            except:
+                print("Couldn't rename", src)
+        print('{} item(s) renamed'.format(x))
+    else:
+        try:
+            os.rename(src, dst)
+            print('"{}" renamed to "{}"'.format(src, dst))
+        except Exception as e:
+            print('Error:', e)
 
-def rm(file, directory=os.curdir):
-    """Move a file/folder to the TRASH"""
+def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
+    """Move a file/folder to the TRASH, or with recurse...
+    Recursive version rm, Optional prompting"""
     from shutil import move
 
-    from pack.shellcmds import rm_from_trash
+    from clay.shellcmds import rm_from_trash
 
-    try:
-        target = os.path.join(TRASH, file)
-        if os.path.exists(target):
-            print('Exists in TRASH, deleting...')
-            rm_from_trash(target)
-        move(os.path.join(directory, file), TRASH)
-        print('"{}" deleted'.format(file))
-    except Exception as e:
-        print(e)
+    if recurse:
+        if prompt:
+            sure = input('Are you sure you want to delete all containing "{}" in "{}"? '.format(criteria, directory))
+        else:
+            sure = True
+        x = 0
+        if sure:
+            criteria = name_or_criteria
+            print('Deleting all w/ "{}"...'.format(criteria))
+            for name in filter(lambda name: criteria.lower() in name.lower(), os.listdir(directory)):
+                try:
+                    target = os.path.join(TRASH, name)
+                    if os.path.exists(target):
+                        print('Exists in TRASH, deleting...')
+                        rm_from_trash(target)
+                    move(os.path.join(directory, name), TRASH)
+                    x += 1
+                except:
+                    pass
+        print('{} item(s) deleted'.format(x))
+    else:
+        name = name_or_criteria
+        try:
+            target = os.path.join(TRASH, name)
+            if os.path.exists(target):
+                print('Exists in TRASH, deleting...')
+                rm_from_trash(target)
+            move(os.path.join(directory, name), TRASH)
+            print('"{}" deleted'.format(name))
+        except Exception as e:
+            print(e)
 
 def rm_from_trash(target):
     win32_rm = ['del', 'rmdir /s']
@@ -136,40 +171,6 @@ def rm_from_trash(target):
         os.system('{} "{}"'.format(linux_rm[i], target))
     else:
         os.system('{} "{}"'.format(win32_rm[i], target))
-
-def roboren(old=None, new=None, directory=os.curdir):
-    """Rename all items with old to new using str.replace(old,new)"""
-    if old == None:
-        old = input('Enter old string: ')
-    if new == None:
-        new = input('Enter new string: ')
-    print('Replacing "{}" with "{}"...'.format(old, new))
-    x = 0
-    for file in filter(lambda name: old in name, os.listdir(directory)):
-        try:
-            os.rename(file, file.replace(old, new))
-            x += 1
-        except:
-            print("Couldn't rename")
-    print('{} item(s) renamed'.format(x))
-
-def roborm(criteria, prompt=True, directory=os.curdir):
-    """Recursive version of pack.ShellCmds.rm, Optional prompting"""
-    from shutil import move
-    if prompt:
-        sure = input('Are you sure you want to delete all containing "{}" in "{}"? '.format(criteria, directory))
-    else:
-        sure = True
-    x = 0
-    if sure:
-        print('Deleting all w/ "{}"...'.format(criteria))
-        for file in filter(lambda name: criteria.lower() in name.lower(), os.listdir(directory)):
-            try:
-                move(os.path.join(directory, file), TRASH)
-                x += 1
-            except:
-                pass
-    print('{} item(s) deleted'.format(x))
 
 def set_title(title=os.path.basename(list(filter(lambda name: not('python' == name), sys.argv))[0]), add=str(), args=False):
     """Customize the window title. Default is through sys.argv.
@@ -196,7 +197,7 @@ def start(program):
         print("Oops, couln't start:", e)
 
 def timeout(seconds, hide=False):
-    """Wait for specified time. Optional visibility"""
+    """Wait for the specified time. Optional visibility"""
     command = TIMEOUT_CMD + str(seconds)
     if hide:
         command += ' >nul'

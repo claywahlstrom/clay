@@ -9,10 +9,10 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from pack import UNIX as _UNIX
+from clay import UNIX as _UNIX
 
 # data vars
-from pack import WEB_HDR
+from clay import WEB_HDR
 LINK = 'http://download.thinkbroadband.com/1MB.zip'
 
 class Cache:
@@ -27,7 +27,7 @@ class Cache:
 
     def __init__(self, uri, alt_title=None):
 
-        from pack.web import get_title as _get_title
+        from clay.web import get_title as _get_title
 
         self.uri = uri
         
@@ -76,8 +76,8 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     import sys
     from time import time
 
-    from pack.shellcmds import set_title
-    from pack.web import get_title
+    from clay.shellcmds import set_title
+    from clay.web import get_title
 
     flag = False
     if log_name:
@@ -182,7 +182,7 @@ def get_html(page, query=None):
 
 def get_mp3(link, title=str()):
     """Download mp3juice.cc links"""
-    from pack.web import download
+    from clay.web import download
     if not(title):
         title = link[link.index('=') + 1:] + '.mp3'
     download(link, title=title)
@@ -214,7 +214,7 @@ def get_title(uri, full=False, show=False, frommarkup=False):
 
 def get_vid(v, vid_type='mp4'):
     """Download using yt-down.tk"""
-    from pack.fileops import download
+    from clay.fileops import download
     download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, v), title='.'.join([v, vid_type]))
 
 def openweb(uri, browser='firefox'):
