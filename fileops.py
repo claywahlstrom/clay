@@ -76,9 +76,9 @@ def get_size(name):
             raise Exception('Basename not found. Need an absolute url path')
     return size
 
-def parsefile(filename, delim='\n'):
+def parsefile(filename, delim='\n', mode='r'):
     """Parse a file by it's delimiter"""
-    with open(filename, 'r') as fp:
+    with open(filename, mode) as fp:
         spl = fp.read().split(delim)
     return spl
 

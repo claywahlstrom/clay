@@ -4,6 +4,7 @@ web module
 
 import os as _os
 from subprocess import call as _call
+import sys as _sys
 import urllib.request, urllib.error, urllib.parse
 
 import requests as _requests
@@ -149,6 +150,11 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     if speed and not(flag):
         return size / taken
 
+def filefortheweb(path):
+    new_path = 'file:///'
+    new_path += path.replace('\\', '/')
+    return new_path
+
 def find_anchors(location, query={}, internal=True, php=False):
     """Extract links. Accepts filename or url"""
     if not('://' in location):
@@ -244,20 +250,33 @@ class WebElements:
         self.soup = _BS(self.source, 'html.parser')
         self.element = element
         self.method = method
+        
     def find_element(self):
         self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
+        if not(self.__found):
+            print('No elements found')
+        
     def get_found(self):
         return self.__found
+    
     def set_element(self, element):
         self.element = element
-    def show(self, inner='text'):
-        print('Elements:')
+        
+    def show(self, inner='text', file=_sys.stdout):
+        print('Elements:', file=file)
         for i in self.get_found():
             if inner in ('string', 'text'):
-                print(eval('i.{}'.format(inner)))
+                print(eval('i.{}'.format(inner)), file=file)
             else:
-                print(eval('i["{}"]'.format(inner)))
-            
+                print(eval('i["{}"]'.format(inner)), file=file)
+    
+    def store(self, filename, inner='text'):
+        with open(filename, 'w') as fp:
+            self.show(inner=inner, file=fp)
+        if _os.path.exists(filename):
+            print('Elements stored successfully')
+        else:
+            print('Something went wrong')
 
 if __name__ == '__main__':
     print(download(LINK, destination=r'E:\Docs', speed=True), 'bytes per second')

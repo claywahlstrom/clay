@@ -10,7 +10,7 @@ from clay import UNIX
 if UNIX:
     LIMPATH = r'/home/clayton/Desktop/limtoinf.log'
 else:
-    LIMPATH = r'C:\Python35\Lib\site-clayages\clay\limtoinf.log'
+    LIMPATH = r'C:\Python35\Lib\site-packages\clay\limtoinf.log'
 # finally
 with open(LIMPATH, 'w') as fp:
     pass

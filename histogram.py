@@ -4,6 +4,8 @@ Histogram development. Still in the early stages
 
 from clay.misc import SortableDict
 
+SCREEN_WD = 100
+
 class HG:
     """Counts objects into groups for histogram analysis.
 
@@ -12,7 +14,7 @@ class HG:
 
     Initial values for each groups is zero if no text is supplied
     """
-    def __init__(self, columns=None, iterable=None):
+    def __init__(self, columns=None, iterable=None, title=None):
         if not columns is None:
             assert type(columns) == tuple or type(columns) == list, 'columns need to be tuple'
         if type(iterable) == bytes:
@@ -21,21 +23,31 @@ class HG:
             sd = SortableDict({col: 0 for col in columns})
         else:
             sd = SortableDict({col: iterable.count(col) for col in columns})
+        sd.sort()
+
         self.cols = columns
         self.sd = sd
         self.iterable = iterable
+        if title is None:
+            title = str(list(sd.keys())[:4]) + ' ...'
+        self.title = title
 
     def build(self):
-        max_element = max(list(self.sd.keys()))
-        if type(max_element) == str:
+        if type(self.cols[0]) == str:
+            max_element = str()
+            for elm in self.sd.keys():
+                if len(elm) > len(max_element):
+                    max_element = elm
             large_key = len(max_element)
-            width = 80 - 1 - large_key
+            width = SCREEN_WD - 1 - large_key
         else: # for ints and floats
+            max_element = max(list(self.sd.keys()))
             large_key = len(str(max_element))
-            width = 80 - 1 - len(str(large_key))
+            width = SCREEN_WD - 1 - len(str(large_key))
 
         max_val = max(list(self.sd.values()))
-        
+
+        print('Histogram for', self.title)
         print('width', width)
         print('max val', max_val)
         for (k, v) in self.sd.items():
@@ -43,6 +55,13 @@ class HG:
         self.max_val = max_val
         self.large_key = large_key
         self.width = width
+
+    def byvalue(self, reverse=False):
+        import operator
+        std = sorted(self.sd.items(), key=operator.itemgetter(1), reverse=reverse)
+        self.sd.clear()
+        for i,j in enumerate(std):
+            self.sd[j[0]] = j[-1]
 
 if __name__ == '__main__':
     s = HG(('bc', 'sac', 'aaa'), 'abbcssaaaaaaaaaaacccssacbbcaddsaacc')
