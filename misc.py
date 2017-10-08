@@ -33,17 +33,22 @@ class MVAverage(object):
         self.max_size = max_size
         if len(self.ls):
             self.__set_average()
+
     def __len__(self):
         return len(self.ls)
+
     def __clean(self):
         while len(self.ls) > self.max_size:
             (self.ls).pop(0)
+
     def __set_average(self):
         self.__av = sum(self.ls)/len(self.ls)
+
     def append(self, item):
         (self.ls).append(item)
         self.__clean()
         self.__set_average()
+
     def get_average(self):
         return self.__av
 

@@ -4,7 +4,7 @@ Histogram development. Still in the early stages
 
 from clay.misc import SortableDict
 
-SCREEN_WD = 100
+SCREEN_WD = 80
 
 class HG:
     """Counts objects into groups for histogram analysis.

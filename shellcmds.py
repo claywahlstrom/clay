@@ -6,15 +6,15 @@ import os
 import subprocess
 import sys
 
-from clay import UNIX
+from clay import UNIX, HOME_DIR
+
 
 if UNIX:
-    TRASH = r'/home/clayton/Desktop/TRASH'
     TIMEOUT_CMD = 'sleep '
 else:
-    TRASH = r'C:\Python35\Lib\site-packages\TRASH'
     TIMEOUT_CMD = 'timeout '
 
+TRASH = os.path.join(HOME_DIR, 'Desktop', 'TRASH')
 if not(os.path.exists(TRASH)):
     os.mkdir(TRASH)
     print('Trash made')
@@ -66,8 +66,6 @@ def filemanager(directory=os.curdir):
         os.system('xdg-open "{}"'.format(directory))
     else:
         os.system('explorer "{}"'.format(directory))
-
-explorer = filemanager # laziness to change incompatible programs 
 
 def ls(directory=os.curdir, shell=False):
     """List contents of the current directory. Use 'cmd' style for Command Prompt's 'dir'"""

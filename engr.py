@@ -8,24 +8,24 @@ OHMS_TABLE = {'I':'V/R',
             'V':'I*R',
             'R':'V/I'}
 # Standard SI prefixes
-prefixes = ['T','G','M','k','','m','u','n','p']
+PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera','Giga','Mega','kilo','','milli','micro(u)','nano','pico', 'femto', 'atto', 'zepto', 'yocto']
 
-def get_prefix(am, label='Amps'):
-    amt = am
-    position = prefixes.index('')
+def get_prefix(scalar, units='m'):
+    amount = scalar
+    position = PREFIXES.index('')
     pre = str()
 
-    while amt > 1000:
-        amt /= 1000
+    while amount > 1000:
+        amount /= 1000
         position -= 1
-        pre = prefixes[position]
+        pre = PREFIXES[position]
 
-    while amt < 1:
-        amt *= 1000
+    while amount < 1:
+        amount *= 1000
         position += 1
-        pre = prefixes[position]
+        pre = PREFIXES[position]
 
-    print(am, label, '=>', amt, pre + label)
+    print(scalar, units, '=>', amount, pre, units)
 
 def ohms_law(V=None, I=None, R=None):
     for letter in OHMS_TABLE.keys():
@@ -43,7 +43,7 @@ series = sum # def
 
 if __name__ == '__main__':
     get_prefix(24582000)
-    get_prefix(0.0021040)
+    get_prefix(0.0021040, units='m/s')
     get_prefix(0.00021040)
     print(series([10, par([100, 25, 100, 50, 12.5])]))
     print(ohms_law(V=9, I=15))

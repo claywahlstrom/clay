@@ -150,11 +150,6 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     if speed and not(flag):
         return size / taken
 
-def filefortheweb(path):
-    new_path = 'file:///'
-    new_path += path.replace('\\', '/')
-    return new_path
-
 def find_anchors(location, query={}, internal=True, php=False):
     """Extract links. Accepts filename or url"""
     if not('://' in location):
@@ -172,6 +167,9 @@ def find_anchors(location, query={}, internal=True, php=False):
     else:
         links = [link['href'] for link in raw_links]
     return links
+
+def get_file_uri(path):
+    return 'file:///' + path.replace('\\', '/')
 
 def get_file(url):
     """Read response from files"""

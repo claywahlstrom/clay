@@ -59,9 +59,8 @@ class Attendance:
     def removebreaks(self, lunches=False):
         """Remove breaks from the punchcard, allows for accurate money calculations"""
         for i, hour in enumerate(self.hours):
-            self.hours[i] -= 0.25 * math.floor(self.hours[i] / 3) # small breaks every 3 hours
-            if hour > 5.0 and lunches:
-                self.hours[i] -= 0.5 # lunch break
+            #self.hours[i] -= 0.25 * math.floor(self.hours[i] / 3) # small breaks every 3 hours
+            self.hours[i] -= math.floor(hour / 5) * 0.5 # lunch break
             self.file[i][-1] = str(self.hours[i])
         total_hours = sum(self.hours)
         cum_average = average(list(self.hours))

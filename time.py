@@ -2,15 +2,6 @@
 """
 time module
 
-funtions:
-    time.struct_time get_time_struct()
-    datetime.timedelta time_until()
-
-classes:
-    SunInfo
-        build
-        get_sunrise
-        get_sunset
 """
 
 TAD_BASE = 'https://www.timeanddate.com/astronomy'
@@ -95,5 +86,5 @@ if __name__ == '__main__':
     suninfo = SunInfo()
     print(suninfo.get_sunset())
     
-    print(time_until(2017, 6, 26)) # france!!!
-    print(time_until(2017, 11, 6))
+    print('birthday', time_until(2017, 11, 6))
+    print('exams over', time_until(2017, 12, 14))
