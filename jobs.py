@@ -60,7 +60,7 @@ class Attendance:
         """Remove breaks from the punchcard, allows for accurate money calculations"""
         for i, hour in enumerate(self.hours):
             #self.hours[i] -= 0.25 * math.floor(self.hours[i] / 3) # small breaks every 3 hours
-            self.hours[i] -= math.floor(hour / 5) * 0.5 # lunch break
+            self.hours[i] -= math.floor(hour / 5) * 0.5 # lunch breaks
             self.file[i][-1] = str(self.hours[i])
         total_hours = sum(self.hours)
         cum_average = average(list(self.hours))

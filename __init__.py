@@ -26,8 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-__all__ = ['advancedsocket',
-           'align',
+__all__ = ['align',
            'bib',
            'boxes',
            'engr',
@@ -40,6 +39,7 @@ __all__ = ['advancedsocket',
            'listops',
            'maths',
            'misc',
+           'network',
            'physics',
            'searchtools',
            'shellcmds',

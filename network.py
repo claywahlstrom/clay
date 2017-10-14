@@ -68,6 +68,7 @@ class AdvancedSocket:
                 print('max reached')
                 break
         return stream
+
     # work in progress
     def getstream(self, buffer=MAX_BUFFER, file=False):
         stream = bytes()
@@ -81,12 +82,15 @@ class AdvancedSocket:
                 print('\r' + str(len(stream)), 'bytes', flush=True, end='')
         time.sleep(0.01)
         return stream
+
     def sendbin(self, text, charset=UTF_CHAR):
         if type(text) == str:
             text = text.encode(charset)
         self.sock.send(text)
+
     def sendeof(self):
         self.sock.send(FILESEP)
+
     def sendstream(self, stream, buffer=MAX_BUFFER):
         for i in range(0, len(stream), buffer):
             try:
@@ -95,17 +99,21 @@ class AdvancedSocket:
                 self.sendbin(stream[i:])
             finally:
                 pass # time.sleep(0.01)
+
     def test(self):
         print(self.sock, 'started')
+
     def terminate(self):
         print('closing {}'.format(self.__class__))
         self.sock.close()
         print('{} closed'.format(self.__class__))
+
     def writestream(self, filename, buffer=MAX_BUFFER, charset=UTF_CHAR):
         stream = self.getstream(buffer, file=True)
         with open(filename, 'wb') as fp:
             print('\r' + str(fp.write(stream)), 'bytes')
         time.sleep(0.1)
+
     def writestreams(self, files, streamlen, buffer=MAX_BUFFER, charset=UTF_CHAR):
         """Gets file content as one string and parses for each file
         Assumes 'eof' is not contained in the files

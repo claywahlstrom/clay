@@ -1,5 +1,5 @@
 """
-Collection of math operations
+Collection of common and advanced math operations
 """
 
 import math
@@ -8,9 +8,9 @@ import statistics
 from clay import UNIX
 
 if UNIX:
-    LIMPATH = r'/home/clayton/Desktop/limtoinf.log'
+    LIMPATH = r'/home/clayton/Desktop/get_liminf.log'
 else:
-    LIMPATH = r'C:\Python36\Lib\site-packages\clay\limtoinf.log'
+    LIMPATH = r'C:\Python36\Lib\site-packages\clay\get_liminf.log'
 # finally
 with open(LIMPATH, 'w') as fp:
     pass
@@ -18,47 +18,40 @@ with open(LIMPATH, 'w') as fp:
 
 average = statistics.mean # def
 
+class Circle(object):
+    """Class for managing basic circular functions"""
+    def __init__(self, radius):
+        self.radius = radius
+
+    def get_circumference(self):
+        return 2 * math.pi * self.radius
+
+    def get_area(self):
+        return math.pi * self.radius ** 2
+
+    def get_diameter(self):
+        return self.radius * 2
+
 def cubrt(x):
     """Return the cubed root of x"""
     return round((x)**(1/3), 12)
 
-def deriv(f, x, deltax=1e-12):
+def differentiate(f, x, deltax=1e-12):
     """Return derivative of a function at a point. File version in PyRepo dir
 
     deltax = 1e-12 or 1e-11 works best."""
     return (f(x + deltax) - f(x)) / (deltax)
 
-def fracsimp(*args, show=False):
-    """Simplify fractions"""
-    from fractions import Fraction
-    f = Fraction(*args)
-    top, bottom = f.numerator, f.denominator
-    if show:
-        print(top)
-        print('-'*max(map(len, map(str, [top, bottom]))))
-        print(bottom)
-    return top, bottom
+def get_factors(num, max_divisor=1000000):
+    """Return a list of factors for the supplied int"""
+    assert type(num) == int, 'type int is required'
+    factors = list()
+    for num in range(1, max_divisor):
+        if number % num == 0: # if no remainder
+            factors[num] = int(number/num)
+    return factors
 
-def integral(func, interval=None, rects=10000):
-    """Integral from tuple (a, b)"""
-    if interval is None:
-        interval = eval(input("Interval (a,b): "))
-    a, b = interval
-    if a > b:
-        print('note: the calculated area will be negative')
-    if b - a > rects:
-        rects = b - a
-    area = 0
-    x = a
-    for n in range(rects):
-        try:
-            area += func(x) * ((b-a)/rects)
-        except Exception as e:
-            print('Error:', e)
-        x += (b-a)/rects
-    return area
-
-def limit(func, num=0, side=None, step=0.1, dist=1):
+def get_limit(func, num=0, side=None, step=0.1, dist=1):
     """Return list of limit values "step" distance apart,
     starting "dist" from num
     """
@@ -83,15 +76,49 @@ def limit(func, num=0, side=None, step=0.1, dist=1):
             x += step
         return lims
 
-def limtoinf(func, i=1, step_mag=False, log=True):
+def get_mult_of_pi(num):
+    """Return the quotient with divisor as pi"""
+    return num / math.pi
+
+def get_smallest_fraction(*args, show=False):
+    """Simplify fractions"""
+    from fractions import Fraction
+    f = Fraction(*args)
+    top, bottom = f.numerator, f.denominator
+    if show:
+        print(top)
+        print('-'*max(map(len, map(str, [top, bottom]))))
+        print(bottom)
+    return top, bottom
+
+def integrate(func, interval=None, rects=10000):
+    """Integrate from tuple (a, b)"""
+    if interval is None:
+        interval = eval(input("Interval (a, b): "))
+    a, b = interval
+    if a > b:
+        print('note: the calculated area will be negative')
+    if b - a > rects:
+        rects = b - a
+    area = 0
+    x = a
+    for n in range(rects):
+        try:
+            area += func(x) * ((b-a)/rects)
+        except Exception as e:
+            print('Error:', e)
+        x += (b-a)/rects
+    return area
+
+def get_liminf(func, i=1, step_mag=False, log=True):
     """Limit to +infinity. Handles division by zero and divergent funcs"""
     if log:
         file = open(LIMPATH, 'a')
-        print('limtoinf for', func)
+        print('get_liminf for', func)
     else:
         from sys import stdout as file
 
-    print('limtoinf for', func, file=file)
+    print('get_liminf for', func, file=file)
 
     while True:
         try:
@@ -134,41 +161,7 @@ def limtoinf(func, i=1, step_mag=False, log=True):
         file.close()
     return round(now, 10)
 
-median = statistics.median # def
-
-# natural log
-ln = math.log #def
-
-class Radical(object):
-    """Class for converting radicals to simplified form"""
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-        self.parent = (self.left, self.right)
-        self.__out = self.__least_div()
-        self.left *= self.__out
-        self.right = int(self.right/(self.__out**2))
-        
-    def __repr__(self):
-        if not self:
-            return '%s()' % (self.__class__.__name__,)
-        return '%s(%r)' % (self.__class__.__name__, (self.left, self.right))
-    
-    def __str__(self):
-        return (len(str(self.left))+2)*' '+len(str(self.right))*'_'+'\n'+'{}-/{}'.format(self.left, self.right)
-    
-    def __least_div(self):
-        div = list()
-        for i in range(2, 1000):
-            if (self.right/(i**2)).is_integer():
-                div.append(i)
-        if div:
-            out = div[-1]
-        else:
-            out = 1
-        return out
-
-def series(f, a=1, b=None, log=True):
+def get_series_sum(f, a=1, b=None, log=True):
     """Return sum for series 'f' starting at 'a'. Partial sum if 'b' supplied"""
     if b == None:
         b = 10**4
@@ -179,7 +172,7 @@ def series(f, a=1, b=None, log=True):
     except Exception as e:
         print('Factorial in function AND', e)
         b = 80
-    if f(b) == 0 or limtoinf(f, i=a, log=log) == 0:
+    if f(b) == 0 or get_liminf(f, i=a, log=log) == 0:
         tot = 0
         for i in range(a, b+1):
             #print(i, f(i))
@@ -193,6 +186,52 @@ def series(f, a=1, b=None, log=True):
     else:
         print("Series doesn't converge")
         return None
+
+# natural log
+ln = math.log #def
+
+median = statistics.median # def
+
+class Polar(object):
+    """Class to convert from polar coords to cartesian"""
+    def __init__(self, radius, angle):
+        self.radius = radius
+        self.angle = angle
+
+    def get_x(self):
+        return self.radius * math.cos(self.angle)
+        
+    def get_y(self):
+        return self.radius * math.sin(self.angle)
+        
+class Radical(object):
+    """Class for converting radicals to simplified form"""
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+        self.parent = (self.left, self.right)
+        self.__out = self.__least_div()
+        self.left *= self.__out
+        self.right = int(self.right/(self.__out**2))
+
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__,)
+        return '%s(%r)' % (self.__class__.__name__, (self.left, self.right))
+
+    def __str__(self):
+        return (len(str(self.left))+2)*' '+len(str(self.right))*'_'+'\n'+'{}-/{}'.format(self.left, self.right)
+
+    def __least_div(self):
+        div = list()
+        for i in range(2, 1000):
+            if (self.right/(i**2)).is_integer():
+                div.append(i)
+        if div:
+            out = div[-1]
+        else:
+            out = 1
+        return out
 
 def test_f(x):
     return x/(2*x-1)
@@ -213,11 +252,11 @@ def test_k(n):
     return n**2/math.factorial(2*n-1)
 
 if __name__ == '__main__':
-    print('FRACSIMP')
-    top, bottom = fracsimp(3, 39, show=True)
-    print('INTEGRAL', integral(test_g, (0, 1)))
+    print('get_smallest_fraction')
+    top, bottom = get_smallest_fraction(3, 39, show=True)
+    print('INTEGRAL from 0 to 1', integrate(test_g, (0, 1)))
     print('LIMIT OF test_h, expected 0.5')
-    lim = limit(test_h, num=2, side='right', step=0.001, dist=2)
+    lim = get_limit(test_h, num=2, side='right', step=0.001, dist=2)
     print(list(lim.values())[-1])
 
     print('RADICAL CLASS')
@@ -228,20 +267,20 @@ if __name__ == '__main__':
     print(rad)
 
     print('LIMITS TO INFINITY')
-    print(limtoinf(test_f, step_mag=True, log=False))
+    print(get_liminf(test_f, step_mag=True, log=False))
     print('expected 0.5')
-    print(limtoinf(test_h, step_mag=True, log=True))
+    print(get_liminf(test_h, step_mag=True, log=True))
     print('expected 0.0')
 
     print('LIMITS FOR SERIES')
-    print(series(test_i, log=True))
+    print(get_series_sum(test_i, log=True))
 
     import clay.tables as t
     t.table(test_i, 0, 30)
 
-    print(series(test_j, a=0))
+    print(get_series_sum(test_j, a=0))
     print('expected 15')
-    print(series(test_k))
+    print(get_series_sum(test_k))
     print('expected 1.7449...')
 
 

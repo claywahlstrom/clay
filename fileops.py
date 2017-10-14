@@ -1,5 +1,5 @@
 """
-File operations. Supports NT and linux-based kernels
+File operations. Supports NT and unix-based kernels
 """
 
 import os as _os

@@ -1,5 +1,12 @@
 
 from collections import OrderedDict
+import math
+
+# acceleration due to gravity
+a_g = -9.81 # m/s^2
+
+def get_drop_time(distance):
+    return math.sqrt((distance * 2) / a_g)
 
 class Position:
     def __init__(self, position, time=None, step=None):
