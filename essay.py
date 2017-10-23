@@ -2,7 +2,7 @@
 Analyzer for essays
 """
 
-__all__ = ['Essay', 'firstnlast', 'savetopics']
+__all__ = ['Essay', 'savetopics']
 
 # ! fix topics method for 'e.g.', 'et al. author' and other abbreviations, list in EXCEPTIONS
 EXCEPTIONS = ['e.g.', 'et al.', 'i.e.'] # work in progress, may not be needed if not many in essay

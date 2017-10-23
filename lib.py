@@ -1,8 +1,6 @@
 """
 lib: a librarian's library
 
-The function 'define' has problems ATM...
-
 """
 
 # test links:
@@ -18,7 +16,14 @@ import time as _time
 from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
-class Cit:
+from clay import WEB_HDR as _WEB_HDR
+from clay.web import get_title as _get_title
+
+COM = ', '
+PER = '. '
+
+# TODO: break up build method into subroutines
+class Cit(object):
     """Basic citation class for MLA/Chicago styles
 
     CATEGORIES:
@@ -30,40 +35,39 @@ class Cit:
 
     # follows MLA 8 standards
 
+    Data is stored as a dictionary in the object's `data` attribute
+
     """
 
-    COM = ', '
-    PER = '. '
-    SPECS = ['author',
-             'title',
-             'publisher',
-             'site_name']
+    REQUIRED = ['author',
+                'title',
+                'publisher',
+                'site_name']
 
     def __init__(self, link):
         self.link = link
-        self.build()
+        self.build_dict()
+        self.build_string()
 
-    def build(self):
-        while not(self.link):
-            self.link = input('link? ')
-        url = self.link
-        page = _requests.get(self.link).content
+    def build_dict(self):
+        # setup the variables
+        req = _requests.get(self.link)
+        page = req.content
         soup = _BS(page, 'html.parser')
-        cit_dict = dict()
-
-        cit_dict['title'] = self.get_title(soup)
-
         now = _time.ctime().split()
-        cit_dict['retrieved'] = ' '.join([str(int(now[2])), now[1] + '.',now[-1]])
-        cit_dict['url'] = url
+        data = dict()
 
-        for prop in Cit.SPECS:
+        data['title'] = _get_title(soup)
+        data['date_retr'] = ' '.join([str(int(now[2])), now[1] + '.',now[-1]])
+        data['url'] = self.link
+
+        for prop in Cit.REQUIRED:
             metas = ['og','article']
             for meta in metas:
                 desc = soup.find_all(attrs={'property': meta + ':' + prop})
                 if desc: # if found
                     try:
-                        cit_dict[prop] = desc[0]['content']
+                        data[prop] = desc[0]['content']
                     except Exception as e:
                         print(e)
                     break
@@ -71,47 +75,56 @@ class Cit:
                     desc = soup.find_all(attrs={'name': prop})
             if desc: # if found
                 try:
-                    cit_dict[prop] = desc[0]['content']
+                    data[prop] = desc[0]['content']
                 except Exception as e:
                     print(e)
-        cit_string = str()
-        if not('author' in cit_dict.keys()):
+
+        if not('author' in data.keys()):
             print('author not found')
-            cit_dict['author'] = soup.find_all('span', attrs={'itemprop': 'name'})[0].text
-        if 'author' in cit_dict.keys():
-            au = cit_dict['author']
-            if len(au.split()) > 1:
-                cit_string = Cit.COM.join([au.split()[-1], ' '.join(au.split()[:-1])])
-            else:
-                cit_string = au
-            cit_string += Cit.PER
-        if 'title' in list(cit_dict.keys()):
-            cit_string += '"' + cit_dict['title'] + '." '
-        if 'publisher' in cit_dict.keys():
-            cit_string += cit_dict['publisher'] + Cit.COM
-        cit_string += Cit.COM.join([cit_dict['retrieved'], cit_dict['url']]) + Cit.PER[0] # using cit_dict
+            data['author'] = soup.find_all('span', attrs={'itemprop': 'name'})[0].text
+
+        self.data = data
         self.soup = soup
-        self.cit_dict = cit_dict
-        self.cit_string = cit_string
+        self.req = req
+        self.page = page
+
+    def build_string(self):
+        """Builds the citation string and stores it in the string member"""
+        string = str()
+        if 'author' in self.data.keys():
+            au = self.data['author']
+            if au.count(' '): # multiple words
+                string += COM.join([au.split()[-1], ' '.join(au.split()[:-1])])
+            else:
+                string += au
+            string += PER
+        if 'title' in list(self.data.keys()):
+            string += '"' + self.data['title'] + '." '
+        if 'publisher' in self.data.keys():
+            string += self.data['publisher'] + COM
+        string += COM.join([self.data['date_retr'], self.data['url']]) + PER[0] # using data
+        self.string = string
 
     def get(self):
-        return self.cit_string
-
-    def get_title(self, s):
-        return s.find('title').cit_string
+        return self.string
 
     def show(self):
         print(self.get())
 
 def define(words):
     """Display Cambridge dictionary definitions"""
-    uri = 'http://dictionary.cambridge.org/dictionary/english/' + words.split()[0] + '?q=' + words.replace(' ','+')
-    print(uri)
-    f = _requests.get(uri).content
-    soup = _BS(f, 'html.parser')
-    print('definitions for', words.capitalize())
-    for i in [g.text for g in soup.select('.entry-body__el .def')]:
-        print(' '*4 + i)
+    baseuri = 'http://dictionary.cambridge.org/dictionary/english/'
+    inituri = baseuri + '?q=' + words.replace(' ','+')
+    try:
+        f = _requests.get(inituri, headers=_WEB_HDR).content
+        uri = baseuri + words
+        f = _requests.get(uri, headers=_WEB_HDR).content
+        soup = _BS(f, 'html.parser')
+        print('definitions for', words.capitalize())
+        for i in [g.text for g in soup.select('.entry-body__el .def')]:
+            print(' '*4 + i)
+    except:
+        print('No definitions found on', inituri)
 
 class Title:
     """Create proper book titles"""

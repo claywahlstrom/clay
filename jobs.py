@@ -8,6 +8,12 @@ from clay.histogram import HG
 from clay.maths import average
 from clay.misc import SortableDict
 
+def offsetby(day, number):
+    day -= number
+    if day < 0:
+        day += 7
+    return day
+
 class Attendance:
     """Analyzes CSV time-sheets for jobs in the following format:
          month day year,time in,time out,hours worked
@@ -17,7 +23,8 @@ class Attendance:
     """
 
 
-    def __init__(self, pay_ratio, perhour):
+    def __init__(self, pay_ratio, perhour, offset=0):
+        """Accepts pay ratio, pay per hour, and the payday offset, default 0 is Monday."""
         import os
         assert os.path.exists('attendance.csv'), 'file attendance.csv doesn\'t exist'
         with open('attendance.csv') as fp:
@@ -25,18 +32,16 @@ class Attendance:
 
         hours = list(map(float, (line[-1] for line in file)))
 
-        total_hours = sum(hours)
-        cum_average = average(list(hours))
+        self.file        = file
+        self.hours       = hours
+        self.total_hours = sum(hours)
+        self.cum_average = average(list(hours))
+        self.ratio       = pay_ratio
+        self.perhour     = perhour
+        self.offset      = offset
 
-        self.file = file
-        self.hours = hours
-        self.total_hours = total_hours
-        self.cum_average = cum_average
-        self.ratio = pay_ratio
-        self.perhour = perhour
-        
-        self.pt = dict()
-        self.pt_done = list()
+        self.pt          = dict()
+        self.pt_done     = list()
 
     def money(self, per=None):
         if per in ('week', 'month') and per + 's' in self.pt_done:
@@ -68,7 +73,7 @@ class Attendance:
         self.cum_average = cum_average
 
     def setup_pt(self, by=None):
-        """Set up the 'Pivot Table' for each month"""
+        """Set up the 'Pivot Table' for the specified period"""
         if by == 'month':
             # parse file
             months = OrderedDict()
@@ -95,7 +100,7 @@ class Attendance:
         elif by == 'week':
             weeks = list()
 
-            print('Note: weeks start on a Monday')
+            print('Note: work week starts on', self.offset)
 
             prev = datetime.date(2017, 7, 3)
 
@@ -103,10 +108,12 @@ class Attendance:
 
             for line in self.file:
                 date = datetime.datetime.strptime(line[0], '%m %d %Y')
+                prevday = offsetby(prev.weekday(), self.offset)
+                dateday = offsetby(date.weekday(), self.offset)
                 print(datetime.datetime.strftime(date, '%m-%d-%Y'), file=fp)
-                print('    prev {} : date {}'.format(prev.weekday(), date.weekday()), file=fp)
+                print('    prev {} : date {}'.format(prevday, dateday), file=fp)
                 print(' '*4, end=str(), file=fp)
-                if prev.weekday() < date.weekday() and weeks:
+                if prevday < dateday and weeks:
                     print('date is bigger and weeks exists', file=fp)
                     weeks[-1].append(float(line[-1]))
                     prev = date

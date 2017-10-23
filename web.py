@@ -28,21 +28,22 @@ class Cache:
 
     def __init__(self, uri, alt_title=None):
 
-        from clay.web import get_title as _get_title
+        from clay.web import get_basename as _get_basename
 
         self.uri = uri
         
         if alt_title is None:
-            self.title = _get_title(uri)[0]
+            self.title = _get_basename(uri)[0]
         else:
             self.title = alt_title
 
-        if _os.path.exists(self.title):
-            self.exists = True
-        else:
-            self.exists = False
+        if not(_os.path.exists(self.title)):
             self.store()
-            
+
+    def exists(self):
+        """Return a boolean of whether the file exists"""
+        return _os.path.exists(self.title)
+    
     def load(self):
         """Return binary content from self.title"""
         print('Loading cache "{}"...'.format(self.title))
@@ -63,9 +64,6 @@ class Cache:
         with open(self.title, 'wb') as fp:
             fp.write(_requests.get(self.uri).content)
 
-        self.exists = True
-        return
-
 def download(url, title=str(), full_title=False, destination='.', log_name='DL_log.txt', speed=False):
     """Downloads a url and logs the relevant information"""
 
@@ -78,7 +76,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     from time import time
 
     from clay.shellcmds import set_title
-    from clay.web import get_title
+    from clay.web import get_basename
 
     flag = False
     if log_name:
@@ -87,10 +85,10 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
     _os.chdir(destination) # better file handling
     print('curdir', _os.getcwd())
 
-    if not title:
-        title, query = get_title(url, full_title)
-    else:
+    if title: # if title already set
         query = None
+    else:
+        title, query = get_basename(url, full=full_title)
     fp = open(title, 'wb')
     print('Retrieving "{}"...\ntitle {}\nquery {}...'.format(url, title, query))
     try:
@@ -151,22 +149,53 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
         return size / taken
 
 def find_anchors(location, query={}, internal=True, php=False):
-    """Extract links. Accepts filename or url"""
-    if not('://' in location):
-        with open(location,'r') as bc:
-            fread = bc.read()
-    else:
+    """Extract links from a location. Accepts filename or url"""
+    if 'http' in location:
         fread = _requests.get(location, headers=WEB_HDR, params=query).content
+    else:
+        with open(location,'r') as bc:
+            fread = bc.read()        
     soup = _BS(fread, 'html.parser')
     raw_links = soup.find_all('a')
-    print(raw_links)
+    links = list()
     if php or internal:
-        links = [x['href'] for x in raw_links if (location[:16] in x['href'] or x['href'].startswith('/')) and not('#' in x['href'])]
+        for x in raw_links:
+            try:
+                if (location[:16] in x['href'] or x['href'].startswith('/')) and not('#' in x['href']):
+                    links.append(x['href'])
+            except:
+                links.append(x)
         if internal:
             links = [link for link in links if not('?' in link)]
     else:
-        links = [link['href'] for link in raw_links]
+        for x in raw_links:
+            try:
+                links.append(x['href'])
+            except:
+                links.append(x)
     return links
+
+def get_basename(uri, full=False, show=False):
+    """Return the basename and query of the specified uri"""
+    if '?' in uri:
+        url, query = uri.split('?')
+    else:
+        url, query = uri, None
+    title = _os.path.basename(url)
+    add_ext = True
+    if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
+        add_ext = False
+
+    if full:
+        title = url.replace('://', '_').replace('/', '_')
+    if not(title):
+        title = 'index'
+    if add_ext:
+        title += '.html'
+    title = urllib.parse.unquote_plus(title)
+    if show:
+        print('Title', title)
+    return title, query
 
 def get_file_uri(path):
     return 'file:///' + path.replace('\\', '/')
@@ -191,30 +220,14 @@ def get_mp3(link, title=str()):
         title = link[link.index('=') + 1:] + '.mp3'
     download(link, title=title)
 
-def get_title(uri, full=False, show=False, frommarkup=False):
-    if frommarkup:
+def get_title(uri_or_soup):
+    """Return the title from the markup"""
+    if type(uri_or_soup) == str:
+        uri = uri_or_soup
         soup = _BS(_requests.get(uri).content, 'html.parser')
-        return soup.html.title.text
     else:
-        if '?' in uri:
-            url, query = uri.split('?')
-        else:
-            url, query = uri, None
-        title = _os.path.basename(url)
-        add_ext = True
-        if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
-            add_ext = False
-
-        if full:
-            title = url.replace('://', '_').replace('/', '_')
-        if not(title):
-            title = 'index'
-        if add_ext:
-            title += '.html'
-        title = urllib.parse.unquote_plus(title)
-        if show:
-            print('Title', title)
-        return title, query
+        soup = uri_or_soup
+    return soup.html.title.text
 
 def get_vid(v, vid_type='mp4'):
     """Download using yt-down.tk"""
@@ -223,7 +236,6 @@ def get_vid(v, vid_type='mp4'):
 
 def openweb(uri, browser='firefox'):
     """Open pages in web browsers. "url" can be a list of urls"""
-
     if type(uri) == str:
         uri = [uri]
     if type(uri) == list:
@@ -238,14 +250,16 @@ class WebElements:
         if page is None and element is None:
             page = 'https://www.google.com'
             element = 'a'
+        self.request = None
         if type(page) == bytes:
-            self.source = page
+            self.src = page
         elif _os.path.exists(page):
             with open(page, 'rb') as fp:
-                self.source = fp.read()
+                self.src = fp.read()
         else:
-            self.source = _requests.get(page).content
-        self.soup = _BS(self.source, 'html.parser')
+            self.request = _requests.get(page, headers=WEB_HDR)
+            self.src = self.request.content
+        self.soup = _BS(self.src, 'html.parser')
         self.element = element
         self.method = method
         
@@ -276,13 +290,20 @@ class WebElements:
         else:
             print('Something went wrong')
 
+    def store_request(self, filename):
+        assert type(self.src) == bytes
+        with open(filename, 'wb') as fp:
+            fp.write(self.src)
+
 if __name__ == '__main__':
     print(download(LINK, destination=r'E:\Docs', speed=True), 'bytes per second')
-    print(get_title('https://www.minecraft.net/change-language?next=/en/', full=False))
+    print(get_basename('https://www.minecraft.net/change-language?next=/en/', full=False))
+    print(get_basename(LINK, full=True))
     print(get_title('http://www.google.com/'))
-    print(get_title('http://www.google.com'))
-    print(get_title(LINK, full=True))
-    print('title from markup:', get_title('https://www.google.com', frommarkup=True))
+    print(get_basename('http://www.google.com/'))
+    print('title from markup:', get_title('https://www.google.com'))
     we = WebElements()
     we.find_element()
     we.show()
+    print(find_anchors('http://www.google.com/', internal=False))
+    

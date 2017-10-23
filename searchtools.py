@@ -7,8 +7,8 @@ searchtools. Use regex to search directories for name or contents
 #     -If name comes up add to counter and output percent to title
 
 from os import walk, sep
-from time import time, sleep
 from re import findall
+import time as _time
 from collections import OrderedDict
 
 EXCLUDE = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
@@ -47,7 +47,7 @@ class Search(object):
         print('Search in progress...')
         print('Searching: ', end='', flush=True)
         try:
-            time_start = time() # start timer
+            time_start = _time.time() # start timer
             for root, dirs, files in walker:
                 if [x for x in EXCLUDE if x in self.string]: # if excluded
                     self.print_path('excluded dir ({})'.format(root[:STR_LIM]))
@@ -76,7 +76,7 @@ class Search(object):
                                 else: # add if not
                                     self.results[root] = [f]
 
-            self.duration = time() - time_start
+            self.duration = _time.time() - time_start
             ## optional sort if walk doesn't succeed in sorting
 ##            for key in self.results:
 ##                self.results[key] = sorted(self.results[key])

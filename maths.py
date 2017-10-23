@@ -5,16 +5,15 @@ Collection of common and advanced math operations
 import math
 import statistics
 
-from clay import UNIX
+from clay import UNIX as _UNIX
 
-if UNIX:
+if _UNIX:
     LIMPATH = r'/home/clayton/Desktop/get_liminf.log'
 else:
     LIMPATH = r'C:\Python36\Lib\site-packages\clay\get_liminf.log'
-# finally
-with open(LIMPATH, 'w') as fp:
-    pass
-
+### finally
+##with open(LIMPATH, 'w') as fp:
+##    pass
 
 average = statistics.mean # def
 
@@ -30,7 +29,7 @@ class Circle(object):
         return math.pi * self.radius ** 2
 
     def get_diameter(self):
-        return self.radius * 2
+        return 2* self.radius
 
 def cubrt(x):
     """Return the cubed root of x"""
@@ -80,6 +79,17 @@ def get_mult_of_pi(num):
     """Return the quotient with divisor as pi"""
     return num / math.pi
 
+def get_roots(a=0, b=0, c=0):
+    if not(a and b and c):
+        raise Exception('please enter some values')
+    import math
+    discriminant = b ** 2 - 4 * a * c
+    if discriminant < 0:
+        import cmath as math
+    root1 = (-b - math.sqrt(discriminant))/ (2 * a)
+    root2 = (-b + math.sqrt(discriminant))/ (2 * a)
+    return root1, root2
+
 def get_smallest_fraction(*args, show=False):
     """Simplify fractions"""
     from fractions import Fraction
@@ -104,16 +114,16 @@ def integrate(func, interval=None, rects=10000):
     x = a
     for n in range(rects):
         try:
-            area += func(x) * ((b-a)/rects)
+            area += func(x) * ((b - a) / rsects)
         except Exception as e:
             print('Error:', e)
-        x += (b-a)/rects
+        x += (b - a) / rects
     return area
 
 def get_liminf(func, i=1, step_mag=False, log=True):
     """Limit to +infinity. Handles division by zero and divergent funcs"""
     if log:
-        file = open(LIMPATH, 'a')
+        file = open(LIMPATH, 'w')
         print('get_liminf for', func)
     else:
         from sys import stdout as file

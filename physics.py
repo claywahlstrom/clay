@@ -5,8 +5,16 @@ import math
 # acceleration due to gravity
 a_g = -9.81 # m/s^2
 
-def get_drop_time(distance):
-    return math.sqrt((distance * 2) / a_g)
+def get_drop_time(displacement, v_i=0, a=a_g):
+    """Returns drop time in seconds starting at t = 0.
+    Assumes up as the positive direction"""
+    import math
+    from clay.maths import get_roots
+    if v_i:
+        t1, t2 = get_roots(a, v_i, displacement)
+        return max(t1, t2)
+    else:
+        return math.sqrt(0 - displacement * 2 / a_g)
 
 class Position:
     def __init__(self, position, time=None, step=None):
@@ -40,3 +48,5 @@ if __name__ == '__main__':
     POS = Position([1, 4, 9, 16, 25, 36])
     print('velocity', POS.vel())
     print('accel', POS.accel())
+    print('drop time', get_drop_time(displacement=abs(a_g / 2), v_i=0))
+    

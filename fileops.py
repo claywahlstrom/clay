@@ -1,5 +1,6 @@
 """
 File operations. Supports NT and unix-based kernels
+
 """
 
 import os as _os
@@ -9,15 +10,15 @@ import urllib.request, urllib.error, urllib.parse
 
 from clay import WEB_HDR as _WEB_HDR
 
-def appendfile(filename, line=str()):
-    """Appends line to a file"""
-    while not(line):
-        line = input('line: ')
+def appendfile(filename, string=str()):
+    """Appends line to a file, not prefaced with a new line"""
+    while not(string):
+        string = input('line: ')
     with open(filename, 'ab') as fp:
         try:
-            f.write(line.encode('utf8')) # for str
+            f.write(string.encode('utf8')) # for str
         except:
-            f.write(line) # for binary
+            f.write(string) # for binary
 
 def countchar(filename, char):
     """Count occurence of char in filename"""
@@ -90,12 +91,12 @@ def save(text, name='text.txt'):
     """Save to file with file numbering"""
     from os.path import exists
     SP = name.split('.')
-    x = 1
+    x = 0
     while True:
+        x += 1
         name = SP[0]+str(x)+''.join(SP[1:-1])+'.'+SP[-1]
         if not exists(name):
             break
-        x += 1
     with open(name,'w') as s:
         s.write(str(text))
     return name

@@ -52,11 +52,6 @@ class MVAverage(object):
     def get_average(self):
         return self.__av
 
-if _UNIX:
-    print("<module 'winsound.py'> not available")
-else:
-    from winsound import Beep as note # def
-
 import collections
 class SortableDict(collections.OrderedDict):
     """Sortable dict, child of collections.OrderedDict"""
@@ -77,9 +72,6 @@ if __name__ == '__main__':
     def func(x, y=2, z=3):
         return x + y + z
     print(map_args(func, (1, 4, 16, 25), z = 4))
-
-    print('BEEP!')
-    note(880, 100)
 
     person = {'friends': [{'id': 0, 'name': 'Carla James'},
                             {'id': 1, 'name': 'Patel Lewis'},

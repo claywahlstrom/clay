@@ -14,7 +14,7 @@ class HG:
 
     Initial values for each groups is zero if no text is supplied
     """
-    def __init__(self, columns=None, iterable=None, title=None):
+    def __init__(self, columns=None, iterable=None, title=None, max_width=SCREEN_WD):
         if not columns is None:
             assert type(columns) == tuple or type(columns) == list, 'columns need to be tuple'
         if type(iterable) == bytes:
@@ -31,6 +31,7 @@ class HG:
         if title is None:
             title = str(list(sd.keys())[:4]) + ' ...'
         self.title = title
+        self.max_width = max_width
 
     def build(self):
         if type(self.cols[0]) == str:
@@ -39,11 +40,11 @@ class HG:
                 if len(elm) > len(max_element):
                     max_element = elm
             large_key = len(max_element)
-            width = SCREEN_WD - 1 - large_key
+            width = self.max_width - 1 - large_key
         else: # for ints and floats
             max_element = max(list(self.sd.keys()))
             large_key = len(str(max_element))
-            width = SCREEN_WD - 1 - len(str(large_key))
+            width = self.max_width - 1 - len(str(large_key))
 
         max_val = max(list(self.sd.values()))
 
