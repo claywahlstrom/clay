@@ -4,9 +4,9 @@ from collections import OrderedDict
 import datetime
 import math
 
+from clay.clusters import SortableDict
 from clay.histogram import HG
 from clay.maths import average
-from clay.misc import SortableDict
 
 def offsetby(day, number):
     day -= number
@@ -14,7 +14,7 @@ def offsetby(day, number):
         day += 7
     return day
 
-class Attendance:
+class Attendance(object):
     """Analyzes CSV time-sheets for jobs in the following format:
          month day year,time in,time out,hours worked
          

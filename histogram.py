@@ -1,12 +1,13 @@
 """
 Histogram development. Still in the early stages
+
 """
 
-from clay.misc import SortableDict
+from clay.clusters import SortableDict
 
 SCREEN_WD = 80
 
-class HG:
+class HG(object):
     """Counts objects into groups for histogram analysis.
 
     Consumes columns as a range of values, required

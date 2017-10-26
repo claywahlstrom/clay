@@ -29,11 +29,11 @@ class Circle(object):
         return math.pi * self.radius ** 2
 
     def get_diameter(self):
-        return 2* self.radius
+        return 2 * self.radius
 
 def cubrt(x):
     """Return the cubed root of x"""
-    return round((x)**(1/3), 12)
+    return round(x ** (1/3), 12)
 
 def differentiate(f, x, deltax=1e-12):
     """Return derivative of a function at a point. File version in PyRepo dir

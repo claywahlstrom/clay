@@ -126,7 +126,7 @@ def define(words):
     except:
         print('No definitions found on', inituri)
 
-class Title:
+class Title(object):
     """Create proper book titles"""
     SKIP_LIST = ['a','am','an','and',
                  'for','in','of',
@@ -161,7 +161,7 @@ def sort_bib(filename):
     with open(filename) as fp:
         lines = fp.read().strip().split('\n')
 
-    lines.sort()
+    lines = sorted(lines, key=lambda x: x.replace('"', ''))
     content = '\n'.join(lines)
 
     with open('sorted_' + filename, 'w') as cont:
