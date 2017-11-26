@@ -92,14 +92,16 @@ def save(text, name='text.txt'):
     from os.path import exists
     SP = name.split('.')
     x = 0
-    while True:
+    name = _save_helper(SP, x)
+    while exists(name):
         x += 1
-        name = SP[0]+str(x)+''.join(SP[1:-1])+'.'+SP[-1]
-        if not exists(name):
-            break
+        name = _save_helper(SP, x)
     with open(name,'w') as s:
         s.write(str(text))
     return name
+
+def _save_helper(SP, x):
+    return SP[0] + str(x) + ''.join(SP[1:-1]) + '.' + SP[-1]
         
 def switch_lf(filename):
     """Switch versions of linefeed from a UNIX machine to Windows and vice versa"""

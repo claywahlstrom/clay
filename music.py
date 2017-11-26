@@ -23,6 +23,10 @@ MINOR = [0, 2, 3, 5, 7, 8, 10, 12]
 MAJOR = [0, 2, 4, 5, 7, 9, 11, 12]
 WHOLE_TONE = list(range(0, 13, 2))
 
+# key signatures
+KEY_SIGNATURE = {'flats': 'BEADGCF',
+                 'sharps': 'FCGDAEB'}
+
 # create steps from A dict
 _letters = 'A A# B C C# D D# E F F# G G#'.split()
 _counter = _it.count()

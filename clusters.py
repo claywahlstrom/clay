@@ -115,4 +115,4 @@ if __name__ == '__main__':
     s.add('d')
     print('after add')
     s.show()
-    s.write_file('group_test.txt')
+    s.write_file('clusters_test.txt')

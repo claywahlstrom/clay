@@ -8,7 +8,9 @@ OHMS_TABLE = {'I':'V/R',
             'V':'I*R',
             'R':'V/I'}
 # Standard SI prefixes
-PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera','Giga','Mega','kilo','','milli','micro(u)','nano','pico', 'femto', 'atto', 'zepto', 'yocto']
+PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
+            'Mega', 'kilo', '', 'milli', 'micro(u)', 'nano',
+            'pico', 'femto', 'atto', 'zepto', 'yocto']
 
 def get_prefix(scalar, units='m'):
     amount = scalar
@@ -16,14 +18,14 @@ def get_prefix(scalar, units='m'):
     pre = str()
 
     while amount > 1000:
-        amount /= 1000
         position -= 1
         pre = PREFIXES[position]
+        amount /= 1000
 
     while amount < 1:
-        amount *= 1000
         position += 1
         pre = PREFIXES[position]
+        amount *= 1000
 
     print(scalar, units, '=>', amount, pre, units)
 

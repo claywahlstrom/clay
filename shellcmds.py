@@ -1,31 +1,32 @@
 """
 Shell commands uses Python to manage your system
+
 """
 
 import os
 import subprocess
 import sys
 
-from clay import UNIX, HOME_DIR
+from clay import UNIX as _UNIX, HOME_DIR as _HOME_DIR
 
 
-if UNIX:
+if _UNIX:
     TIMEOUT_CMD = 'sleep '
 else:
     TIMEOUT_CMD = 'timeout '
 
-TRASH = os.path.join(HOME_DIR, 'Desktop', 'TRASH')
+TRASH = os.path.join(_HOME_DIR, 'Desktop', 'TRASH')
 if not(os.path.exists(TRASH)):
     os.mkdir(TRASH)
     print('Trash made')
 
 cd = os.chdir # def
 
-def cls():
+def clear():
     """Clear the screen"""
     if 'idlelib' in sys.modules:
         print('\n'*40)
-    elif UNIX:
+    elif _UNIX:
         os.system('clear')
     else:
         os.system('cls')
@@ -62,7 +63,7 @@ pwd = os.getcwd # def
 
 def filemanager(directory=os.curdir):
     """Open the file manager to the specified directory"""
-    if UNIX: # This should work...
+    if _UNIX: # This should work...
         os.system('xdg-open "{}"'.format(directory))
     else:
         os.system('explorer "{}"'.format(directory))
@@ -93,7 +94,7 @@ from shutil import move as mv # def
 
 def pause(consoleonly=False):
     """Pause the script"""
-    if ('idlelib' in sys.modules or UNIX) and not(consoleonly):
+    if ('idlelib' in sys.modules or _UNIX) and not(consoleonly):
         input('Press enter to continue . . . ')
     elif not('idlelib' in sys.modules):
         subprocess.call('pause', shell=True)
@@ -123,7 +124,7 @@ def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
     Recursive version rm, Optional prompting"""
     from shutil import move
 
-    from clay.shellcmds import rm_from_trash
+    from clay.shellcmds import rm_item
 
     if recurse:
         if prompt:
@@ -135,27 +136,24 @@ def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
             criteria = name_or_criteria
             print('Deleting all w/ "{}"...'.format(criteria))
             for name in filter(lambda name: criteria.lower() in name.lower(), os.listdir(directory)):
-                try:
-                    target = os.path.join(TRASH, name)
-                    if os.path.exists(target):
-                        print('Exists in TRASH, deleting...')
-                        rm_from_trash(target)
-                    move(os.path.join(directory, name), TRASH)
-                    x += 1
-                except:
-                    pass
+                rm_item(directory, name)
+                x += 1
         print('{} item(s) deleted'.format(x))
     else:
         name = name_or_criteria
-        try:
-            target = os.path.join(TRASH, name)
-            if os.path.exists(target):
-                print('Exists in TRASH, deleting...')
-                rm_from_trash(target)
-            move(os.path.join(directory, name), TRASH)
-            print('"{}" deleted'.format(name))
-        except Exception as e:
-            print(e)
+        rm_item(directory, name)
+        
+def rm_item(directory, name):
+    from clay.shellcmds import rm_from_trash, TRASH
+    try:
+        target = os.path.join(TRASH, name)
+        if os.path.exists(target):
+            print('Exists in TRASH, deleting...')
+            rm_from_trash(target)
+        move(os.path.join(directory, name), TRASH)
+        print('"{}" deleted'.format(name))
+    except Exception as e:
+        print(e)
 
 def rm_from_trash(target):
     win32_rm = ['del', 'rmdir /s']
@@ -165,7 +163,7 @@ def rm_from_trash(target):
     if not(os.path.isfile(target)):
         i = 1
 
-    if UNIX:
+    if _UNIX:
         os.system('{} "{}"'.format(linux_rm[i], target))
     else:
         os.system('{} "{}"'.format(win32_rm[i], target))
@@ -179,7 +177,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
     if add:
         name += ' - {}'.format(add)
     name = name.replace('<', '^<').replace('>', '^>')
-    if 'idlelib' in sys.modules or UNIX:
+    if 'idlelib' in sys.modules or _UNIX:
         print('set title -> {}'.format(name))
     else:
         os.system('title ' + name)
@@ -187,7 +185,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
 def start(program):
     """Start a program"""
     try:
-        if UNIX:
+        if _UNIX:
             os.system(program)
         else:
             os.system('start {}'.format(program))
@@ -196,11 +194,15 @@ def start(program):
 
 def timeout(seconds, hide=False):
     """Wait for the specified time. Optional visibility"""
-    command = TIMEOUT_CMD + str(seconds)
-    if hide:
-        command += ' >nul'
-    try:
-        os.system(command)
-    except:
-        print('\nTimeout skipped')
+    if 'idlelib' in sys.modules:
+        from time import sleep
+        sleep(seconds)
+    else:
+        command = TIMEOUT_CMD + str(seconds)
+        if hide:
+            command += ' >nul'
+        try:
+            os.system(command)
+        except:
+            print('\nTimeout skipped')
 

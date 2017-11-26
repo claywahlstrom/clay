@@ -1,4 +1,5 @@
 
+import os as _os
 import socket
 import time
 
@@ -31,15 +32,15 @@ class Report:
         self.generate()
 
     def generate(self):
-        import os
+
 
         report = list()
-        Walk = os.walk(self.directory)
+        Walk = _os.walk(self.directory)
 
         for root, dirs, files in Walk:
             for file in files:
-                filename = os.path.join(root, file)
-                report.append((filename, os.stat(filename).st_size))
+                filename = _os.path.join(root, file)
+                report.append((filename, _os.stat(filename).st_size))
         self.report = report
 
     def tostring(self):
@@ -59,6 +60,7 @@ class AdvancedSocket:
             return self.sock.recv(buffer)
         except:
             return b'quit'
+
     def getfilestream(self, streamlen, buffer=MAX_BUFFER):
         stream = bytes()
         while True:
@@ -155,7 +157,7 @@ class AdvancedSocket:
         print('removing', removing)
 
     def senddiffs(self):
-        import os
+
         from subprocess import check_output
 
         recv = self.getbin().decode(UTF_CHAR)
@@ -166,13 +168,12 @@ class AdvancedSocket:
         self.d_dst = d_dst
 
     def loaddiff(self, Dir):
-        import os
         Dict = dict()
-        for root, dirs, files in os.walk(Dir):
+        for root, dirs, files in _os.walk(Dir):
             for file in files:
-                name = os.path.join(root, file)
-                key = name[name.index(os.path.sep)+1:]
-                Dict[key] = os.stat(name).st_size
+                name = _os.path.join(root, file)
+                key = name[name.index(_os.path.sep)+1:]
+                Dict[key] = _os.stat(name).st_size
         return Dict.copy()
 
 class Client(AdvancedSocket):

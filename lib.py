@@ -23,7 +23,7 @@ COM = ', '
 PER = '. '
 
 # TODO: break up build method into subroutines
-class Cit(object):
+class Citation(object):
     """Basic citation class for MLA/Chicago styles
 
     CATEGORIES:
@@ -61,7 +61,7 @@ class Cit(object):
         data['date_retr'] = ' '.join([str(int(now[2])), now[1] + '.',now[-1]])
         data['url'] = self.link
 
-        for prop in Cit.REQUIRED:
+        for prop in Citation.REQUIRED:
             metas = ['og','article']
             for meta in metas:
                 desc = soup.find_all(attrs={'property': meta + ':' + prop})
@@ -126,6 +126,21 @@ def define(words):
     except:
         print('No definitions found on', inituri)
 
+def sort_bib(filename):
+    """Sort a bibilography lexigraphically, no stdout required
+
+    You need to sort quoted titles manually though
+    """
+
+    with open(filename) as fp:
+        lines = fp.read().strip().split('\n')
+
+    lines = sorted(lines, key=lambda x: x.replace('"', ''))
+    content = '\n'.join(lines)
+
+    with open('sorted_' + filename, 'w') as cont:
+        cont.write(content)
+
 class Title(object):
     """Create proper book titles"""
     SKIP_LIST = ['a','am','an','and',
@@ -152,27 +167,12 @@ class Title(object):
     def get(self):
         return self.__get
 
-def sort_bib(filename):
-    """Sort a bibilography lexigraphically, no stdout required
-
-    You need to sort quoted titles manually though
-    """
-
-    with open(filename) as fp:
-        lines = fp.read().strip().split('\n')
-
-    lines = sorted(lines, key=lambda x: x.replace('"', ''))
-    content = '\n'.join(lines)
-
-    with open('sorted_' + filename, 'w') as cont:
-        cont.write(content)
-
 if __name__ == '__main__':
     if len(_sys.argv) > 1:
         link = _sys.argv[-1]
     else:
         link = 'http://www.datascribble.com/deep-learning/deep-learning-tensorflow-series-part-1-neural-network/'
-    cit = Cit(link)
+    cit = Citation(link)
     cit.show()
 
     # define('vector quantity')

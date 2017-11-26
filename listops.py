@@ -1,10 +1,11 @@
 """
 Basic operations for lines, lists, and files
+
 """
 
 # possible: rmdup could use "set" object to remove duplicates
 
-TEST_LIST = list(['h','e','l','l','o'])
+TEST_LIST = list(['h', 'e', 'l', 'l', 'o'])
 
 def jnrows(arg, sep=', '):
     """Join rows of a file to a line with sep, defaults to ', '
@@ -41,9 +42,8 @@ def readmeat(meat, lines=0, numbers=True):
     chunks = chunks[:lines]
     for num, line in enumerate(chunks):
         if numbers:
-            print(str(num).rjust(len(str(lines))), line)
-        else:
-            print(line)
+            print(str(num).rjust(len(str(lines))), end=' ')
+        print(line)
 
 def rmdup(lizt):
     """Return non-duplicated list. Note: NOT A METHOD"""

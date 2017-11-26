@@ -27,25 +27,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 __all__ = ['align',
-           'bib',
            'boxes',
+           'clusters',
            'engr',
            'essay',
            'fileops',
            'google',
-           'group',
            'histogram',
            'jobs',
+           'lib',
            'listops',
            'maths',
            'misc',
-           'network',
+           'music',
+           'networking',
            'physics',
            'searchtools',
            'shellcmds',
            'tables',
            'time',
-           'web']
+           'web',
+           'wintitles']
 
 import sys as _sys
 import os as _os
@@ -61,6 +63,6 @@ WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
            #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
            'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
-           'Accept-Encoding': 'gzip, deflate, br',
+           'Accept-Encoding': 'gzip, deflate',
            'Accept-Language': 'en-US,en;q=0.8',
            'Connection': 'keep-alive'}

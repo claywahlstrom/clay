@@ -1,5 +1,10 @@
 """
 web module
+
+need to fix the web header to fix google accept char problems
+
+
+
 """
 
 import os as _os
@@ -14,7 +19,15 @@ from clay import UNIX as _UNIX
 
 # data vars
 from clay import WEB_HDR
-LINK = 'http://download.thinkbroadband.com/1MB.zip'
+
+# downloadable links
+LINKS = dict()
+LINK_SIZES = map(lambda n: str(n) + 'MB', [1, 2, 5, 10, 20, 50, 100, 200, 512])
+for n in LINK_SIZES:
+    LINKS[n] = 'http://download.thinkbroadband.com/' + str(n) + '.zip'
+LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
+
+TEST_LINK = 'https://minecraft.net/en-us/'
 
 class Cache:
 
@@ -31,7 +44,7 @@ class Cache:
         from clay.web import get_basename as _get_basename
 
         self.uri = uri
-        
+
         if alt_title is None:
             self.title = _get_basename(uri)[0]
         else:
@@ -43,21 +56,21 @@ class Cache:
     def exists(self):
         """Return a boolean of whether the file exists"""
         return _os.path.exists(self.title)
-    
+
     def load(self):
         """Return binary content from self.title"""
         print('Loading cache "{}"...'.format(self.title))
         with open(self.title, 'rb') as fp:
             fread = fp.read()
         return fread
-    
+
     def reload(self):
         """Alias for `store`, but easier to remember for humans
         Commonly performed outside of a script
         """
         print('Performing a cache reload...')
         self.store()
-        
+
     def store(self):
         """Store binary content of requested uri, returns None"""
         print('Storing cache "{}"...'.format(self.title))
@@ -151,10 +164,10 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
 def find_anchors(location, query={}, internal=True, php=False):
     """Extract links from a location. Accepts filename or url"""
     if 'http' in location:
-        fread = _requests.get(location, headers=WEB_HDR, params=query).content
+        fread = _requests.get(location, params=query).content#headers=WEB_HDR, params=query).content
     else:
         with open(location,'r') as bc:
-            fread = bc.read()        
+            fread = bc.read()
     soup = _BS(fread, 'html.parser')
     raw_links = soup.find_all('a')
     links = list()
@@ -205,11 +218,14 @@ def get_file(url):
     response = urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
     return response.read()
 
-def get_html(page, query=None):
+def get_html(page, query=None, headers=True):
     """Read binary response from webpage"""
     if query is not None:
         assert type(query) == dict
-    fread = _requests.get(page, params=query, headers=WEB_HDR)
+    if headers:
+        fread = _requests.get(page, params=query, headers=WEB_HDR)
+    else:
+        fread = _requests.get(page, params=query)
     text = fread.text.encode('utf-8')
     return text
 
@@ -246,14 +262,14 @@ def openweb(uri, browser='firefox'):
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
 class WebElements:
-    def __init__(self, page=None, element=None, method='find_all'):
+    def __init__(self, page=None, element=None, method='find_all', reload_local=False):
         if page is None and element is None:
-            page = 'https://www.google.com'
-            element = 'a'
+            page = TEST_LINK
+            element = 'link'
         self.request = None
         if type(page) == bytes:
             self.src = page
-        elif _os.path.exists(page):
+        elif _os.path.exists(page) and not(reload_local):
             with open(page, 'rb') as fp:
                 self.src = fp.read()
         else:
@@ -262,26 +278,29 @@ class WebElements:
         self.soup = _BS(self.src, 'html.parser')
         self.element = element
         self.method = method
-        
+
     def find_element(self):
         self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
         if not(self.__found):
             print('No elements found')
-        
+
     def get_found(self):
         return self.__found
-    
+
     def set_element(self, element):
         self.element = element
-        
-    def show(self, inner='text', file=_sys.stdout):
+
+    def show(self, attribute='text', file=_sys.stdout):
         print('Elements:', file=file)
         for i in self.get_found():
-            if inner in ('string', 'text'):
-                print(eval('i.{}'.format(inner)), file=file)
-            else:
-                print(eval('i["{}"]'.format(inner)), file=file)
-    
+            try:
+                if attribute in ('string', 'text'):
+                    print(eval('i.{}'.format(attribute)), file=file)
+                else:
+                    print(eval('i["{}"]'.format(attribute)), file=file)
+            except KeyError as e:
+                print('Key', e, 'for', i, 'not found')
+
     def store(self, filename, inner='text'):
         with open(filename, 'w') as fp:
             self.show(inner=inner, file=fp)
@@ -296,14 +315,15 @@ class WebElements:
             fp.write(self.src)
 
 if __name__ == '__main__':
-    print(download(LINK, destination=r'E:\Docs', speed=True), 'bytes per second')
+    print(download(LINKS['1MB'], destination=r'E:\Docs', speed=True), 'bytes per second')
     print(get_basename('https://www.minecraft.net/change-language?next=/en/', full=False))
-    print(get_basename(LINK, full=True))
-    print(get_title('http://www.google.com/'))
-    print(get_basename('http://www.google.com/'))
-    print('title from markup:', get_title('https://www.google.com'))
+    print(get_basename(LINKS['1MB'], full=True))
+    print(get_title(TEST_LINK))
+    print(get_basename(TEST_LINK))
+    print('title from markup:', get_title(TEST_LINK))
     we = WebElements()
     we.find_element()
-    we.show()
-    print(find_anchors('http://www.google.com/', internal=False))
-    
+    we.show(attribute='href')
+    print('ANCHORS')
+    print(find_anchors(TEST_LINK, internal=False))
+
