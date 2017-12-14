@@ -1,1 +1,1 @@
-robocopy . C:\Python35\Lib\site-clayages\clay /mir
+robocopy . C:\Python36\Lib\site-packages\clay /mir

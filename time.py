@@ -4,10 +4,15 @@ time module
 
 """
 
-TAD_BASE = 'https://www.timeanddate.com/astronomy'
-
 DEF_COUNTRY = 'usa'
-DEF_CITY = 'vancouver'
+DEF_CITY    = 'vancouver'
+
+MONTHS = ['january', 'february', 'march',
+          'april', 'may', 'june', 'july',
+          'august', 'september', 'october',
+          'november', 'december']
+
+TAD_BASE = 'https://www.timeanddate.com/astronomy'
 
 def get_time_struct():
     """Return local time as struct object"""

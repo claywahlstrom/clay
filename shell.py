@@ -1,5 +1,5 @@
 """
-Shell commands uses Python to manage your system
+Shell uses shell-like commands in Python to manage your system
 
 """
 
@@ -37,8 +37,8 @@ def chext(filepath, ext):
     try:
         os.rename(filepath, new)
         print('Ext changed')
-    except:
-        print('Failed rename')
+    except Exception as e:
+        print('Failed rename:', e)
 
 def copy(src, dst):
     """Copy source item to destination using shutil.copy"""
@@ -55,6 +55,8 @@ def copy(src, dst):
             print('Item copied')
         else:
             print('Copy failed')
+# linux users
+cp = copy # def
 
 # nt users
 cwd = os.getcwd # def
@@ -124,7 +126,7 @@ def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
     Recursive version rm, Optional prompting"""
     from shutil import move
 
-    from clay.shellcmds import rm_item
+    from clay.shell import rm_item
 
     if recurse:
         if prompt:
@@ -144,7 +146,7 @@ def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
         rm_item(directory, name)
         
 def rm_item(directory, name):
-    from clay.shellcmds import rm_from_trash, TRASH
+    from clay.shell import rm_from_trash, TRASH
     try:
         target = os.path.join(TRASH, name)
         if os.path.exists(target):

@@ -4,7 +4,6 @@ web module
 need to fix the web header to fix google accept char problems
 
 
-
 """
 
 import os as _os
@@ -19,6 +18,8 @@ from clay import UNIX as _UNIX
 
 # data vars
 from clay import WEB_HDR
+
+CHUNK_CAP = 1000000 # 1MB
 
 # downloadable links
 LINKS = dict()
@@ -77,18 +78,18 @@ class Cache:
         with open(self.title, 'wb') as fp:
             fp.write(_requests.get(self.uri).content)
 
-def download(url, title=str(), full_title=False, destination='.', log_name='DL_log.txt', speed=False):
+def download(url, title=str(), full_title=False, destination='.', log_name='dl_log.txt', speed=False):
     """Downloads a url and logs the relevant information"""
 
     # http://stackoverflow.com/a/16696317/5645103
 
     assert type(url) == str, 'Lists not supported'
 
-    from datetime import datetime
+    import datetime as dt
     import sys
     from time import time
 
-    from clay.shellcmds import set_title
+    from clay.shell import set_title
     from clay.web import get_basename
 
     flag = False
@@ -117,18 +118,18 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
             response = _requests.get(url, params=query, headers=WEB_HDR, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
             before = time() # start timer
             size = int(response.headers.get('content-length'))
-            CHUNK = size // 100
-            if CHUNK > 1000000: # place chunk cap on files >1MB
-                CHUNK = 100000 # 0.1MB
+            chunk = size // 100
+            if chunk > CHUNK_CAP: # place chunk cap on files >1MB
+                chunk = CHUNK_CAP # 1MB
             print(size, 'bytes')
-            print("Writing to file in chunks of {} bytes...".format(CHUNK))
+            print("Writing to file in chunks of {} bytes...".format(chunk))
             actual = 0
             try:
-                for chunk in response.iter_content(chunk_size=CHUNK):
-                    if not chunk: break
+                for chunk in response.iter_content(chunk_size=chunk):
+                    if len(chunk) == 0: break
                     fp.write(chunk)
                     actual += len(chunk)
-                    percent = int((actual/size)*100)
+                    percent = int(actual / size * 100)
                     if 'idlelib' in sys.modules or _UNIX:
                         if percent % 5 == 0: # if multiple of 5 reached...
                             print('{}%'.format(percent), end=' ', flush=True)
@@ -147,7 +148,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='DL_l
         print('\ntook {}s'.format(taken))
         if not('idlelib' in sys.modules or _UNIX):
             set_title('Completed {}'.format(title))
-        log_string = '{} on {} of {} bytes\n'.format(url, datetime.today(), size)
+        log_string = '{} on {} of {} bytes [{}]\n'.format(title, dt.datetime.today(), size, url)
         print('Complete\n')
     finally:
         if not(fp.closed):
@@ -261,7 +262,7 @@ def openweb(uri, browser='firefox'):
             else:
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
-class WebElements:
+class Elements:
     def __init__(self, page=None, element=None, method='find_all', reload_local=False):
         if page is None and element is None:
             page = TEST_LINK
@@ -321,7 +322,7 @@ if __name__ == '__main__':
     print(get_title(TEST_LINK))
     print(get_basename(TEST_LINK))
     print('title from markup:', get_title(TEST_LINK))
-    we = WebElements()
+    we = Elements()
     we.find_element()
     we.show(attribute='href')
     print('ANCHORS')

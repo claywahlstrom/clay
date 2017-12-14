@@ -2,8 +2,11 @@
 from collections import OrderedDict
 import math
 
-# acceleration due to gravity
-a_g = -9.81 # m/s^2
+# acceleration due to gravity, scalar quantity
+a_g = 9.81 # m/s^2
+
+# gravitational constant
+G = 6.67408*10**-11 # m^3/(kg * s^2)
 
 def get_drop_time(displacement, v_i=0, a=a_g):
     """Returns drop time in seconds starting at t = 0.

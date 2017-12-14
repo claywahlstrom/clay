@@ -14,7 +14,7 @@ import winsound as _ws
 
 from clay import UNIX as _UNIX
 from clay.fileops import save as _save
-from clay.shellcmds import set_title
+from clay.shell import set_title
 
 
 # scale types
