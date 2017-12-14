@@ -1,6 +1,6 @@
-
 """
-searchtools. Use regex to search directories for name or contents
+Search tools uses `regex` to search directories for name or contents
+
 """
 
 # add percentages based on os.listdir in folder.
@@ -18,29 +18,39 @@ EXCLUDE = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
 STR_LIM = 70 # path printing termination number
 
 class Search(object):
+    """A class for searching a file system"""
     def __init__(self, method='name', folder='.', string=str(), ext=False):
-        """Search files by method, folder, string, ext"""
+        """Searches files by method, folder, string, ext"""
+        # variable initializing
         self.method = method
         self.folder = folder
         self.string = string
         self.ext = ext
+        
+        # initialized upon build
         self.duration = None
         self.matches = None
+        self.raw_string = None 
         self.results = OrderedDict()
         self.lens = list([0])
+        
+        # actual work
         self.do_search()
         self.build_results()
+
     def build_results(self):
         self.raw_text = '{} seconds\n'.format(self.duration)
         for res in list(self.results.keys()):
             self.raw_text += res+'\n' # parent
             for val in self.results[res]:
                 self.raw_text += '\t'+val+'\n' # children
+
     def display(self):
         if self.results:
             print(self.raw_text)
         else:
             print('No results')
+
     def do_search(self):
         self.matches = 0
         walker = walk(self.folder) # root dir
@@ -86,16 +96,20 @@ class Search(object):
                 fp.close()
         print('\nSearch complete')
         print('Results built')
+
     def get_results(self):
         return self.results
+
     def print_path(self, arg):
         print('\x08'*self.lens[-1] + ' '*self.lens[-1] + '\x08'*self.lens[-1] + arg, end='', flush=True)
         self.lens.append(len(arg))
 
-def write_output(obj, filename):
-    f = open(filename,'w')
-    f.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(obj.string, obj.folder, obj.ext, obj.raw_text))
-    f.close()
+def write_output(searchobj, filename):
+    """Writes search query output to the given file"""
+    with open(filename, 'w') as fp:
+        fp.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(searchobj.string,
+                                                                       searchobj.folder, searchobj.ext))
+        fp.write(searchobj.raw_text)
 
 def executable_search(string, ext='exe'):
     """Returns tuple of program files results"""

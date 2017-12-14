@@ -23,7 +23,7 @@ if not(os.path.exists(TRASH)):
 cd = os.chdir # def
 
 def clear():
-    """Clear the screen"""
+    """Clears the screen"""
     if 'idlelib' in sys.modules:
         print('\n'*40)
     elif _UNIX:
@@ -32,7 +32,7 @@ def clear():
         os.system('cls')
 
 def chext(filepath, ext):
-    """Change file extension"""
+    """Changes file extension of the given file to `ext`"""
     new = '.'.join(os.path.splitext(filepath)[:-1]+[ext]) # split into chunks and add list to name
     try:
         os.rename(filepath, new)
@@ -41,7 +41,7 @@ def chext(filepath, ext):
         print('Failed rename:', e)
 
 def copy(src, dst):
-    """Copy source item to destination using shutil.copy"""
+    """Copies the source item to destination using shutil.copy"""
     print('Copying "{}" to "{}"...'.format(src, dst))
     from shutil import copy as cp
     try:
@@ -55,6 +55,7 @@ def copy(src, dst):
             print('Item copied')
         else:
             print('Copy failed')
+
 # linux users
 cp = copy # def
 
@@ -64,21 +65,23 @@ cwd = os.getcwd # def
 pwd = os.getcwd # def
 
 def filemanager(directory=os.curdir):
-    """Open the file manager to the specified directory"""
+    """Opens the file manager to the specified directory"""
     if _UNIX: # This should work...
         os.system('xdg-open "{}"'.format(directory))
     else:
         os.system('explorer "{}"'.format(directory))
 
 def ls(directory=os.curdir, shell=False):
-    """List contents of the current directory. Use 'cmd' style for Command Prompt's 'dir'"""
+    """Returns the listing of contents for the given `directory`.
+    If `shell` is true, then the MS-DOS style is printed and noting returned
+    """
     if shell:
         print(subprocess.check_output(['dir', directory], shell=True).decode('utf8', errors='ignore'))
     else:
         return os.listdir(directory)
 
 def lsgrep(regex, directory=os.curdir):
-    """Find all files containing "regex" using re.findall. Returns list"""
+    """Finds and returns all files containing `regex` using re.findall"""
     from re import findall
     listing = os.listdir(directory)
     if type(regex) == list:
@@ -95,14 +98,14 @@ from os import mkdir # def
 from shutil import move as mv # def
 
 def pause(consoleonly=False):
-    """Pause the script"""
+    """Pauses the console execution"""
     if ('idlelib' in sys.modules or _UNIX) and not(consoleonly):
         input('Press enter to continue . . . ')
     elif not('idlelib' in sys.modules):
         subprocess.call('pause', shell=True)
 
 def ren(src, dst, directory=os.curdir, recurse=False):
-    """Rename src to dst, or with recurse=True...
+    """Renames src to dst, or with recurse=True...
     Rename all items with old to new using str.replace(old,new)"""
     if recurse:
         print('Replacing all "{}" with "{}"...'.format(src, dst))
@@ -122,7 +125,7 @@ def ren(src, dst, directory=os.curdir, recurse=False):
             print('Error:', e)
 
 def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
-    """Move a file/folder to the TRASH, or with recurse...
+    """Moves a file/folder to the TRASH, or with recurse...
     Recursive version rm, Optional prompting"""
     from shutil import move
 
@@ -146,6 +149,7 @@ def rm(name_or_criteria, directory=os.curdir, recurse=False, prompt=True):
         rm_item(directory, name)
         
 def rm_item(directory, name):
+    """Removes an item from the given directory. Helps `rm` accomplish its task"""
     from clay.shell import rm_from_trash, TRASH
     try:
         target = os.path.join(TRASH, name)
@@ -158,6 +162,7 @@ def rm_item(directory, name):
         print(e)
 
 def rm_from_trash(target):
+    """Removes the given target from the `shell` trash"""
     win32_rm = ['del', 'rmdir /s']
     linux_rm = ['rm', 'rm -r']
 
@@ -171,8 +176,8 @@ def rm_from_trash(target):
         os.system('{} "{}"'.format(win32_rm[i], target))
 
 def set_title(title=os.path.basename(list(filter(lambda name: not('python' == name), sys.argv))[0]), add=str(), args=False):
-    """Customize the window title. Default is through sys.argv.
-    You can use additional text to follow and full for additional sys.argv's"""
+    """Customizes the window title. Default is the modules name
+    You can use your own additional text or use the command-line arguments"""
     name = title
     if args:
         name += ' ' + ' '.join(list(filter(lambda name: not('python' == name), sys.argv))[1:])
@@ -185,7 +190,7 @@ def set_title(title=os.path.basename(list(filter(lambda name: not('python' == na
         os.system('title ' + name)
 
 def start(program):
-    """Start a program"""
+    """Starts a given program"""
     try:
         if _UNIX:
             os.system(program)
@@ -195,7 +200,7 @@ def start(program):
         print("Oops, couln't start:", e)
 
 def timeout(seconds, hide=False):
-    """Wait for the specified time. Optional visibility"""
+    """Waits for the specified time in seconds"""
     if 'idlelib' in sys.modules:
         from time import sleep
         sleep(seconds)

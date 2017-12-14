@@ -8,7 +8,7 @@ Basic operations for lines, lists, and files
 TEST_LIST = list(['h', 'e', 'l', 'l', 'o'])
 
 def jnrows(arg, sep=', '):
-    """Join rows of a file to a line with sep, defaults to ', '
+    """Joins rows of a file to a line with `sep`, defaults to ', '
     Returns a string
     """
     if type(arg) == list:
@@ -19,17 +19,17 @@ def jnrows(arg, sep=', '):
         fp = open(arg, 'r')
     return fp.read().replace('\n', sep)
 
-def printall(Items):
-    """Print all items in Items"""
-    if type(Items) == dict:
-        for item in list(Items.keys()):
-            print(item, ':', Items[item])
+def printall(items):
+    """Prints all items in items"""
+    if type(items) == dict:
+        for item in list(items.keys()):
+            print(item, ':', items[item])
     else:
-        for item in Items:
+        for item in items:
             print(item)
 
 def readmeat(meat, lines=0, numbers=True):
-    """Read meat (list or str), w/ or w/o line numbers."""
+    """Reads meat (list or str), w/ or w/o line numbers."""
     if type(meat) == str:
         with open(meat,'r') as f:
             chunks = [x.rstrip() for x in f.readlines()]
@@ -46,7 +46,7 @@ def readmeat(meat, lines=0, numbers=True):
         print(line)
 
 def rmdup(lizt):
-    """Return non-duplicated list. Note: NOT A METHOD"""
+    """Returns non-duplicated list. Note: NOT A METHOD"""
     len_before = len(lizt)
     new = list()
     for n in lizt:

@@ -1,3 +1,11 @@
+"""
+Networking tools for Python
+
+AdvancedSocket difference finder functionality is not fully developed
+
+TODO: commenting
+"""
+
 
 import os as _os
 import socket
@@ -26,14 +34,28 @@ def nextopenport(ip, port):
     print('port selected ->', port)
     return port
 
-class Report:
+class Report(object):
+    """A class for generating reports on file systems
+    An exmaple of output:
+    
+    .\align.py | 587
+    .\badquotes.txt | 308
+    .\boxes.py | 2027
+    .\clusters.py | 3391
+    .\clusters_test.txt | 1363
+    ...
+    
+    """
     def __init__(self, directory='.'):
         self.directory = directory
         self.generate()
+        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
+
+    def __repr__(self):
+        """Prints the string representation of this report"""
+        return self.string
 
     def generate(self):
-
-
         report = list()
         Walk = _os.walk(self.directory)
 
@@ -43,17 +65,13 @@ class Report:
                 report.append((filename, _os.stat(filename).st_size))
         self.report = report
 
-    def tostring(self):
-        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
-        return self.string
-
     def parse(self):
         splt = [x.split(' | ') for x in self.string.strip().split('\n')]
         lst = [(x, int(y.strip())) for x, y in splt]
         return lst
 
-class AdvancedSocket:
-    """Super-class for Server and Client socket handlers"""
+class AdvancedSocket(object):
+    """Super-class for Server and Client socket handlers. Extends `object` ATM"""
 
     def getbin(self, buffer=MAX_BUFFER):
         try:
@@ -117,7 +135,7 @@ class AdvancedSocket:
         time.sleep(0.1)
 
     def writestreams(self, files, streamlen, buffer=MAX_BUFFER, charset=UTF_CHAR):
-        """Gets file content as one string and parses for each file
+        """Receives file content as one string and parses for each file
         Assumes 'eof' is not contained in the files
         """
         print('expected', streamlen)
@@ -200,5 +218,4 @@ class Server(AdvancedSocket):
 if __name__ == '__main__':
     report = Report(directory='.')
     print(report)
-    report.tostring()
     print(report.parse())

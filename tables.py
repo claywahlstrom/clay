@@ -1,5 +1,6 @@
 """
-tables. Makes basic tables and plots
+tables: Makes basic tables and plots
+
 """
 
 __all__ = ['basic', 'table', 'test_function']
@@ -7,6 +8,7 @@ __all__ = ['basic', 'table', 'test_function']
 import sys as _sys
 
 def basic(dictionary, name=str()):
+    """Prints a basic table from the given dictionary called `name`"""
     assert type(dictionary) != list
     if name != str():
         print(name.upper())
@@ -16,6 +18,7 @@ def basic(dictionary, name=str()):
         print(str(i) + ' '*(largestlen-len(i)), ':', dictionary[i])
 
 def table(func, start=-5, end=5, step=1, spacing=9, precision=10, roundto=14, file=_sys.stdout):
+    """Prints a table of values from the given a function, bounds, step, and output location"""
     print(str(func), file=file)
     print('-'*30, file=file)
     mapstr = map(str, [start, end, step])
@@ -37,6 +40,7 @@ def table(func, start=-5, end=5, step=1, spacing=9, precision=10, roundto=14, fi
         i = round(i + step, 14)
 
 def test_function(x):
+    """Function for testing `table`"""
     return x ** (4 / 3) / float(x)
 
 if __name__ == '__main__':

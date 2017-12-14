@@ -1,12 +1,12 @@
 """
-Open Google(TM) apps with Python
+Opens Google(TM) apps with Python
 """
 
 def_browser = 'firefox'
 
 def g_app(name, browser, url):
     from subprocess import call
-    print('Opening {} in {}'.format(name, browser))
+    print('Opensing {} in {}'.format(name, browser))
     call('start {} "{}"'.format(browser, url), shell=True)
 
 def calendar(browser=def_browser):

@@ -44,10 +44,12 @@ class Attendance(object):
         self.pt_done     = list()
 
     def money(self, per=None):
+        """Calculates and prints the take-home estimate for the given period `per`"""
         if per in ('week', 'month') and per + 's' in self.pt_done:
             exec("""for i, {0} in enumerate(self.{1}): print('{0}', str(i) + ': $' + str(round(self.pt['{0}'][list(self.pt['{0}'].keys())[i]] * self.perhour * self.ratio, 4)))""".format(per, per + 's'))
 
     def moneyall(self):
+        """Calculates and prints the take-home estimate for the whole job"""
         print('estimate take-home using the ratio {}: ${}'.format(self.ratio, round(self.total_hours * self.perhour * self.ratio, 4)))
 
     def get_punchcard(self):
@@ -62,7 +64,7 @@ class Attendance(object):
         self.hg = hg
 
     def removebreaks(self, lunches=False):
-        """Remove breaks from the punchcard, allows for accurate money calculations"""
+        """Removes breaks from the punchcard, allows for accurate money calculations"""
         for i, hour in enumerate(self.hours):
             #self.hours[i] -= 0.25 * math.floor(self.hours[i] / 3) # small breaks every 3 hours
             self.hours[i] -= math.floor(hour / 5) * 0.5 # lunch breaks
@@ -73,7 +75,7 @@ class Attendance(object):
         self.cum_average = cum_average
 
     def setup_pt(self, by=None):
-        """Set up the 'Pivot Table' for the specified period"""
+        """Sets up the 'Pivot Table' for the specified period"""
         if by == 'month':
             # parse file
             months = OrderedDict()

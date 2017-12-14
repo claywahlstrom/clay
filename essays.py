@@ -13,7 +13,7 @@ from re import findall as _findall
 from clay.lists import rmdup as _rmdup
 
 class Essay:
-    r"""For analytics of essays. Don't use line_start as first sentence Converts line_sep to single '\n'"""
+    r"""A class for storing and analyzing essays. Don't use line_start as first sentence Converts line_sep to single '\n'"""
     def __init__(self, source, line_start=1, line_sep='\n'):
         self.line_start = line_start
         end = '\n\n' # default
@@ -34,7 +34,7 @@ class Essay:
             print('Couldn\'t remove extra fat from text')
         
     def extract_paren(self, page_num=True, http_only=False):
-        """Return citations extracted from essay.\nFound using parenthetical standards"""
+        """Returns citations extracted from essay.\nFound using parenthetical standards"""
         parens = _findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
         parens = _rmdup(parens)
         if http_only:
@@ -44,12 +44,12 @@ class Essay:
         return parens
 
     def extraspace(self):
-        """Find extra spaces, ex. ' .' and '  '"""
+        """Finds extra spaces, ex. ' .' and '  '"""
         print('Extraspace')
         print(_findall('(.{6}  .{6})|(.{6} \.[ \w\n]{6})', self.text))
 
     def firstnlast(self, pdelim='\n'):
-        """Simplify long texts"""
+        """Simplifies long texts"""
         spl = self.text.split(pdelim)
         if '' in spl: # if parsed incorrectly
             print('Please check your pdelim arg')
@@ -63,40 +63,40 @@ class Essay:
                 print(p)
 
     def fix_spaces(self):
-        """Fix bad spaces"""
+        """Fixes bad spaces"""
         self.text = self.text.replace('  ', ' ') # xtra sp
         self.text = self.text.replace(' .', '.') # per bef
         self.text = self.text.replace('.  ', '. ') # sp aft
 
     def midcaps(self):
-        """Find unexpected capitals"""
+        """Finds unexpected capitals"""
         print('Mid caps')
         mids = list(filter(lambda sent: not('I' in sent), list(_findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
         print(mids)
 
     def paragraphs(self):
-        """Return # of paragraphs"""
+        """Returns # of paragraphs"""
         return len(self.text.strip().split('\n'))
 
     def paren_bal(self):
-        """Find if parentheses are balanced, returns boolean"""
+        """Finds if parentheses are balanced, returns boolean"""
         return self.text.count('(') == self.text.count(')')
 
     def periods(self):
-        """Return # of periods"""
+        """Returns # of periods"""
         return (self.text).count('.')
 
     def pronouns(self):
-        """Find uncapitalized I's"""
+        """Finds uncapitalized I's"""
         print('Pronouns (I\'s)')
         print(_findall('.{6} i .{6}', self.text))
 
     def sents(self):
-        """Return # of sentences"""
+        """Returns # of sentences"""
         return len(_findall('\.\s', self.text))
 
     def stats(self):
-        """Display basic stats"""
+        """Displays basic stats"""
         print(self)
         print('para', self.paragraphs())
         print('per', self.periods())
@@ -104,15 +104,15 @@ class Essay:
         print('words', self.words())
 
     def topics(self):
-        """Return list of topic sentences"""
+        """Returns list of topic sentences"""
         return _findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text)
 
     def words(self):
-        """Return # of words"""
+        """Returns # of words"""
         return len(self.text.split())
 
     def wrongcaps(self):
-        """Display unexpected capitals"""
+        """Displays unexpected capitals"""
         print('Wrong caps')
         print(_findall('.{5}\. [a-z0-9].{5}', self.text))
 

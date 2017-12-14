@@ -7,13 +7,13 @@ misc: imports that don't have their own module yet
 from clay import UNIX as _UNIX
 
 def human_hex(dec):
-    """Convert decimal values to human readable hex.
+    """Converts decimal values to human readable hex.
     Mainly used in engineering class
     """
     return hex(dec)[2:]
 
 def map_args(function, iterable, *args, **kwargs):
-    """map iterable to a function with arguments/keywords.\nDynamic types"""
+    """maps iterable to a function with arguments/keywords.\nDynamic types"""
     return type(iterable)(function(x, *args, **kwargs) for x in iterable)
 
 if __name__ == '__main__':

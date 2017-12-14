@@ -4,6 +4,7 @@ Music: for creating and playing music
 Steps are relative to A.
 Registers are in ovtaves with the lowest pitch of 55.
 
+TODO: comment Song
 
 """
 from collections import OrderedDict as _od
@@ -32,7 +33,7 @@ _letters = 'A A# B C C# D D# E F F# G G#'.split()
 _counter = _it.count()
 STEP_DICT = {note: next(_counter) for note in _letters}
 
-# set enharmonic equalss
+# set enharmonic equals
 STEP_DICT['Bb'] = STEP_DICT['A#']
 STEP_DICT['Db'] = STEP_DICT['C#']
 STEP_DICT['Eb'] = STEP_DICT['D#']
@@ -86,6 +87,8 @@ def play_half(scale, tempo):
 
 class Song(object):
     """
+    A class for storing and writing music.
+    
     Receives optional file name, selection, and subdivision
     Defaults:
         file     :: type str()

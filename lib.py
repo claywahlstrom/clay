@@ -24,7 +24,7 @@ PER = '. '
 
 # TODO: break up build method into subroutines
 class Citation(object):
-    """Basic citation class for MLA/Chicago styles
+    """A class for citating content in MLA/Chicago styles
 
     CATEGORIES:
     # editor/author
@@ -50,7 +50,7 @@ class Citation(object):
         self.build_string()
 
     def build_dict(self):
-        # setup the variables
+        """Sets up the variables"""
         req = _requests.get(self.link)
         page = req.content
         soup = _BS(page, 'html.parser')
@@ -112,7 +112,7 @@ class Citation(object):
         print(self.get())
 
 def define(words):
-    """Display Cambridge dictionary definitions"""
+    """Prints possible definitions for a word by using Cambridge's dictionary"""
     baseuri = 'http://dictionary.cambridge.org/dictionary/english/'
     inituri = baseuri + '?q=' + words.replace(' ','+')
     try:
@@ -127,7 +127,7 @@ def define(words):
         print('No definitions found on', inituri)
 
 def sort_bib(filename):
-    """Sort a bibilography lexigraphically, no stdout required
+    """Sorts a bibliography lexicographically, no stdout required
 
     You need to sort quoted titles manually though
     """
@@ -142,7 +142,7 @@ def sort_bib(filename):
         cont.write(content)
 
 class Title(object):
-    """Create proper book titles"""
+    """A class for creating proper titles"""
     SKIP_LIST = ['a','am','an','and',
                  'for','in','of',
                  'on','the','to']

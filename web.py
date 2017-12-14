@@ -1,8 +1,7 @@
 """
 web module
 
-need to fix the web header to fix google accept char problems
-
+TODO: fix the web header to fix google.com JS rendering problems (accept char param)
 
 """
 
@@ -21,7 +20,7 @@ from clay import WEB_HDR
 
 CHUNK_CAP = 1000000 # 1MB
 
-# downloadable links
+# download links for testing
 LINKS = dict()
 LINK_SIZES = map(lambda n: str(n) + 'MB', [1, 2, 5, 10, 20, 50, 100, 200, 512])
 for n in LINK_SIZES:
@@ -30,8 +29,7 @@ LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 TEST_LINK = 'https://minecraft.net/en-us/'
 
-class Cache:
-
+class Cache(object):
     """Manages file caching on your local machine, accepts one uri
     The caching system will use the local version of the file if it exists.
     Otherwise it will be downloaded from the server.
@@ -55,11 +53,11 @@ class Cache:
             self.store()
 
     def exists(self):
-        """Return a boolean of whether the file exists"""
+        """Returns a boolean of whether the file exists"""
         return _os.path.exists(self.title)
 
     def load(self):
-        """Return binary content from self.title"""
+        """Returns binary content from self.title"""
         print('Loading cache "{}"...'.format(self.title))
         with open(self.title, 'rb') as fp:
             fread = fp.read()
@@ -73,13 +71,13 @@ class Cache:
         self.store()
 
     def store(self):
-        """Store binary content of requested uri, returns None"""
+        """Stores binary content of the requested uri, returns None"""
         print('Storing cache "{}"...'.format(self.title))
         with open(self.title, 'wb') as fp:
             fp.write(_requests.get(self.uri).content)
 
 def download(url, title=str(), full_title=False, destination='.', log_name='dl_log.txt', speed=False):
-    """Downloads a url and logs the relevant information"""
+    """Downloads data from the given url and logs the relevant information"""
 
     # http://stackoverflow.com/a/16696317/5645103
 
@@ -163,7 +161,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='dl_l
         return size / taken
 
 def find_anchors(location, query={}, internal=True, php=False):
-    """Extract links from a location. Accepts filename or url"""
+    """Extracts links from a location. Accepts filename or url"""
     if 'http' in location:
         fread = _requests.get(location, params=query).content#headers=WEB_HDR, params=query).content
     else:
@@ -190,7 +188,7 @@ def find_anchors(location, query={}, internal=True, php=False):
     return links
 
 def get_basename(uri, full=False, show=False):
-    """Return the basename and query of the specified uri"""
+    """Returns the basename and query of the specified uri"""
     if '?' in uri:
         url, query = uri.split('?')
     else:
@@ -212,15 +210,16 @@ def get_basename(uri, full=False, show=False):
     return title, query
 
 def get_file_uri(path):
+    """Returns the web file uri for the given path"""
     return 'file:///' + path.replace('\\', '/')
 
-def get_file(url):
-    """Read response from files"""
+def get_file(uri):
+    """Returns the response from the given `uri`"""
     response = urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
     return response.read()
 
-def get_html(page, query=None, headers=True):
-    """Read binary response from webpage"""
+def get_html(uri, query=None, headers=True):
+    """Returns the binary response from the given `uri`"""
     if query is not None:
         assert type(query) == dict
     if headers:
@@ -231,14 +230,14 @@ def get_html(page, query=None, headers=True):
     return text
 
 def get_mp3(link, title=str()):
-    """Download mp3juice.cc links"""
+    """Downloads the given link from mp3juices.cc"""
     from clay.web import download
     if not(title):
         title = link[link.index('=') + 1:] + '.mp3'
     download(link, title=title)
 
 def get_title(uri_or_soup):
-    """Return the title from the markup"""
+    """Returns the title from the markup"""
     if type(uri_or_soup) == str:
         uri = uri_or_soup
         soup = _BS(_requests.get(uri).content, 'html.parser')
@@ -246,13 +245,13 @@ def get_title(uri_or_soup):
         soup = uri_or_soup
     return soup.html.title.text
 
-def get_vid(v, vid_type='mp4'):
-    """Download using yt-down.tk"""
+def get_vid(vid, vid_type='mp4'):
+    """Downloads the given YouTube (tm) video id using yt-down.tk, no longer stable"""
     from clay.fileops import download
-    download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, v), title='.'.join([v, vid_type]))
+    download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, vid), title='.'.join([vid, vid_type]))
 
 def openweb(uri, browser='firefox'):
-    """Open pages in web browsers. "url" can be a list of urls"""
+    """Opens the given uri (string or list) in your favorite browser"""
     if type(uri) == str:
         uri = [uri]
     if type(uri) == list:
@@ -262,7 +261,10 @@ def openweb(uri, browser='firefox'):
             else:
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
-class Elements:
+class Elements(object):
+    """A class for storing elements from a given web page or markup
+    
+    """
     def __init__(self, page=None, element=None, method='find_all', reload_local=False):
         if page is None and element is None:
             page = TEST_LINK

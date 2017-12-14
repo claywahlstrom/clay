@@ -21,19 +21,19 @@ def appendfile(filename, string=str()):
             f.write(string) # for binary
 
 def countchar(filename, char):
-    """Count occurence of char in filename"""
+    """Returns the count occurence of char in filename"""
     with open(filename) as fp:
         fcount = fp.read().count(char)
     return fcount
 
 def countwords(filename):
-    """Count number of words in file given filename"""
+    """Returns the count number of words in file given filename"""
     with open(filename) as fp:
         fcount = len(fp.read().split())
     return fcount
 
 def fix_quotes(filename):
-    """Fix UTF-8 quotes to ANSI"""
+    """Replaces UTF-8 quotes with ANSI ones"""
     try:
         fp = open(filename,'rb+')
         fread = fp.read()
@@ -50,7 +50,7 @@ def fix_quotes(filename):
         fp.close()
 
 def get_content(filename, binary=False):
-    """Get file content"""
+    """Returns file content"""
     mode = 'r'
     if binary:
         mode += 'b'
@@ -61,7 +61,7 @@ def get_content(filename, binary=False):
     return fread
 
 def get_size(name):
-    """Get the size of a file or url"""
+    """Returns the size of a file or uri"""
     from requests import head
     if _os.path.exists(name):
         size = _os.path.getsize(name)
@@ -78,17 +78,18 @@ def get_size(name):
     return size
 
 def parsefile(filename, delim='\n', mode='r'):
-    """Parse a file by it's delimiter"""
+    """Parses a file by it's delimiter and returns the list"""
     with open(filename, mode) as fp:
         spl = fp.read().split(delim)
     return spl
 
 def printfile(filename):
-    with open(filename) as fp:
+    """Prints the binary contents to the given file"""
+    with open(filename, 'rb') as fp:
         print(fp.read())
 
 def save(text, name='text.txt'):
-    """Save to file with file numbering"""
+    """Saves the given text to file with version numbering"""
     from os.path import exists
     SP = name.split('.')
     x = 0
@@ -101,10 +102,11 @@ def save(text, name='text.txt'):
     return name
 
 def _save_helper(SP, x):
+    """Helps `save` with finding a valide name for a file"""
     return SP[0] + str(x) + ''.join(SP[1:-1]) + '.' + SP[-1]
         
 def switch_lf(filename):
-    """Switch versions of linefeed from a UNIX machine to Windows and vice versa"""
+    """Switches the linefeed type from a UNIX machine to Windows and vice versa and overwrites the file"""
     with open(filename, 'rb') as fp:
         fread = fp.read()
         to_unix = False
@@ -122,7 +124,8 @@ def switch_lf(filename):
         print('Converted to crlf')
 
 def _tr_base(filename, old, new):
-    """http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing"""
+    """Helps `text_replace` rename a particular file
+    http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing"""
     try:
         fp = open(filename, 'rb+')
         fread = fp.read()
@@ -136,7 +139,7 @@ def _tr_base(filename, old, new):
         fp.close()
 
 def text_replace(name, old, new, recurse=False, ext=str()):
-    """Replace name with binary params old and new"""
+    """Replaces `name` with binary string params `old` and `new`"""
     from clay.fileops import _tr_base
     if recurse:
         sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(name, old, new)))
@@ -160,11 +163,11 @@ def text_replace(name, old, new, recurse=False, ext=str()):
         _tr_base(name, old, new)
 
 if __name__ == '__main__':
-    print('Expect basename not to exist')
+    print('Expects basename not to exist')
     try:
         print(get_size('http://www.google.com/'))
     except Exception as e:
         _traceback.print_exc()
     from clay.web import LINK as _LINK
-    print('Expect basename to exist')
+    print('Expects basename to exist')
     print(get_size(_LINK))

@@ -15,12 +15,12 @@ MONTHS = ['january', 'february', 'march',
 TAD_BASE = 'https://www.timeanddate.com/astronomy'
 
 def get_time_struct():
-    """Return local time as struct object"""
+    """Returns the local time as struct object"""
     from time import localtime, time
     return localtime(time())
 
 class SunInfo:
-    """Get Sun data from timeanddate.com (c) in the following form:
+    """A class for storing sun data collected from timeanddate.com (c) in the following form:
     |    Rise/Set    |     Daylength       |   Solar Noon
     Sunrise | Sunset | Length | Difference | Time | Million Miles
 
@@ -31,7 +31,7 @@ class SunInfo:
     
     """
 
-    cols = 6
+    COLS = 6
     
     def __init__(self, country=DEF_COUNTRY, city=DEF_CITY):
         self.country = country
@@ -39,6 +39,13 @@ class SunInfo:
         self.build()
         
     def build(self):
+        """Collects sun data and creates the following fields:
+            req  = request response
+            cont = web request content
+            soup = `bs4` soup object
+            data = list of data scraped
+        
+        """
         from bs4 import BeautifulSoup as _BS
         import requests as _requests
         req = _requests.get('/'.join([TAD_BASE, self.country, self.city]))
@@ -48,8 +55,8 @@ class SunInfo:
 
         # parse the data into rows
         data = list()
-        for i in range(0, len(scraped), SunInfo.cols):
-            data.append(scraped[i: i + SunInfo.cols])
+        for i in range(0, len(scraped), SunInfo.COLS):
+            data.append(scraped[i: i + SunInfo.COLS])
 
         # store relevant varss
         self.req = req
@@ -59,28 +66,25 @@ class SunInfo:
         self.data = data
         
     def get_data(self):
-        """Return data retrieved and parsed from timeanddate.com (c)"""
+        """Returns data retrieved and parsed from timeanddate.com (c)"""
         return self.data
 
     def get_sunrise(self, day=0):
-        """Return string of sunrise time"""
+        """Returns string of sunrise time"""
         sunrise = self.data[day][0]
         return sunrise
 
     def get_sunset(self, day=0):
-        """Return string of sunset time"""
+        """Returns string of sunset time"""
         sunset = self.data[day][1]
         return sunset
 
     def rebuild(self):
-        """Alias for `build` method"""
+        """An alias for the `build` method"""
         self.build()
         
 def time_until(year, month, day):
-    """Find time until year, month, day.
-    Returns dt.timedelta object
-
-    """
+    """Finds time until year, month, day and returns a dt.timedelta object"""
     import datetime as dt
     start = dt.datetime.today()
     end = dt.datetime(year, month, day, 0, 0, 0)

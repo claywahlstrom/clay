@@ -18,7 +18,7 @@ else:
 average = statistics.mean # def
 
 class Circle(object):
-    """Class for managing basic circular functions"""
+    """A class for managing basic circular functions"""
     def __init__(self, radius):
         self.radius = radius
 
@@ -32,17 +32,17 @@ class Circle(object):
         return 2 * self.radius
 
 def cubrt(x):
-    """Return the cubed root of x"""
+    """Returns the cubed root of x"""
     return round(x ** (1/3), 12)
 
 def differentiate(f, x, deltax=1e-12):
-    """Return derivative of a function at a point. File version in PyRepo dir
+    """Returns derivative of a function at a point. File version in PyRepo dir
 
     deltax = 1e-12 or 1e-11 works best."""
     return (f(x + deltax) - f(x)) / (deltax)
 
 def get_factors(num, max_divisor=1000000):
-    """Return a list of factors for the supplied int"""
+    """Returns a list of factors for the supplied int"""
     assert type(num) == int, 'type int is required'
     factors = list()
     for num in range(1, max_divisor):
@@ -51,7 +51,7 @@ def get_factors(num, max_divisor=1000000):
     return factors
 
 def get_limit(func, num=0, side=None, step=0.1, dist=1):
-    """Return list of limit values "step" distance apart,
+    """Returns list of limit values "step" distance apart,
     starting "dist" from num
     """
     from collections import OrderedDict
@@ -76,10 +76,11 @@ def get_limit(func, num=0, side=None, step=0.1, dist=1):
         return lims
 
 def get_mult_of_pi(num):
-    """Return the quotient with divisor as pi"""
+    """Returns the quotient with divisor as pi"""
     return num / math.pi
 
 def get_roots(a=0, b=0, c=0):
+    """Returns a tuple of roots (intersections with the x-axis) for conic equations"""
     if not(a and b and c):
         raise Exception('please enter some values')
     import math
@@ -91,7 +92,7 @@ def get_roots(a=0, b=0, c=0):
     return root1, root2
 
 def get_smallest_fraction(*args, show=False):
-    """Simplify fractions"""
+    """Returns a tuple of the given fraction in its simplest form"""
     from fractions import Fraction
     f = Fraction(*args)
     top, bottom = f.numerator, f.denominator
@@ -102,7 +103,7 @@ def get_smallest_fraction(*args, show=False):
     return top, bottom
 
 def integrate(func, interval=None, rects=10000):
-    """Integrate from tuple (a, b)"""
+    """Integrates from inclusive tuple (a, b)"""
     if interval is None:
         interval = eval(input("Interval (a, b): "))
     a, b = interval
@@ -121,7 +122,7 @@ def integrate(func, interval=None, rects=10000):
     return area
 
 def get_liminf(func, i=1, step_mag=False, log=True):
-    """Limit to +infinity. Handles division by zero and divergent funcs"""
+    """Returns the limit to +infinity. Handles division by zero and divergent funcs"""
     if log:
         file = open(LIMPATH, 'w')
         print('get_liminf for', func)
@@ -172,7 +173,7 @@ def get_liminf(func, i=1, step_mag=False, log=True):
     return round(now, 10)
 
 def get_series_sum(f, a=1, b=None, log=True):
-    """Return sum for series 'f' starting at 'a'. Partial sum if 'b' supplied"""
+    """Returns sum for series 'f' starting at 'a'. Partial sum if 'b' supplied"""
     if b == None:
         b = 10**4
 
@@ -203,7 +204,7 @@ ln = math.log #def
 median = statistics.median # def
 
 class Polar(object):
-    """Class to convert from polar coords to cartesian"""
+    """A class to convert from polar coords to cartesian"""
     def __init__(self, radius, angle):
         self.radius = radius
         self.angle = angle
