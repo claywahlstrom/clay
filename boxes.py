@@ -12,7 +12,7 @@ def fullbox(text, thickness=1, border=1):
 
     print(width)
     for x in range(thickness):
-        print('#'*width)
+        print('#' * width)
     
     for x in range(border): # greater than one
         printline(' ' * (len(text) + 2 * border), thickness)
@@ -20,10 +20,10 @@ def fullbox(text, thickness=1, border=1):
     printline(' ' * border + text + ' ' * border, thickness)
     
     for x in range(border): # greater than one
-        printline(' '*(len(text) + 2 * border), thickness)
+        printline(' ' * (len(text) + 2 * border), thickness)
         
     for x in range(thickness):
-        print('#'*width)
+        print('#' * width)
 
 def printline(text, thickness):
     """A helper for fullbox"""
@@ -35,19 +35,19 @@ def box(text, width=0, height=3, module=False):
     Option for module headers to customize titles
 
     """
-    if width < len(text)+4: # if width is zero
+    if width < len(text) + 4: # if width is zero
         for line in text.split('\n'):
             if len(line) >= width:
-                width = len(line)+4
+                width = len(line) + 4
     assert height >= 3
     if module:
         height += 2
    
     border = 1
 
-    #print('width', width)
+    # print('width', width)
 
-    print('#'*width)
+    print('#' * width)
     
     for x in range(border):
         print('#' + ' '*(width - 2) + '#')
@@ -57,12 +57,12 @@ def box(text, width=0, height=3, module=False):
         space = [' '] * width
         space[0], space[-1] = ['#'] * 2
         ind = _math.floor(width / 2 - len(line) / 2 - (width + 1) % 2)
-        #print('ind', ind)
+        # print('ind', ind)
         space[ind:ind + len(line)] = line
         print(''.join(space))
 
     for x in range(border):
-        print('#'+' ' * (width - 2)+'#')
+        print('#' + ' ' * (width - 2) + '#')
         
     print('#'*width)
 

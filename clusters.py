@@ -1,83 +1,71 @@
 
 """
-Clusters: for managing data
+Clusters: for managing data such as variables, lists and dictionaries
 
 """
 
 import collections as _collections
 import sys as _sys
 
-class Group(object):
-    """Holds list of objects to display. Mainly used for debugging"""
+class FixedSizeQueue(object):
+    """Object that maintains length when items are added to it."""
+    def __init__(self, ls=list(), max_size=10):
+        self.__ls = ls[:]
+        self.max_size = max_size
+
+    def __len__(self):
+        return len(self.__ls)
+
+    def __clean(self):
+        while len(self.__ls) > self.max_size:
+            (self.__ls).pop(-1)
+
+    def add(self, item):
+        (self.__ls).insert(0, item)
+        self.__clean()
+        self.__set_average()
+
+    def get_average(self):
+        return sum(self.ls) / len(self.ls)
+
+    def get_list(self):
+        return self.__ls
+
+class Grouping(object):
+    """Holds list of objects to display. Mainly used for tracking variables
+    in the debugging phase of a project."""
     def __init__(self, objs=list(), module='__main__'):
         assert type(objs) == list, 'Not a list of strings'
 
         self.objs = objs
         self.module = module
-        
+
     def add(self, var):
         if type(var) == list:
             for v in var:
                 (self.objs).append(v)
         elif type(var) == str:
             (self.objs).append(var)
-            
+
+    def get_dict(self):
+        return _sys.modules[self.module].__dict__
+
     def remove(self, var):
         if type(var) == list:
             for v in var:
                 (self.objs).remove(v)
         elif type(var) == str:
             (self.objs).remove(var)
-            
+
     def show(self):
         groupdict = self.get_dict()
         for ob in self.objs:
             print(ob, groupdict[ob])
-            
-    def get_dict(self):
-        return _sys.modules[self.module].__dict__
 
     def write_file(self, filename):
         string = 'stat_dict = {}'.format(self.get_dict())
         with open(filename,'w') as fp:
             fp.write(string)
-
-class MVAverage(object):
-    """Object that maintains length when items are added
-    A simple example:
-        from random import randint
-        from time import sleep
-        myav = MVAverage(max_size=5)
-        while True:
-            myav.append(randint(0, 20))
-            print('len', len(myav))
-            print('av', myav.get_average())
-            sleep(1)
-
-    """
-    def __init__(self, ls=list(), max_size=10):
-        self.ls = ls[:]
-        self.max_size = max_size
-        if len(self.ls):
-            self.__set_average()
-
-    def __len__(self):
-        return len(self.ls)
-
-    def __clean(self):
-        while len(self.ls) > self.max_size:
-            (self.ls).pop(0)
-
-    def __set_average(self):
-        self.__av = sum(self.ls)/len(self.ls)
-
-    def append(self, item):
-        (self.ls).append(item)
-        self.__clean()
-        self.__set_average()
-
-    def get_average(self):
-        return self.__av
 
 class SortableDict(_collections.OrderedDict):
     """Sortable dict, child of collections.OrderedDict"""
@@ -92,6 +80,26 @@ class SortableDict(_collections.OrderedDict):
             self[key] = copy[key]
 
 if __name__ == '__main__':
+    from random import randint
+    from time import sleep
+    myav = FixedSizeQueue(max_size=5)
+    while len(myav) < 7:
+        myav.add(randint(0, 20))
+        print('len', len(myav))
+        print('av', myav.get_average())
+
+    a = 'string'
+    b = int(4)
+    c = dict()
+    s = Grouping(['a', 'b', 'c'])
+    print('before add')
+    s.show()
+    d = float(542.2)
+    s.add('d')
+    print('after add')
+    s.show()
+    s.write_file('clusters_test.txt')
+
     person = {'friends': [{'id': 0, 'name': 'Carla James'},
                           {'id': 1, 'name': 'Patel Lewis'},
                           {'id': 2, 'name': 'Lacey Brady'}],
@@ -104,15 +112,3 @@ if __name__ == '__main__':
     celia = SortableDict(person)
     celia.sort()
     print(celia, type(celia))
-
-    a = 'string'
-    b = int(4)
-    c = dict()
-    s = Group(['a', 'b', 'c'])
-    print('before add')
-    s.show()
-    d = float(542.2)
-    s.add('d')
-    print('after add')
-    s.show()
-    s.write_file('clusters_test.txt')

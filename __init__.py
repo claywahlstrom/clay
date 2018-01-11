@@ -31,11 +31,11 @@ __all__ = ['align',
            'clusters',
            'engr',
            'essays',
-           'fileops',
+           'files',
            'google',
-           'histogram',
+           'graphing',
            'jobs',
-           'lib',
+           'libr',
            'lists',
            'maths',
            'misc',
@@ -44,7 +44,6 @@ __all__ = ['align',
            'physics',
            'searchtools',
            'shell',
-           'tables',
            'time',
            'web',
            'wintitles']
@@ -52,9 +51,10 @@ __all__ = ['align',
 import sys as _sys
 import os as _os
 
-UNIX = _sys.platform.startswith('linux') or _sys.platform.startswith('darwin') # darwin for macOS
+def isUnix():
+    return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
-if UNIX:
+if isUnix():
     HOME_DIR = _os.environ['HOME']
 else:
     HOME_DIR = _os.environ['USERPROFILE']

@@ -5,9 +5,9 @@ Collection of common and advanced math operations
 import math
 import statistics
 
-from clay import UNIX as _UNIX
+from clay import isUnix as _isUnix
 
-if _UNIX:
+if _isUnix():
     LIMPATH = r'/home/clayton/Desktop/get_liminf.log'
 else:
     LIMPATH = r'C:\Python36\Lib\site-packages\clay\get_liminf.log'
@@ -234,33 +234,26 @@ class Radical(object):
         return (len(str(self.left))+2)*' '+len(str(self.right))*'_'+'\n'+'{}-/{}'.format(self.left, self.right)
 
     def __least_div(self):
-        div = list()
-        for i in range(2, 1000):
-            if (self.right/(i**2)).is_integer():
-                div.append(i)
-        if div:
-            out = div[-1]
-        else:
-            out = 1
-        return out
+        div = list([i for i in range(2, 1000) if (self.right / (i ** 2)).is_integer()])
+        return div[-1] if len(div) > 0 else 1 # ternary operation
 
 def test_f(x):
-    return x/(2*x-1)
+    return x / (2 * x - 1)
 
 def test_g(x):
     return math.acos(x)
 
 def test_h(x):
-    return 1/x
+    return 1 / x
 
 def test_i(n):
-    return (-1)**n * (1/n**2)
+    return (-1) ** n * (1 / n ** 2)
 
 def test_j(n):
-    return 5*(2/3)**n
+    return 5 * (2 / 3) ** n
 
 def test_k(n):
-    return n**2/math.factorial(2*n-1)
+    return n ** 2 / math.factorial(2 * n - 1)
 
 if __name__ == '__main__':
     print('get_smallest_fraction')
@@ -286,8 +279,8 @@ if __name__ == '__main__':
     print('LIMITS FOR SERIES')
     print(get_series_sum(test_i, log=True))
 
-    import clay.tables as t
-    t.table(test_i, 0, 30)
+    import clay.graphing as g
+    g.tabulate(test_i, 0, 30)
 
     print(get_series_sum(test_j, a=0))
     print('expected 15')

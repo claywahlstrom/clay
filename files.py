@@ -1,5 +1,5 @@
 """
-File operations. Supports NT and unix-based kernels
+File functions, supports NT and unix-based kernels
 
 """
 
@@ -9,6 +9,7 @@ import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
 from clay import WEB_HDR as _WEB_HDR
+from clay.shell import ssdExists as _ssdExists
 
 def appendfile(filename, string=str()):
     """Appends line to a file, not prefaced with a new line"""
@@ -90,23 +91,22 @@ def printfile(filename):
 
 def save(text, name='text.txt'):
     """Saves the given text to file with version numbering"""
-    from os.path import exists
-    SP = name.split('.')
+    SP = _os.path.splitext(name)
     x = 0
     name = _save_helper(SP, x)
-    while exists(name):
+    while _os.path.exists(name):
         x += 1
         name = _save_helper(SP, x)
-    with open(name,'w') as s:
-        s.write(str(text))
+    with open(name, 'w') as fp:
+        fp.write(str(text))
     return name
 
 def _save_helper(SP, x):
     """Helps `save` with finding a valide name for a file"""
-    return SP[0] + str(x) + ''.join(SP[1:-1]) + '.' + SP[-1]
+    return '{}{:03d}{}'.format(SP[0], x, SP[-1])
         
 def switch_lf(filename):
-    """Switches the linefeed type from a UNIX machine to Windows and vice versa and overwrites the file"""
+    """Switches the linefeed type from a unix-based machine to Windows and vice versa and overwrites the file"""
     with open(filename, 'rb') as fp:
         fread = fp.read()
         to_unix = False
@@ -140,7 +140,7 @@ def _tr_base(filename, old, new):
 
 def text_replace(name, old, new, recurse=False, ext=str()):
     """Replaces `name` with binary string params `old` and `new`"""
-    from clay.fileops import _tr_base
+    from clay.files import _tr_base
     if recurse:
         sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(name, old, new)))
 
@@ -168,6 +168,6 @@ if __name__ == '__main__':
         print(get_size('http://www.google.com/'))
     except Exception as e:
         _traceback.print_exc()
-    from clay.web import LINK as _LINK
+    from clay.web import LINKS as _LINKS
     print('Expects basename to exist')
-    print(get_size(_LINK))
+    print(get_size(_LINKS['1MB']))

@@ -1,7 +1,7 @@
 """
 web module
 
-TODO: fix the web header to fix google.com JS rendering problems (accept char param)
+TODO: fix the web header to fix google.com JS rendering problem with accept-char
 
 """
 
@@ -13,9 +13,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay import UNIX as _UNIX
-
-# data vars
+from clay import isUnix as _isUnix
 from clay import WEB_HDR
 
 CHUNK_CAP = 1000000 # 1MB
@@ -58,7 +56,7 @@ class Cache(object):
 
     def load(self):
         """Returns binary content from self.title"""
-        print('Loading cache "{}"...'.format(self.title))
+        print('Loading from cache "{}"...'.format(self.title))
         with open(self.title, 'rb') as fp:
             fread = fp.read()
         return fread
@@ -67,17 +65,19 @@ class Cache(object):
         """Alias for `store`, but easier to remember for humans
         Commonly performed outside of a script
         """
-        print('Performing a cache reload...')
+        print('Performing a cache reload for "{}"...'.format(self.title))
         self.store()
 
     def store(self):
         """Stores binary content of the requested uri, returns None"""
-        print('Storing cache "{}"...'.format(self.title))
+        print('Storing into cache "{}"...'.format(self.title))
         with open(self.title, 'wb') as fp:
             fp.write(_requests.get(self.uri).content)
 
-def download(url, title=str(), full_title=False, destination='.', log_name='dl_log.txt', speed=False):
-    """Downloads data from the given url and logs the relevant information"""
+def download(url, title=str(), full_title=False,
+             destination='.', log_name='dl_log.txt', speed=False):
+    """Downloads data from the given url and logs the relevant information
+    in the same directory"""
 
     # http://stackoverflow.com/a/16696317/5645103
 
@@ -128,7 +128,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='dl_l
                     fp.write(chunk)
                     actual += len(chunk)
                     percent = int(actual / size * 100)
-                    if 'idlelib' in sys.modules or _UNIX:
+                    if 'idlelib' in sys.modules or _isUnix():
                         if percent % 5 == 0: # if multiple of 5 reached...
                             print('{}%'.format(percent), end=' ', flush=True)
                     else:
@@ -144,7 +144,7 @@ def download(url, title=str(), full_title=False, destination='.', log_name='dl_l
     else:
         taken = time() - before
         print('\ntook {}s'.format(taken))
-        if not('idlelib' in sys.modules or _UNIX):
+        if not('idlelib' in sys.modules or _isUnix()):
             set_title('Completed {}'.format(title))
         log_string = '{} on {} of {} bytes [{}]\n'.format(title, dt.datetime.today(), size, url)
         print('Complete\n')
@@ -195,7 +195,7 @@ def get_basename(uri, full=False, show=False):
         url, query = uri, None
     title = _os.path.basename(url)
     add_ext = True
-    if [x for x in ['htm', 'aspx', 'php'] if x in title] or _os.path.basename(title):
+    if any(ext in title for exit in ('htm', 'aspx', 'php')) or len(_os.path.basename(title)) > 0:
         add_ext = False
 
     if full:
@@ -247,19 +247,8 @@ def get_title(uri_or_soup):
 
 def get_vid(vid, vid_type='mp4'):
     """Downloads the given YouTube (tm) video id using yt-down.tk, no longer stable"""
-    from clay.fileops import download
+    from clay.files import download
     download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, vid), title='.'.join([vid, vid_type]))
-
-def openweb(uri, browser='firefox'):
-    """Opens the given uri (string or list) in your favorite browser"""
-    if type(uri) == str:
-        uri = [uri]
-    if type(uri) == list:
-        for link in uri:
-            if _UNIX:
-                _call(['google-chrome', link], shell=True)
-            else:
-                _call(['start', browser, link.replace('&', '^&')], shell=True)
 
 class Elements(object):
     """A class for storing elements from a given web page or markup
@@ -317,8 +306,19 @@ class Elements(object):
         with open(filename, 'wb') as fp:
             fp.write(self.src)
 
+def launch(uri, browser='firefox'):
+    """Opens the given uri (string or list) in your favorite browser"""
+    if type(uri) == str:
+        uri = [uri]
+    if type(uri) == list:
+        for link in uri:
+            if _isUnix():
+                _call(['google-chrome', link], shell=True)
+            else:
+                _call(['start', browser, link.replace('&', '^&')], shell=True)
+
 if __name__ == '__main__':
-    print(download(LINKS['1MB'], destination=r'E:\Docs', speed=True), 'bytes per second')
+    print(download(LINKS['1MB'], destination=getDocsFolder(), speed=True), 'bytes per second')
     print(get_basename('https://www.minecraft.net/change-language?next=/en/', full=False))
     print(get_basename(LINKS['1MB'], full=True))
     print(get_title(TEST_LINK))

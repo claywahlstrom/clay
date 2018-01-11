@@ -1,21 +1,25 @@
 """
-Search tools uses `regex` to search directories for name or contents
+Search tools can be used to search the file system using regular expressions
 
 """
 
 # add percentages based on os.listdir in folder.
 #     -If name comes up add to counter and output percent to title
 
-from os import walk, sep
+from collections import OrderedDict as _OrderedDict
+import os as _os
 from re import findall
+import sys as _sys
 import time as _time
-from collections import OrderedDict
 
-EXCLUDE = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
+from clay.shell import getDocsFolder as _getDocsFolder
+
+
+EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
            '.jmc', '.matplotlib', '.oracle_jre_usage', '.pdfsam', '.phet',
            '3D Objects', 'AppData', 'Application Data', 'eclipse', 'Android']
 
-STR_LIM = 70 # path printing termination number
+STR_LIM = 75 # path printing termination number
 
 class Search(object):
     """A class for searching a file system"""
@@ -25,41 +29,34 @@ class Search(object):
         self.method = method
         self.folder = folder
         self.string = string
-        self.ext = ext
-        
-        # initialized upon build
-        self.duration = None
-        self.matches = None
-        self.raw_string = None 
-        self.results = OrderedDict()
-        self.lens = list([0])
+        self.ext    = ext
         
         # actual work
         self.do_search()
         self.build_results()
 
+    def __repr__(self):
+        if len(self.results) > 0:
+            return self.raw_text
+        else:
+            return 'No results'
+
     def build_results(self):
         self.raw_text = '{} seconds\n'.format(self.duration)
-        for res in list(self.results.keys()):
-            self.raw_text += res+'\n' # parent
-            for val in self.results[res]:
-                self.raw_text += '\t'+val+'\n' # children
-
-    def display(self):
-        if self.results:
-            print(self.raw_text)
-        else:
-            print('No results')
+        self.raw_text += '\n'.join([res + '\n\t' + '\n\t'.join([val for val in self.results[res]]) \
+                                    for res in list(self.results.keys())])
 
     def do_search(self):
+        self.results = _OrderedDict()
         self.matches = 0
-        walker = walk(self.folder) # root dir
+        self.last_len = 0
+        walker = _os.walk(self.folder) # root dir
         print('Search in progress...')
         print('Searching: ', end='', flush=True)
         try:
             time_start = _time.time() # start timer
             for root, dirs, files in walker:
-                if [x for x in EXCLUDE if x in self.string]: # if excluded
+                if any(excl in self.string for excl in EXCLUDED): # if excluded
                     self.print_path('excluded dir ({})'.format(root[:STR_LIM]))
                 else: # not excluded dirs
                     try:
@@ -70,26 +67,20 @@ class Search(object):
                         flag = False
                         if self.method.startswith('cont'):
                             try:
-                                with open(root+sep+f, encoding='latin-1') as fp:
+                                with open(_os.path.join(root, f), encoding='latin-1') as fp:
                                     text = fp.read()
-                                if findall(self.string, text):
-                                    flag = True
+                                flag = len(findall(self.string, text)) > 0
                             except Exception as e:
                                 print(e)
-                        elif self.method.startswith('name') and findall(self.string, f):
-                            flag = True
+                        flag = not(flag) and self.method.startswith('name') and findall(self.string, f)
                         if flag:
                             self.matches += 1
                             if self.ext and f.endswith(self.ext) or not self.ext:
-                                if root in list(self.results.keys()): # if same dir
-                                    self.results[root] += [f]
+                                if root in list(self.results.keys()): # if same dir, add a file
+                                    self.results[root].append(f)
                                 else: # add if not
-                                    self.results[root] = [f]
-
+                                    self.results[root] = list([f])
             self.duration = _time.time() - time_start
-            ## optional sort if walk doesn't succeed in sorting
-##            for key in self.results:
-##                self.results[key] = sorted(self.results[key])
         except KeyboardInterrupt:
             print('KeyboardInterrupt')
             if not(fp.closed):
@@ -101,15 +92,19 @@ class Search(object):
         return self.results
 
     def print_path(self, arg):
-        print('\x08'*self.lens[-1] + ' '*self.lens[-1] + '\x08'*self.lens[-1] + arg, end='', flush=True)
-        self.lens.append(len(arg))
+        # overwrite the line to clear its contents
+        if 'idlelib' in _sys.modules:
+            print(arg)
+        else:
+            print('\x08' * self.last_len + ' ' * self.last_len + '\x08' * self.last_len + arg, end='', flush=True)
+            self.last_len = len(arg)
 
-def write_output(searchobj, filename):
-    """Writes search query output to the given file"""
-    with open(filename, 'w') as fp:
-        fp.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(searchobj.string,
-                                                                       searchobj.folder, searchobj.ext))
-        fp.write(searchobj.raw_text)
+    def write_output(self, filename):
+        """Writes search query output to the given file"""
+        with open(filename, 'w') as fp:
+            fp.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(self.string,
+                                                                                self.folder, self.ext))
+            fp.write(self.raw_text)
 
 def executable_search(string, ext='exe'):
     """Returns tuple of program files results"""
@@ -118,5 +113,5 @@ def executable_search(string, ext='exe'):
     return dict({s.folder: s.get_results(), t.folder: t.get_results()})
 
 if __name__ == '__main__':
-    s = Search('cont', r'E:\Docs\Clay\Notes', 'the')
+    s = Search('cont', _getDocsFolder() + r'\Clay\Notes', 'the')
     print(executable_search('chrome'))

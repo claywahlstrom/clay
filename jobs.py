@@ -5,7 +5,7 @@ import datetime
 import math
 
 from clay.clusters import SortableDict
-from clay.histogram import HG
+from clay.graphing import Histogram
 from clay.maths import average
 
 def offsetby(day, number):
@@ -54,7 +54,7 @@ class Attendance(object):
 
     def get_punchcard(self):
         # columns are initialized to 0
-        hg = HG(columns=list(range(7)))
+        hg = Histogram(columns=list(range(7)))
         for col in hg.cols:
             for line in self.file:
                 date = datetime.datetime.strptime(line[0], '%m %d %Y')
