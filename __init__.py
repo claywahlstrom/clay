@@ -51,18 +51,18 @@ __all__ = ['align',
 import sys as _sys
 import os as _os
 
+def isIdle():
+    return 'idlelib' in _sys.modules
+
 def isUnix():
     return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
-if isUnix():
-    HOME_DIR = _os.environ['HOME']
-else:
-    HOME_DIR = _os.environ['USERPROFILE']
+HOME_DIR = _os.environ['HOME'] if isUnix() else _os.environ['USERPROFILE']
 
 WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
            #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+           'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,image/apng,*/*;q=0.8',
            'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
-           'Accept-Encoding': 'gzip, deflate',
-           'Accept-Language': 'en-US,en;q=0.8',
+           'Accept-Encoding': 'gzip, deflate, br',
+           'Accept-Language': 'en-US,en;q=0.8;q=0.5',
            'Connection': 'keep-alive'}

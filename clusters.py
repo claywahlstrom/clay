@@ -23,10 +23,11 @@ class FixedSizeQueue(object):
     def add(self, item):
         (self.__ls).insert(0, item)
         self.__clean()
-        self.__set_average()
 
     def get_average(self):
-        return sum(self.ls) / len(self.ls)
+        if len(self.__ls) == 0:
+            raise Exception('length must be >= 1')
+        return sum(self.__ls) / len(self.__ls)
 
     def get_list(self):
         return self.__ls
@@ -40,12 +41,19 @@ class Grouping(object):
         self.objs = objs
         self.module = module
 
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__,)
+        return '%s(%r)' % (self.__class__.__name__, self.objs)
+
     def add(self, var):
         if type(var) == list:
             for v in var:
                 (self.objs).append(v)
         elif type(var) == str:
             (self.objs).append(var)
+        else:
+            raise ValueError()
 
     def get_dict(self):
         return _sys.modules[self.module].__dict__
@@ -80,13 +88,19 @@ class SortableDict(_collections.OrderedDict):
             self[key] = copy[key]
 
 if __name__ == '__main__':
+
     from random import randint
     from time import sleep
+
+    print('--------')
     myav = FixedSizeQueue(max_size=5)
-    while len(myav) < 7:
-        myav.add(randint(0, 20))
-        print('len', len(myav))
-        print('av', myav.get_average())
+    myav.add(0) # ensures while-loop entry
+    while myav.get_average() < 10:
+        myav.add(randint(0, 15))
+        print('list', myav.get_list())
+        print('  len', len(myav))
+        print('  av ', myav.get_average())
+    print('--------')
 
     a = 'string'
     b = int(4)

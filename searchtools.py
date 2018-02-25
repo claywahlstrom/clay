@@ -1,3 +1,4 @@
+
 """
 Search tools can be used to search the file system using regular expressions
 
@@ -12,6 +13,7 @@ from re import findall
 import sys as _sys
 import time as _time
 
+from clay import isIdle as _isIdle
 from clay.shell import getDocsFolder as _getDocsFolder
 
 
@@ -93,7 +95,7 @@ class Search(object):
 
     def print_path(self, arg):
         # overwrite the line to clear its contents
-        if 'idlelib' in _sys.modules:
+        if _isIdle():
             print(arg)
         else:
             print('\x08' * self.last_len + ' ' * self.last_len + '\x08' * self.last_len + arg, end='', flush=True)

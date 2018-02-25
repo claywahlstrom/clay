@@ -1,3 +1,4 @@
+
 """
 lib: a librarian's library
 
@@ -152,7 +153,7 @@ class Title(object):
         self.create()
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__,self.title)
+        return '%s(%r)' % (self.__class__.__name__, self.title)
 
     def __xcaptilize(self, word):
         if word.lower() not in Title.SKIP_LIST:

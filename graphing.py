@@ -1,3 +1,4 @@
+
 """
 Graphing: basic graphing data structures
 
@@ -54,7 +55,10 @@ class Histogram(object):
     Consumes columns as a range of values, required
     Consumes str or bytes as text, optional
 
-    Initial values for each groups is zero if no text is supplied
+    Initial values for each group is zero if no text is supplied.
+
+    Always safe to have max_width be one less than the actual screen width.
+
     """
     def __init__(self, columns=None, iterable=None, title=None, max_width=SCREEN_WD):
         if not columns is None:
@@ -64,42 +68,46 @@ class Histogram(object):
         if columns and not iterable:
             sd = _SortableDict({col: 0 for col in columns})
         else:
+            columns = iterable
             sd = _SortableDict({col: iterable.count(col) for col in columns})
         sd.sort()
 
+        if title is None:
+            title = '['
+            for i in list(sd.keys())[:4]:
+                title += "'{}', ".format(i)
+            title += '...]'
+        self.title = title
         self.cols = columns
         self.sd = sd
         self.iterable = iterable
-        if title is None:
-            title = str(list(sd.keys())[:4]) + ' ...'
-        self.title = title
         self.max_width = max_width
+
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__,)
+        return '%s(%r)' % (self.__class__.__name__, list(self.sd.items()))
 
     def build(self):
         if type(self.cols[0]) == str:
-            max_element = str()
-            for elm in self.sd.keys():
-                if len(elm) > len(max_element):
-                    max_element = elm
-            large_key = len(max_element)
-            width = self.max_width - 1 - large_key
+            largest_key = max(map(len, map(str, list(self.sd.keys()))))
         else: # for ints and floats
-            max_element = max(list(self.sd.keys()))
-            large_key = len(str(max_element))
-            width = self.max_width - 1 - len(str(large_key))
-
+            # longest str repr of a number
+            largest_key = len(str(max(list(self.sd.keys()))))
+##            width = self.max_width - 1 - len(str(largest_key))
+        width = self.max_width - 1 - largest_key
         max_val = max(list(self.sd.values()))
 
         print('Histogram for', self.title)
         print('width', width)
         print('max val', max_val)
         for (k, v) in self.sd.items():
-            print('{:>{}}'.format(k, large_key), '0'*int(width*v/max_val))
+            print('{:>{}}'.format(k, largest_key), '0'*int(width*v/max_val))
         self.max_val = max_val
-        self.large_key = large_key
+        self.largest_key = largest_key
         self.width = width
 
-    def byvalue(self, reverse=False):
+    def sortbycount(self, reverse=False):
         import operator
         std = sorted(self.sd.items(), key=operator.itemgetter(1), reverse=reverse)
         self.sd.clear()

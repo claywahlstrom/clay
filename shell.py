@@ -1,3 +1,4 @@
+
 """
 Shell uses shell-like commands in Python to manage your system
 
@@ -8,12 +9,11 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-from clay import isUnix as _isUnix, HOME_DIR as _HOME_DIR
+from clay import isUnix as _isUnix, HOME_DIR as _HOME_DIR, isIdle as _isIdle
 
-if _isUnix():
-    TIMEOUT_CMD = 'sleep '
-else:
-    TIMEOUT_CMD = 'timeout '
+FILTERED_ARGS = list(filter(lambda name: not(name in ('python', 'python.exe')), _sys.argv))
+
+TIMEOUT_CMD = 'sleep ' if _isUnix() else 'timeout '
 
 TRASH = _os.path.join(_HOME_DIR, 'Desktop', 'TRASH')
 
@@ -21,7 +21,7 @@ cd = _os.chdir # def
 
 def clear():
     """Clears the screen"""
-    if 'idlelib' in _sys.modules:
+    if _isIdle():
         print('\n'*40)
     elif _isUnix():
         _os.system('clear')
@@ -47,7 +47,7 @@ def copy(src, dst):
     except Exception as e:
         print(e)
         succeed = False
-    if 'idlelib' in _sys.modules:
+    if _isIdle():
         if succeed:
             print('Item copied')
         else:
@@ -70,33 +70,80 @@ def filemanager(directory=_os.curdir):
     _os.system('{} "{}"'.format(fm_name, directory))
 
 def getDocsFolder():
+    """Returns the location of the documents folder for this computer.
+    Assumes a similar naming convention to work."""
     from clay.shell import ssdExists as _ssdExists
     if _ssdExists():
         return r'E:\Docs'
     else:
-        return r'C:\Users\Clayton\Documents'
+        return _os.path.join(_os.environ['HOME'], 'Documents')
+
+class JavaCompiler(object):
+    """Class Java can be used to compile Java(tm) source files to bytecode"""
+    
+    SRC_EXT = '.java'
+    
+    def __init__(self, classes=None, directory=_os.curdir):
+        """Parameter `classes` can be left none in wich all  must be a list of class names, otherwise and ValueError is thrown"""
+        if classes is not None and (type(classes) != list or type(classes) != tuple):
+            raise ValueError('`classes` must be an iterable')
+        self.classes = classes
+        self.directory = directory
+
+    def set_path(self, directory):
+        self.directory = directory
+        
+    def compile(self, flags='g Xlint:unchecked', exclude=None):
+        """Compiles the source files in this directory with the given flags
+        (debugging info included by default) and excludes any files with
+        name including the given string `exclude`"""
+        from clay.shell import lsgrep
+        if self.classes is None:
+            self.classes = (_os.path.splitext(x)[0] for x in lsgrep(JavaCompiler.SRC_EXT, self.directory))
+        if exclude is not None and len(exclude) > 0:
+            self.classes = [x for x in self.classes if not(exclude in x)]
+        if len(flags) > 0:
+            opt_str = '-' + ' -'.join(flags.split()) + ' '
+        else:
+            opt_str = str()
+        for src in self.classes:
+            jname = src + JavaCompiler.SRC_EXT
+            jclass = src + '.class'
+            if not(_os.path.exists(jname)):
+                print(src, 'doesn\'t exist, skipping...')
+                continue
+            jstat = _os.stat(jname).st_mtime
+            try:
+                jcomp = _os.stat(jclass).st_mtime
+            except:
+                jcomp = 0 # file doesn't exist
+
+            if jstat - jcomp >= 5: # if edited more than five seconds ago
+                print('Compiling:', src)
+                _os.system('javac ' + opt_str + jname)
 
 def ls(directory=_os.curdir, shell=False):
     """Returns the listing of contents for the given `directory`.
-    If `shell` is true, then the MS-DOS style is printed and noting returned
+    If `shell` is true, then the MS-DOS style is printed and nothing is returned
     """
     if shell:
         print(_subprocess.check_output(['dir', directory], shell=True).decode('utf8', errors='ignore'))
     else:
         return _os.listdir(directory)
 
-def lsgrep(regex, directory=_os.curdir):
+def lsgrep(regex, directory=_os.curdir, fullpath=True):
     """Finds and returns all files containing `regex` (string or list)
     sing re.findall"""
     listing = _os.listdir(directory)
     if type(regex) == list:
         results = list()
         for x in listing:
-            if eval(' and '.join(['findall("{}", "{}")'.format(char, x) for char in regex])):
+            if all(len(findall(char, x)) > 0 for char in regex):
                 results.append(x)
     else:
         from re import findall
         results = [x for x in listing if findall(regex, x)]
+    results = [_os.path.join(directory, x) if fullpath else x for x in results]
     return results
 
 from os import mkdir # def
@@ -110,9 +157,9 @@ def notify(e, seconds=2.25):
 
 def pause(consoleonly=False):
     """Pauses the console execution"""
-    if ('idlelib' in _sys.modules or _isUnix()) and not(consoleonly):
+    if (_isIdle() or _isUnix()) and not(consoleonly):
         input('Press enter to continue . . . ')
-    elif not('idlelib' in _sys.modules):
+    elif not(_isIdle()):
         _subprocess.call('pause', shell=True)
 
 def ren(src, dst, directory=_os.curdir, recurse=False):
@@ -163,9 +210,12 @@ def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
 def rm_item(directory, name):
     """Moves an item from the given directory with its name including its
     path neutral version of its origin. Helps `rm` accomplish its task"""
+
+    DEBUG = False
+    
     from shutil import move
     from clay.shell import rm_from_trash
-    print('name', name)
+
     try:
         target = _os.path.join(directory, name)
         src_dir = _os.path.dirname(_os.path.abspath(name))
@@ -173,13 +223,16 @@ def rm_item(directory, name):
         new_name = '.'.join((dir_info, name))
         new_path = _os.path.join(directory, new_name)
         dst_path = _os.path.join(TRASH, new_name)
-        # print('dir_info', dir_info)
-        # print('new_name', new_name)
-        # print('new_path', new_path)
-        # print('dst_path', dst_path)
+        if DEBUG:
+            print('name', name)
+            print('dir_info', dir_info)
+            print('new_name', new_name)
+            print('new_path', new_path)
+            print('dst_path', dst_path)
         move(target, new_name)
         if _os.path.exists(dst_path):
-            # print(name, 'exists in TRASH, deleting...')
+            if DEBUG:
+                print(name, 'exists in TRASH, deleting...')
             print('removing', dst_path)
             rm_from_trash(dst_path)
         move(new_path, TRASH)
@@ -205,21 +258,23 @@ def rm_from_trash(target):
         key = 'win32'
     _os.system('{} "{}"'.format(rms[key][i], target))
 
-def set_title(title=_os.path.basename(list(filter(lambda name: not('python' == name), _sys.argv))[0]), add=str(), args=False):
-    """Customizes the window title. Default is the modules name
+def set_title(title=_os.path.basename(FILTERED_ARGS[0]), add=str(), args=False):
+    """Sets the title of the current shell instance. Default is the modules name
     You can use your own additional text or use the command-line arguments"""
     name = title
     if args:
-        name += ' ' + ' '.join(list(filter(lambda name: not('python' == name), _sys.argv))[1:])
+        name += ' ' + ' '.join(FILTERED_ARGS[1:])
     if add:
         name += ' - {}'.format(add)
     name = name.replace('<', '^<').replace('>', '^>')
-    if 'idlelib' in _sys.modules or _isUnix():
+    if _isIdle() or _isUnix():
         print('set title -> {}'.format(name))
     else:
         _os.system('title ' + name)
 
 def ssdExists():
+    """Returns true if the solid state drive location 'E:\Docs' exists,
+    otherwise false"""
     return _os.path.exists(r'E:\Docs')
 
 def start(program):
@@ -230,11 +285,11 @@ def start(program):
         else:
             _os.system('start {}'.format(program))
     except Exception as e:
-        print("Oops, couln't start:", e)
+        print("Oops, couldn't start:", e)
 
 def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
-    if 'idlelib' in _sys.modules:
+    if _isIdle():
         if not(hidden):
             print('Waiting for ' + seconds + '...')
         _time.sleep(seconds)
@@ -242,7 +297,4 @@ def timeout(seconds, hidden=False):
         command = TIMEOUT_CMD + str(seconds)
         if hidden:
             command += ' >nul'
-        try:
-            _os.system(command)
-        except:
-            print('\nTimeout skipped')
+        _os.system(command)

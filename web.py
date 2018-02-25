@@ -1,3 +1,4 @@
+
 """
 web module
 
@@ -13,7 +14,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay import isUnix as _isUnix
+from clay import isUnix as _isUnix, isIdle as _isIdle
 from clay import WEB_HDR
 
 CHUNK_CAP = 1000000 # 1MB
@@ -84,7 +85,6 @@ def download(url, title=str(), full_title=False,
     assert type(url) == str, 'Lists not supported'
 
     import datetime as dt
-    import sys
     from time import time
 
     from clay.shell import set_title
@@ -128,7 +128,7 @@ def download(url, title=str(), full_title=False,
                     fp.write(chunk)
                     actual += len(chunk)
                     percent = int(actual / size * 100)
-                    if 'idlelib' in sys.modules or _isUnix():
+                    if _isIdle() or _isUnix():
                         if percent % 5 == 0: # if multiple of 5 reached...
                             print('{}%'.format(percent), end=' ', flush=True)
                     else:
@@ -195,7 +195,7 @@ def get_basename(uri, full=False, show=False):
         url, query = uri, None
     title = _os.path.basename(url)
     add_ext = True
-    if any(ext in title for exit in ('htm', 'aspx', 'php')) or len(_os.path.basename(title)) > 0:
+    if any(ext in title for ext in ('htm', 'aspx', 'php')) or len(_os.path.basename(title)) > 0:
         add_ext = False
 
     if full:
@@ -293,7 +293,7 @@ class Elements(object):
             except KeyError as e:
                 print('Key', e, 'for', i, 'not found')
 
-    def store(self, filename, inner='text'):
+    def store_elements(self, filename, inner='text'):
         with open(filename, 'w') as fp:
             self.show(inner=inner, file=fp)
         if _os.path.exists(filename):

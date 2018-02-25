@@ -9,6 +9,8 @@ from clay.graphing import Histogram
 from clay.maths import average
 
 def offsetby(day, number):
+    """Returns an integer representing the day number shifted
+    by the given amount"""
     day -= number
     if day < 0:
         day += 7
@@ -26,7 +28,8 @@ class Attendance(object):
     def __init__(self, pay_ratio, perhour, offset=0):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is Monday."""
         import os
-        assert os.path.exists('attendance.csv'), 'file attendance.csv doesn\'t exist'
+        assert os.path.exists('attendance.csv'),
+            'file attendance.csv doesn\'t exist'
         with open('attendance.csv') as fp:
             file = [line.split(',') for line in fp.read().strip().split('\n')]
 
@@ -66,7 +69,6 @@ class Attendance(object):
     def removebreaks(self, lunches=False):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
         for i, hour in enumerate(self.hours):
-            #self.hours[i] -= 0.25 * math.floor(self.hours[i] / 3) # small breaks every 3 hours
             self.hours[i] -= math.floor(hour / 5) * 0.5 # lunch breaks
             self.file[i][-1] = str(self.hours[i])
         total_hours = sum(self.hours)
@@ -77,7 +79,6 @@ class Attendance(object):
     def setup_pt(self, by=None):
         """Sets up the 'Pivot Table' for the specified period"""
         if by == 'month':
-            # parse file
             months = OrderedDict()
             fp = open('months.log', 'w')
             for line in self.file:
