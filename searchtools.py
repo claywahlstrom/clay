@@ -32,7 +32,7 @@ class Search(object):
         self.folder = folder
         self.string = string
         self.ext    = ext
-        
+
         # actual work
         self.do_search()
         self.build_results()
@@ -45,7 +45,8 @@ class Search(object):
 
     def build_results(self):
         self.raw_text = '{} seconds\n'.format(self.duration)
-        self.raw_text += '\n'.join([res + '\n\t' + '\n\t'.join([val for val in self.results[res]]) \
+        self.raw_text += '\n'.join([res + '\n\t' + \
+                                    '\n\t'.join([val for val in self.results[res]]) \
                                     for res in list(self.results.keys())])
 
     def do_search(self):
@@ -78,10 +79,10 @@ class Search(object):
                         if flag:
                             self.matches += 1
                             if self.ext and f.endswith(self.ext) or not self.ext:
-                                if root in list(self.results.keys()): # if same dir, add a file
-                                    self.results[root].append(f)
-                                else: # add if not
+                                if root not in list(self.results.keys()): # if same dir, add a file
                                     self.results[root] = list([f])
+                                self.results[root].append(f)
+
             self.duration = _time.time() - time_start
         except KeyboardInterrupt:
             print('KeyboardInterrupt')
@@ -91,29 +92,34 @@ class Search(object):
         print('Results built')
 
     def get_results(self):
+        """Returns this search results"""
         return self.results
 
     def print_path(self, arg):
+        """Prints the path, helper to the search method"""
         # overwrite the line to clear its contents
         if _isIdle():
             print(arg)
         else:
-            print('\x08' * self.last_len + ' ' * self.last_len + '\x08' * self.last_len + arg, end='', flush=True)
+            print('\x08' * self.last_len + ' ' * self.last_len + \
+                  '\x08' * self.last_len + arg, end='', flush=True)
             self.last_len = len(arg)
 
     def write_output(self, filename):
-        """Writes search query output to the given file"""
+        """Writes the search query to the given output file"""
         with open(filename, 'w') as fp:
             fp.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(self.string,
-                                                                                self.folder, self.ext))
+                                                                                self.folder,
+                                                                                self.ext))
             fp.write(self.raw_text)
 
 def executable_search(string, ext='exe'):
-    """Returns tuple of program files results"""
+    """Returns the tuple of results of from searching
+       program files directories with the given string"""
     s = Search('name', folder=r'C:\Program Files', string=string, ext=ext)
     t = Search('name', folder=r'C:\Program Files (x86)', string=string, ext=ext)
     return dict({s.folder: s.get_results(), t.folder: t.get_results()})
 
 if __name__ == '__main__':
-    s = Search('cont', _getDocsFolder() + r'\Clay\Notes', 'the')
+    s = Search('cont', _os.path.join(_getDocsFolder(), r'Clay\Notes'), 'the')
     print(executable_search('chrome'))

@@ -1,6 +1,6 @@
 
 """
-File functions, supports NT and unix-based kernels
+Common file operations done easier with Python
 
 """
 
@@ -13,7 +13,8 @@ from clay import WEB_HDR as _WEB_HDR
 from clay.shell import ssdExists as _ssdExists
 
 def appendfile(filename, string=str()):
-    """Appends line to a file, not prefaced with a new line"""
+    """Appends the string to the end of the given file.
+       No new line is preceded"""
     while not(string):
         string = input('line: ')
     with open(filename, 'ab') as fp:
@@ -29,7 +30,7 @@ def countchar(filename, char):
     return fcount
 
 def countwords(filename):
-    """Returns the count number of words in file given filename"""
+    """Returns the count of words in the given file"""
     with open(filename) as fp:
         fcount = len(fp.read().split())
     return fcount
@@ -63,7 +64,7 @@ def get_content(filename, binary=False):
     return fread
 
 def get_size(name):
-    """Returns the size of a file or uri"""
+    """Returns the size of the given file or uri"""
     from requests import head
     if _os.path.exists(name):
         size = _os.path.getsize(name)
@@ -80,18 +81,18 @@ def get_size(name):
     return size
 
 def parsefile(filename, delim='\n', mode='r'):
-    """Parses a file by it's delimiter and returns the list"""
+    """Parses a file by the given delimiter and returns the resulting list"""
     with open(filename, mode) as fp:
         spl = fp.read().split(delim)
     return spl
 
 def printfile(filename):
-    """Prints the binary contents to the given file"""
+    """Prints the binary contents of the given file"""
     with open(filename, 'rb') as fp:
         print(fp.read())
 
-def save(text, name='text.txt'):
-    """Saves the given text to file with version numbering"""
+def save(text, name='saved_text.txt'):
+    """Saves the given text to the file with sequential numbering"""
     SP = _os.path.splitext(name)
     x = 0
     name = _save_helper(SP, x)
@@ -103,11 +104,13 @@ def save(text, name='text.txt'):
     return name
 
 def _save_helper(SP, x):
-    """Helps `save` with finding a valide name for a file"""
+    """Returns a possible filename. Helps `save` with finding a
+       valid name for a file"""
     return '{}{:03d}{}'.format(SP[0], x, SP[-1])
         
 def switch_lf(filename):
-    """Switches the linefeed type from a unix-based machine to Windows and vice versa and overwrites the file"""
+    """Switches the linefeed type from a unix-based machine to
+       Windows and vice versa and overwrites the file"""
     with open(filename, 'rb') as fp:
         fread = fp.read()
         to_unix = False

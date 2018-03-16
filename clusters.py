@@ -17,24 +17,29 @@ class FixedSizeQueue(object):
         return len(self.__ls)
 
     def __clean(self):
+        """Removes elements from the queue until max size has been reached"""
         while len(self.__ls) > self.max_size:
-            (self.__ls).pop(-1)
+            (self.__ls).pop(0)
 
-    def add(self, item):
-        (self.__ls).insert(0, item)
+    def add(self, element):
+        """Adds the given element to the back of the queue"""
+        (self.__ls).append(item)
         self.__clean()
 
     def get_average(self):
+        """Returns the average for this queue if the elements are summable"""
         if len(self.__ls) == 0:
             raise Exception('length must be >= 1')
         return sum(self.__ls) / len(self.__ls)
 
     def get_list(self):
+        """Returns this queue"""
         return self.__ls
 
 class Grouping(object):
-    """Holds list of objects to display. Mainly used for tracking variables
-    in the debugging phase of a project."""
+    """Holds a list of objects to display. Mainly used for tracking variables
+       in the debugging phase of a project."""
+    
     def __init__(self, objs=list(), module='__main__'):
         assert type(objs) == list, 'Not a list of strings'
 
@@ -47,6 +52,7 @@ class Grouping(object):
         return '%s(%r)' % (self.__class__.__name__, self.objs)
 
     def add(self, var):
+        """Adds the given object to this grouping"""
         if type(var) == list:
             for v in var:
                 (self.objs).append(v)
@@ -56,21 +62,27 @@ class Grouping(object):
             raise ValueError()
 
     def get_dict(self):
+        """Returns this grouping's dict"""
         return _sys.modules[self.module].__dict__
 
     def remove(self, var):
+        """Removes the given object from this grouping"""
         if type(var) == list:
             for v in var:
                 (self.objs).remove(v)
         elif type(var) == str:
             (self.objs).remove(var)
 
-    def show(self):
+    def show(self, useLocals=None):
+        """Prints out the key, value pairs for this grouping"""
         groupdict = self.get_dict()
+        if useLocals:
+            groupdict.update(useLocals)
         for ob in self.objs:
-            print(ob, groupdict[ob])
+            print(ob, '->', groupdict[ob])
 
     def write_file(self, filename):
+        """Writes this grouping to the given file"""
         string = 'stat_dict = {}'.format(self.get_dict())
         with open(filename,'w') as fp:
             fp.write(string)
@@ -78,6 +90,7 @@ class Grouping(object):
 class SortableDict(_collections.OrderedDict):
     """Sortable dict, child of collections.OrderedDict"""
     def sort(self, reverse=False, debug=False):
+        """Sorts this dict"""
         part = list(self.keys()) # extract keys
         part.sort(reverse=reverse) # sorts keys
         if debug:

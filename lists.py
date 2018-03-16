@@ -1,3 +1,4 @@
+
 """
 Basic operations for lines, lists, and files
 
@@ -7,10 +8,9 @@ Basic operations for lines, lists, and files
 
 TEST_LIST = list(['h', 'e', 'l', 'l', 'o'])
 
-def jnrows(arg, sep=', '):
-    """Joins rows of a file to a line with `sep`, defaults to ', '
-    Returns a string
-    """
+def jnrows(file, sep=', '):
+    """Reads and returns the lines of text from the
+       given file (object or str) joined by ', '"""
     if type(arg) == list:
         return sep.join(arg)
     elif arg.__class__.__module__ == '_io':
@@ -20,7 +20,7 @@ def jnrows(arg, sep=', '):
     return fp.read().replace('\n', sep)
 
 def printall(items):
-    """Prints all items in items"""
+    """Prints each item in items"""
     if type(items) == dict:
         for item in list(items.keys()):
             print(item, ':', items[item])
@@ -29,7 +29,7 @@ def printall(items):
             print(item)
 
 def readmeat(meat, lines=0, numbers=True):
-    """Reads meat (list or str), w/ or w/o line numbers."""
+    """Reads the given meat (list of str or str), w/ or w/o line numbers."""
     if type(meat) == str:
         with open(meat,'r') as f:
             chunks = [x.rstrip() for x in f.readlines()]
@@ -46,7 +46,7 @@ def readmeat(meat, lines=0, numbers=True):
         print(line)
 
 def rmdup(lizt):
-    """Returns non-duplicated list. Note: NOT A METHOD"""
+    """Returns a non-duplicated version of the given list"""
     len_before = len(lizt)
     new = list()
     for n in lizt:

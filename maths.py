@@ -14,7 +14,7 @@ if _isUnix():
     LIMPATH = r'/home/clayton/Desktop/get_liminf.log'
 else:
     LIMPATH = r'C:\Python36\Lib\site-packages\clay\get_liminf.log'
-### finally
+### finally clear the file
 ##with open(LIMPATH, 'w') as fp:
 ##    pass
 
@@ -26,12 +26,15 @@ class Circle(object):
         self.radius = radius
 
     def get_circumference(self):
+        """Returns the circumference of this circle"""
         return 2 * math.pi * self.radius
 
     def get_area(self):
+        """Returns the area of this circle"""
         return math.pi * self.radius ** 2
 
     def get_diameter(self):
+        """Returns the diameter of this circle"""
         return 2 * self.radius
 
 def cubrt(x):
@@ -39,13 +42,14 @@ def cubrt(x):
     return round(x ** (1/3), 12)
 
 def differentiate(f, x, deltax=1e-12):
-    """Returns derivative of a function at a point. File version in PyRepo dir
+    """Returns the derivative of the given function at the point x.
+       function at a point. File version in PyRepo dir
 
-    deltax = 1e-12 or 1e-11 works best."""
+       deltax = 1e-12 or 1e-11 works best."""
     return (f(x + deltax) - f(x)) / (deltax)
 
 def get_factors(number):
-    """Returns a list of factors for the supplied int"""
+    """Returns a list of factors for the given int"""
     assert type(number) == int, 'type int is required'
     factors = dict()
     for num in range(1, number + 1):
@@ -54,7 +58,8 @@ def get_factors(number):
     return factors
 
 def get_limit(func, num=0, side=None, step=0.1, dist=1):
-    """Returns list of limit values "step" distance apart, starting "dist" from num"""
+    """Returns list of limit values "step" distance apart,
+       starting "dist" from num"""
     from collections import OrderedDict
     lims = OrderedDict()
     if side == 'right':
@@ -76,12 +81,25 @@ def get_limit(func, num=0, side=None, step=0.1, dist=1):
             x += step
         return lims
 
+def get_M(func, interval):
+    """Returns the max M of the given function on the closed interval"""
+    assert type(interval) == list or type(interval) == tuple \
+           and len(interval) == 2
+    m = interval[0]
+    mval = abs(func(m))
+    for i in interval[1:]:
+        if abs(func(m)) > mval:
+            m = i
+            mval = func(m)
+    return m        
+
 def get_mult_of_pi(number):
     """Returns the quotient with divisor as pi"""
     return number / math.pi
 
 def get_roots(a=0, b=0, c=0):
-    """Returns a tuple of roots (intersections with the x-axis) for conic equations"""
+    """Returns a tuple of roots (intersections with the x-axis)
+       for conic equations"""
     if not(a and b and c):
         raise Exception('please enter some values')
     discriminant = b ** 2 - 4 * a * c
@@ -92,7 +110,11 @@ def get_roots(a=0, b=0, c=0):
     return root1, root2
 
 class FractionReducer(object):
+    """Class FractionReducer can be used to reduce fractions to
+       simplest form"""
+    
     def __init__(self, *args):
+        """Initializes the reducer to the given `any`, type str preferred"""
         from fractions import Fraction
         f = Fraction(*args)
         self.top, self.bottom = f.numerator, f.denominator
@@ -102,13 +124,14 @@ class FractionReducer(object):
         return self.top, self.bottom
 
     def print(self):
-        """Prints the fraction"""
+        """Prints this fraction in visual representation"""
         print(self.top)
         print('-' * len(str(max(self.top, self.bottom))))
         print(self.bottom)
 
 def integrate(func, interval=None, rects=100000):
-    """Integrates from inclusive tuple (a, b) using a Riemann sum"""
+    """Returns the integral from the inclusive tuple (a, b) using
+       a Riemann sum approximation"""
     if interval is None:
         interval = eval(input("Interval (a, b): "))
     a, b = interval
@@ -127,7 +150,8 @@ def integrate(func, interval=None, rects=100000):
     return area
 
 def get_liminf(func, i=1, step_mag=False, log=True):
-    """Returns the limit to +infinity. Handles division by zero and divergent funcs"""
+    """Returns the limit to +infinity. Handles division by zero
+       and divergent funcs"""
     if log:
         file = open(LIMPATH, 'w')
         print('get_liminf for', func)
@@ -140,7 +164,8 @@ def get_liminf(func, i=1, step_mag=False, log=True):
         try:
             now = func(i)
             pr = False
-            if i % 1000 == 0 and not(step_mag) or i % 10000 == 0 and step_mag: # mags div by 10**4
+            if i % 1000 == 0 and not(step_mag) or i % 10000 == 0 \
+               and step_mag: # mags div by 10**4
                 pr = True
                 print(i, end=', ', file=file)
                 print('now', now, end=', ', file=file)
@@ -179,7 +204,8 @@ def get_liminf(func, i=1, step_mag=False, log=True):
     return round(now, 10)
 
 def get_series_sum(f, a=1, b=None, log=True):
-    """Returns sum for series 'f' starting at 'a'. Partial sum if 'b' supplied"""
+    """Returns sum for the given series f starting at a.
+       Partial sum if b is supplied"""
     if b == None:
         b = 10 ** 4
 
@@ -210,11 +236,13 @@ ln = math.log #def
 median = statistics.median # def
 
 def newtons_method(f, x):
-    """Given a function and float guess, returns the roots using Newton's Method"""
+    """Given a function and float guess, returns the roots using
+       Newton's Method"""
     return _newtons_method_helper(f, x, 0)
 
 def _newtons_method_helper(f, x, n):
-    """Given expected input and call n, returns expected and throws an exception if not"""
+    """Given expected input and call n, returns expected and throws
+       an exception if not"""
     if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
         return round(x, 9)
     elif n > 200: # max recursion depth
@@ -253,7 +281,8 @@ class Radical(object):
                 + '\n' + '{}-/{}'.format(self.left, self.right)
 
     def __least_div(self):
-        div = list([i for i in range(2, self.right) if (self.right / (i ** 2)).is_integer()])
+        div = list([i for i in range(2, self.right) \
+                        if (self.right / (i ** 2)).is_integer()])
         return div[-1] if len(div) > 0 else 1 # ternary operation
 
 def test_limf(x):
@@ -320,7 +349,4 @@ if __name__ == '__main__':
     print(get_series_sum(test_convergent, a=0))
     print('expecting 1.7449...')
     print(get_series_sum(test_convergent2))
-
-
-
 

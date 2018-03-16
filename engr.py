@@ -1,5 +1,7 @@
+
 """
 Engineering module
+
 """
 
 # Coulomb's constant
@@ -7,12 +9,14 @@ C = 6.241*10**18
 OHMS_TABLE = {'I':'V/R',
             'V':'I*R',
             'R':'V/I'}
+
 # Standard SI prefixes
 PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
-            'Mega', 'kilo', '', 'milli', 'micro(u)', 'nano',
+            'Mega', 'kilo', '', 'milli', 'micro(u)', 'nano', # '' is the base
             'pico', 'femto', 'atto', 'zepto', 'yocto']
 
 def get_prefix(scalar, units='m'):
+    """Adjusts the given scalar to a better prefix and prints it out"""
     amount = scalar
     position = PREFIXES.index('')
     pre = str()
@@ -30,6 +34,7 @@ def get_prefix(scalar, units='m'):
     print(scalar, units, '=>', amount, pre, units)
 
 def ohms_law(V=None, I=None, R=None):
+    """Fills in and returns the missing value to satisfy Ohm's law"""
     for letter in OHMS_TABLE.keys():
         if eval(letter) is None:
             try:
@@ -39,6 +44,8 @@ def ohms_law(V=None, I=None, R=None):
                 return
 
 def par(*res):
+    """Returns the result of taking the given
+       iterable of resistors in parallel"""
     return (sum([num**(-1) for n in res for num in n]))**(-1)
 
 series = sum # def

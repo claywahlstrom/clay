@@ -1,6 +1,6 @@
 
 """
-Analyzer for essays
+essays: Contains a template for analyzing essays
 
 """
 
@@ -13,8 +13,10 @@ from re import findall as _findall
 
 from clay.lists import rmdup as _rmdup
 
-class Essay:
-    r"""A class for storing and analyzing essays. Don't use line_start as first sentence Converts line_sep to single '\n'"""
+class Essay(object):
+    r"""Class Essay can be used for storing and analyzing essays.
+        Don't use line_start as first sentence. Converts
+        line_sep to single '\n'"""
     def __init__(self, source, line_start=1, line_sep='\n'):
         self.line_start = line_start
         end = '\n\n' # default
@@ -35,7 +37,8 @@ class Essay:
             print('Couldn\'t remove extra fat from text')
         
     def extract_paren(self, page_num=True, http_only=False):
-        """Returns citations extracted from essay.\nFound using parenthetical standards"""
+        """Returns citations extracted from essay.
+           Found using parenthetical standards"""
         parens = _findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
         parens = _rmdup(parens)
         if http_only:
@@ -72,7 +75,8 @@ class Essay:
     def midcaps(self):
         """Finds unexpected capitals"""
         print('Mid caps')
-        mids = list(filter(lambda sent: not('I' in sent), list(_findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
+        mids = list(filter(lambda sent: not('I' in sent),
+                           list(_findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
         print(mids)
 
     def paragraphs(self):

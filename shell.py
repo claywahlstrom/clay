@@ -1,6 +1,6 @@
 
 """
-Shell uses shell-like commands in Python to manage your system
+shell: commands that can be used to manage your system or retrieve information
 
 """
 
@@ -84,7 +84,8 @@ class JavaCompiler(object):
     SRC_EXT = '.java'
     
     def __init__(self, classes=None, directory=_os.curdir):
-        """Parameter `classes` can be left none in wich all  must be a list of class names, otherwise and ValueError is thrown"""
+        """Initializes the compiler. Default for classes is all in the given
+           directory or expects a list or tuple, otherwise and ValueError is thrown"""
         if classes is not None and (type(classes) != list or type(classes) != tuple):
             raise ValueError('`classes` must be an iterable')
         self.classes = classes
@@ -95,8 +96,8 @@ class JavaCompiler(object):
         
     def compile(self, flags='g Xlint:unchecked', exclude=None):
         """Compiles the source files in this directory with the given flags
-        (debugging info included by default) and excludes any files with
-        name including the given string `exclude`"""
+           (debugging info included by default) and excludes any files
+           containing the given string `exclude`"""
         from clay.shell import lsgrep
         if self.classes is None:
             self.classes = (_os.path.splitext(x)[0] for x in lsgrep(JavaCompiler.SRC_EXT, self.directory))
@@ -127,7 +128,8 @@ def ls(directory=_os.curdir, shell=False):
     If `shell` is true, then the MS-DOS style is printed and nothing is returned
     """
     if shell:
-        print(_subprocess.check_output(['dir', directory], shell=True).decode('utf8', errors='ignore'))
+        print(_subprocess.check_output(['dir', directory],
+                                       shell=True).decode('utf8', errors='ignore'))
     else:
         return _os.listdir(directory)
 
@@ -199,7 +201,8 @@ def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
         if sure.lower() in ('1', 'yes'):
             criteria = name_or_criteria
             print('Deleting all w/ "{}"...'.format(criteria))
-            for name in filter(lambda name: criteria.lower() in name.lower(), _os.listdir(directory)):
+            for name in filter(lambda name: criteria.lower() in name.lower(),
+                               _os.listdir(directory)):
                 rm_item(directory, name)
                 x += 1
         print('{} item(s) deleted'.format(x))

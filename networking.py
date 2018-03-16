@@ -2,9 +2,9 @@
 """
 Networking tools for Python
 
-AdvancedSocket difference finder functionality is not fully developed
+AdvancedSocket difference finder functionality is not fully implemented
 
-TODO: commenting
+
 """
 
 
@@ -20,6 +20,7 @@ UTF_CHAR = 'utf8'
 FILESEP = b'eof' + b'eof'
 
 def nextopenport(ip, port):
+    """Returns the next open port for the given IP address starting at port"""
     found = False
     while True:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,9 +46,13 @@ class Report(object):
     .\clusters.py | 3391
     .\clusters_test.txt | 1363
     ...
+
+    TODO: file IO
     
     """
     def __init__(self, directory='.'):
+        """Initializes this report using the given directory and stores
+           the result in the string field"""
         self.directory = directory
         self.generate()
         self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
@@ -57,6 +62,7 @@ class Report(object):
         return self.string
 
     def generate(self):
+        """Generates a report in the format (filename, filesize)"""
         report = list()
         Walk = _os.walk(self.directory)
 
@@ -67,6 +73,7 @@ class Report(object):
         self.report = report
 
     def parse(self):
+        """Parses the string field and returns the original report"""
         splt = [x.split(' | ') for x in self.string.strip().split('\n')]
         lst = [(x, int(y.strip())) for x, y in splt]
         return lst
@@ -75,12 +82,15 @@ class AdvancedSocket(object):
     """Super-class for Server and Client socket handlers. Extends `object` ATM"""
 
     def getbin(self, buffer=MAX_BUFFER):
+        """Receives up to `buffer` bytes from the stream"""
         try:
             return self.sock.recv(buffer)
         except:
             return b'quit'
 
     def getfilestream(self, streamlen, buffer=MAX_BUFFER):
+        """Receives and returns a filestream read from the stream of
+           given length at buffer sized chunks"""
         stream = bytes()
         while True:
             stuff = self.getbin(buffer)
@@ -92,6 +102,7 @@ class AdvancedSocket(object):
 
     # work in progress
     def getstream(self, buffer=MAX_BUFFER, file=False):
+        """Receives and returns a stream of bytes read from a file"""
         stream = bytes()
         while True:
             stuff = self.getbin(buffer)
@@ -105,31 +116,38 @@ class AdvancedSocket(object):
         return stream
 
     def sendbin(self, text, charset=UTF_CHAR):
+        """Sends the text through the stream"""
         if type(text) == str:
             text = text.encode(charset)
         self.sock.send(text)
 
     def sendeof(self):
+        """Sends the end of file signal"""
         self.sock.send(FILESEP)
 
     def sendstream(self, stream, buffer=MAX_BUFFER):
+        """Sends a stream of bytes to the recipient"""
         for i in range(0, len(stream), buffer):
             try:
                 self.sendbin(stream[i:i+buffer])
             except:
                 self.sendbin(stream[i:])
             finally:
-                pass # time.sleep(0.01)
+                pass # alternatively time.sleep(0.01)
 
     def test(self):
+        """Prints information about this socket. Called at the beginning
+           of a session"""
         print(self.sock, 'started')
 
     def terminate(self):
+        """Closes this session"""
         print('closing {}'.format(self.__class__))
         self.sock.close()
         print('{} closed'.format(self.__class__))
 
     def writestream(self, filename, buffer=MAX_BUFFER, charset=UTF_CHAR):
+        """Write a file stream to the given filename"""
         stream = self.getstream(buffer, file=True)
         with open(filename, 'wb') as fp:
             print('\r' + str(fp.write(stream)), 'bytes')
@@ -137,8 +155,7 @@ class AdvancedSocket(object):
 
     def writestreams(self, files, streamlen, buffer=MAX_BUFFER, charset=UTF_CHAR):
         """Receives file content as one string and parses for each file
-        Assumes 'eof' is not contained in the files
-        """
+           Assumes 'eof' is not contained in the files"""
         print('expected', streamlen)
         streams = self.getfilestream(streamlen=streamlen, buffer=buffer)
         print('actual', len(streams))
@@ -152,6 +169,8 @@ class AdvancedSocket(object):
         time.sleep(0.2)
 
     def getdiffs(self, src, dst):
+        """Detects changes and removals to get from the given src state
+           to the dst state"""
         changed = list()
         removing = list()
         self.sendbin(dst.encode(UTF_CHAR))
@@ -176,6 +195,7 @@ class AdvancedSocket(object):
         print('removing', removing)
 
     def senddiffs(self):
+        """Send the differences through the steam"""
 
         from subprocess import check_output
 
@@ -187,6 +207,7 @@ class AdvancedSocket(object):
         self.d_dst = d_dst
 
     def loaddiff(self, Dir):
+        """Loads and returns the differces as a dict"""
         Dict = dict()
         for root, dirs, files in _os.walk(Dir):
             for file in files:
@@ -196,6 +217,9 @@ class AdvancedSocket(object):
         return Dict.copy()
 
 class Client(AdvancedSocket):
+
+    """Class Client can be used to connect to a server"""
+    
     def __init__(self, ip=None, port=DEF_PORT):
         if ip is None:
             ip = input('ip? ')
@@ -205,6 +229,9 @@ class Client(AdvancedSocket):
         self.sock = sock
 
 class Server(AdvancedSocket):
+
+    """Class Server can be used to host connections"""
+    
     def __init__(self, ip='0.0.0.0', port=DEF_PORT, maxcon=MAX_CONN):
         port = nextopenport(ip, port)
         serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

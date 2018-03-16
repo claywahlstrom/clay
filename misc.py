@@ -22,4 +22,5 @@ if __name__ == '__main__':
 
     def func(x, y=2, z=3):
         return x + y + z
+
     print(map_args(func, (1, 4, 16, 25), z = 4))

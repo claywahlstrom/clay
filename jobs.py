@@ -1,4 +1,10 @@
 
+"""
+Jobs
+
+Future features: overtime hour detection for increased accuracy
+
+"""
 
 from collections import OrderedDict
 import datetime
@@ -19,7 +25,7 @@ def offsetby(day, number):
 class Attendance(object):
     """Analyzes CSV time-sheets for jobs in the following format:
          month day year,time in,time out,hours worked
-         
+
     Attendance sheet is read from 'attendance.csv', so it must exist for
     anything to work.
     """
@@ -28,8 +34,7 @@ class Attendance(object):
     def __init__(self, pay_ratio, perhour, offset=0):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is Monday."""
         import os
-        assert os.path.exists('attendance.csv'),
-            'file attendance.csv doesn\'t exist'
+        assert os.path.exists('attendance.csv'), 'file attendance.csv doesn\'t exist'
         with open('attendance.csv') as fp:
             file = [line.split(',') for line in fp.read().strip().split('\n')]
 
@@ -53,7 +58,10 @@ class Attendance(object):
 
     def moneyall(self):
         """Calculates and prints the take-home estimate for the whole job"""
-        print('estimate take-home using the ratio {}: ${}'.format(self.ratio, round(self.total_hours * self.perhour * self.ratio, 4)))
+        print('estimate take-home using the ratio {:.5f}: ${}'.format(self.ratio, round(self.total_hours * self.perhour * self.ratio, 4)))
+
+    def get_average_hours(self):
+        return average(list(self.hours))
 
     def get_punchcard(self):
         # columns are initialized to 0
@@ -66,15 +74,14 @@ class Attendance(object):
         hg.build()
         self.hg = hg
 
+    def get_total_hours(self):
+        return sum(self.hours)
+
     def removebreaks(self, lunches=False):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
         for i, hour in enumerate(self.hours):
             self.hours[i] -= math.floor(hour / 5) * 0.5 # lunch breaks
             self.file[i][-1] = str(self.hours[i])
-        total_hours = sum(self.hours)
-        cum_average = average(list(self.hours))
-        self.total_hours = total_hours
-        self.cum_average = cum_average
 
     def setup_pt(self, by=None):
         """Sets up the 'Pivot Table' for the specified period"""
@@ -103,7 +110,7 @@ class Attendance(object):
         elif by == 'week':
             weeks = list()
 
-            print('Note: work week starts on', self.offset)
+            print('Note: work week starts on day', self.offset)
 
             prev = datetime.date(2017, 7, 3)
 
@@ -129,7 +136,7 @@ class Attendance(object):
             fp.close()
             pt_weeks = OrderedDict()
             for i, line in enumerate(weeks):
-                pt_weeks[i] = sum(line)
+                pt_weeks[i] = round(sum(line), 2)
             self.pt['week'] = pt_weeks
 
             new_weeks = OrderedDict()
