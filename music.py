@@ -96,24 +96,23 @@ def play_scale_half(notes, tempo):
     play_scale(notes, tempo)
 
 class Song(object):
-    """
-    A class for writing and storing music.
+    """A class for writing and storing music.
 
-    Receives optional file name, selection, and subdivision
-    Defaults:
-        file     :: type str()
-        selected :: int(0)
-        sub      :: float(0.25)
-        tempo    :: int(60)
-    Gives functionality including:
-        writing a note
-        editing a note
-        setting the subdivision
-        deleting notes
-
+       Receives optional file name, selection, and subdivision
+       Defaults:
+           file     :: type str()
+           selected :: int(0)
+           sub      :: float(0.25)
+           tempo    :: int(60)
+       Gives functionality including:
+           writing a note
+           editing a note
+           setting the subdivision
+           deleting notes
     """
 
     def __init__(self, file=str(), selected=0, sub=0.25, tempo=60):
+        """Initializes a new Song object from the given file name"""
         self.selected = selected
         self.sub = round(sub, 4) # 64th note length limit
         self.load()

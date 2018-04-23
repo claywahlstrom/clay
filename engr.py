@@ -4,12 +4,6 @@ Engineering module
 
 """
 
-# Coulomb's constant
-C = 6.241*10**18
-OHMS_TABLE = {'I':'V/R',
-            'V':'I*R',
-            'R':'V/I'}
-
 # Standard SI prefixes
 PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
             'Mega', 'kilo', '', 'milli', 'micro(u)', 'nano', # '' is the base
@@ -17,7 +11,11 @@ PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
 
 def get_prefix(scalar, units='m'):
     """Adjusts the given scalar to a better prefix and prints it out"""
+    negative = False
     amount = scalar
+    if amount < 0:
+        negative = True
+        amount *= -1
     position = PREFIXES.index('')
     pre = str()
 
@@ -30,29 +28,12 @@ def get_prefix(scalar, units='m'):
         position += 1
         pre = PREFIXES[position]
         amount *= 1000
-
+        
+    if negative:
+        amount *= -1
     print(scalar, units, '=>', amount, pre, units)
-
-def ohms_law(V=None, I=None, R=None):
-    """Fills in and returns the missing value to satisfy Ohm's law"""
-    for letter in OHMS_TABLE.keys():
-        if eval(letter) is None:
-            try:
-                return eval(OHMS_TABLE[letter])
-            except:
-                print('missing keyword arguments, 2 required')
-                return
-
-def par(*res):
-    """Returns the result of taking the given
-       iterable of resistors in parallel"""
-    return (sum([num**(-1) for n in res for num in n]))**(-1)
-
-series = sum # def
 
 if __name__ == '__main__':
     get_prefix(24582000)
     get_prefix(0.0021040, units='m/s')
     get_prefix(0.00021040)
-    print(series([10, par([100, 25, 100, 50, 12.5])]))
-    print(ohms_law(V=9, I=15))

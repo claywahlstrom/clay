@@ -17,11 +17,11 @@ from bs4 import BeautifulSoup as _BS
 from clay import isUnix as _isUnix, isIdle as _isIdle
 from clay import WEB_HDR
 
-CHUNK_CAP = 1000000 # 1MB
+CHUNK_CAP = 1e6 # 1MB
 
 # download links for testing
 LINKS = dict()
-LINK_SIZES = map(lambda n: str(n) + 'MB', [1, 2, 5, 10, 20, 50, 100, 200, 512])
+LINK_SIZES = list(map(lambda n: str(n) + 'MB', [1, 2, 5, 10, 20, 50, 100, 200, 512]))
 for n in LINK_SIZES:
     LINKS[n] = 'http://download.thinkbroadband.com/' + str(n) + '.zip'
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
@@ -29,15 +29,16 @@ LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 TEST_LINK = 'https://minecraft.net/en-us/'
 
 class Cache(object):
-    """Manages file caching on your local machine, accepts one uri
-    The caching system will use the local version of the file if it exists.
-    Otherwise it will be downloaded from the server.
+    """Class Cache can be used to manage file caching on your local machine,
+       accepts one uri. The caching system will use the local version of
+       the file if it exists. Otherwise it will be downloaded from the server.
 
-    The main advantage is saving time by eliminating downloads
+       The main advantage is saving time by eliminating downloads
 
     """
 
     def __init__(self, uri, alt_title=None):
+        """Initializes a new Cache object using the given uri"""
 
         from clay.web import get_basename as _get_basename
 
@@ -150,7 +151,7 @@ def download(url, title=str(), full_title=False,
         print('Complete\n')
     finally:
         if not(fp.closed):
-            fp.close()
+            fpInitializes.close()
     if log_name:
         with open(log_path,'a+') as lp:
             lp.write(log_string)
@@ -159,6 +160,62 @@ def download(url, title=str(), full_title=False,
     _os.chdir(current) # better file handling
     if speed and not(flag):
         return size / taken
+
+class Elements(object):
+    """Class Elements can find and store elements from a given web page or markup"""
+
+    def __init__(self, page=None, element=None, method='find_all', reload_local=False):
+        """Initalizes a new Elements object"""
+        if page is None and element is None:
+            page = TEST_LINK
+            element = 'link'
+        self.request = None
+        if type(page) == bytes:
+            self.src = page
+        elif _os.path.exists(page) and not(reload_local):
+            with open(page, 'rb') as fp:
+                self.src = fp.read()
+        else:
+            self.request = _requests.get(page, headers=WEB_HDR)
+            self.src = self.request.content
+        self.soup = _BS(self.src, 'html.parser')
+        self.element = element
+        self.method = method
+
+    def find_element(self):
+        self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
+        if not(self.__found):
+            print('No elements found')
+
+    def get_found(self):
+        return self.__found
+
+    def set_element(self, element):
+        self.element = element
+
+    def show(self, attribute='text', file=_sys.stdout):
+        print('Elements:', file=file)
+        for i in self.get_found():
+            try:
+                if attribute in ('string', 'text'):
+                    print(eval('i.{}'.format(attribute)), file=file)
+                else:
+                    print(eval('i["{}"]'.format(attribute)), file=file)
+            except KeyError as e:
+                print('Key', e, 'for', i, 'not found')
+
+    def store_elements(self, filename, inner='text'):
+        with open(filename, 'w') as fp:
+            self.show(inner=inner, file=fp)
+        if _os.path.exists(filename):
+            print('Elements stored successfully')
+        else:
+            print('Something went wrong')
+
+    def store_request(self, filename):
+        assert type(self.src) == bytes
+        with open(filename, 'wb') as fp:
+            fp.write(self.src)
 
 def find_anchors(location, query={}, internal=True, php=False):
     """Extracts links from a location. Accepts filename or url"""
@@ -223,9 +280,9 @@ def get_html(uri, query=None, headers=True):
     if query is not None:
         assert type(query) == dict
     if headers:
-        fread = _requests.get(page, params=query, headers=WEB_HDR)
+        fread = _requests.get(uri, params=query, headers=WEB_HDR)
     else:
-        fread = _requests.get(page, params=query)
+        fread = _requests.get(uri, params=query)
     text = fread.text.encode('utf-8')
     return text
 
@@ -249,62 +306,6 @@ def get_vid(vid, vid_type='mp4'):
     """Downloads the given YouTube (tm) video id using yt-down.tk, no longer stable"""
     from clay.files import download
     download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, vid), title='.'.join([vid, vid_type]))
-
-class Elements(object):
-    """A class for storing elements from a given web page or markup
-    
-    """
-    def __init__(self, page=None, element=None, method='find_all', reload_local=False):
-        if page is None and element is None:
-            page = TEST_LINK
-            element = 'link'
-        self.request = None
-        if type(page) == bytes:
-            self.src = page
-        elif _os.path.exists(page) and not(reload_local):
-            with open(page, 'rb') as fp:
-                self.src = fp.read()
-        else:
-            self.request = _requests.get(page, headers=WEB_HDR)
-            self.src = self.request.content
-        self.soup = _BS(self.src, 'html.parser')
-        self.element = element
-        self.method = method
-
-    def find_element(self):
-        self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
-        if not(self.__found):
-            print('No elements found')
-
-    def get_found(self):
-        return self.__found
-
-    def set_element(self, element):
-        self.element = element
-
-    def show(self, attribute='text', file=_sys.stdout):
-        print('Elements:', file=file)
-        for i in self.get_found():
-            try:
-                if attribute in ('string', 'text'):
-                    print(eval('i.{}'.format(attribute)), file=file)
-                else:
-                    print(eval('i["{}"]'.format(attribute)), file=file)
-            except KeyError as e:
-                print('Key', e, 'for', i, 'not found')
-
-    def store_elements(self, filename, inner='text'):
-        with open(filename, 'w') as fp:
-            self.show(inner=inner, file=fp)
-        if _os.path.exists(filename):
-            print('Elements stored successfully')
-        else:
-            print('Something went wrong')
-
-    def store_request(self, filename):
-        assert type(self.src) == bytes
-        with open(filename, 'wb') as fp:
-            fp.write(self.src)
 
 def launch(uri, browser='firefox'):
     """Opens the given uri (string or list) in your favorite browser"""
