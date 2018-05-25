@@ -21,17 +21,22 @@ def get_time_struct():
     from time import localtime, time
     return localtime(time())
 
+def get_time_until(year, month, day):
+    """Returns the timedelta object from today until the
+       given year, month, day"""
+    return _dt.datetime(year, month, day) - _dt.datetime.today()
+
 class SunTime(object):
     """A class for storing sun data collected from timeanddate.com (c)
        in the following form:
 
-        Rise/Set     |     Daylength       |   Solar Noon
-    Sunrise | Sunset | Length | Difference | Time | Million Miles
+           Rise/Set     |     Daylength       |   Solar Noon
+       Sunrise | Sunset | Length | Difference | Time | Million Miles
 
-    Countries with more than one occurence of a city require state abbrev.s,
-    such as Portland, OR, and Portland, ME:
-         city -> portland-or
-         city -> portland-me
+       Countries with more than one occurence of a city require state abbrev.s,
+       such as Portland, OR, and Portland, ME:
+           city -> portland-or
+           city -> portland-me
 
     """
 
@@ -52,10 +57,10 @@ class SunTime(object):
 
     def build(self):
         """Collects sun data and creates the following fields:
-            req  = request response
-            cont = web request content
-            soup = `bs4` soup object
-            data = list of data scraped
+               req  = request response
+               cont = web request content
+               soup = `bs4` soup object
+               data = list of data scraped
 
         """
         from bs4 import BeautifulSoup as _BS
@@ -63,7 +68,7 @@ class SunTime(object):
         url = '/'.join([TAD_BASE, self.country, self.city])
         req = _requests.get(url)
         if req.status_code != 200:
-            raise Exception('request unsuccessful, url: %s' % url)
+            raise Exception('request unsuccessful, used url: %s' % url)
         cont = req.content
         soup = _BS(cont, 'html.parser')
         scraped = [td.text for td in soup.select('#as-monthsun > tbody > tr > td')]
@@ -100,6 +105,7 @@ class SunTime(object):
             raise ValueError('day must be from 0 to ' + str(len(self.data) - 1))
 
     def __satisfy(self, day):
+        """Verifies that the requested day is valid and this SunTime is up to date"""
         self.__check_valid(day)
         self.__check_date()
 
@@ -131,16 +137,10 @@ class SunTime(object):
         """An alias for building the relevant information. See `build`"""
         self.build()
 
-def time_until(year, month, day):
-    """Returns the timedelta object from today until the
-       given year, month, day"""
-    import datetime as dt
-    return dt.datetime(year, month, day) - dt.datetime.today()
-
 if __name__ == '__main__':
     print(get_time_struct())
     sun = SunTime()
     print('sunset tonight', sun.get_sunset())
 
-    print('birthday', time_until(2018, 11, 6))
-    print('exams over', time_until(2018, 3, 16))
+    print('birthday', get_time_until(2018, 11, 6))
+    print('exams over', get_time_until(2018, 6, 8))

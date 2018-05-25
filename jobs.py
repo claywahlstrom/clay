@@ -9,10 +9,11 @@ Future features: overtime hour detection for increased accuracy
 from collections import OrderedDict
 import datetime
 import math
+import pprint
 
 from clay.clusters import SortableDict
 from clay.graphing import Histogram
-from clay.maths import average
+from clay.maths import average, median
 
 def offsetby(day, number):
     """Returns an integer representing the day number shifted
@@ -24,11 +25,10 @@ def offsetby(day, number):
 
 class Attendance(object):
     """Analyzes CSV time-sheets for jobs in the following format:
-         month day year,time in,time out,hours worked
+           month day year,time in,time out,hours worked
 
-    Attendance sheet is read from 'attendance.csv', so it must exist for
-    anything to work.
-    """
+       Attendance sheet is read from 'attendance.csv', so it must exist for
+       anything to work."""
 
 
     def __init__(self, pay_ratio, perhour, offset=0):
@@ -37,6 +37,7 @@ class Attendance(object):
         assert os.path.exists('attendance.csv'), 'file attendance.csv doesn\'t exist'
         with open('attendance.csv') as fp:
             file = [line.split(',') for line in fp.read().strip().split('\n')]
+        assert len(file) > 1, 'file must have at least one entry'
 
         hours = list(map(float, (line[-1] for line in file)))
 
@@ -76,6 +77,28 @@ class Attendance(object):
 
     def get_total_hours(self):
         return sum(self.hours)
+
+    def printreport(self):
+        print()
+        self.setup_pt(by='week')
+        pprint.pprint(self.pt['week'])
+
+        print()
+        self.setup_pt(by='month')
+        pprint.pprint(self.pt['month'])
+
+        print()
+        print('total hours: ', round(self.get_total_hours(), 4))
+
+        self.money(per='week')
+        self.moneyall()
+
+        print()
+        print('all averaged:', round(self.get_average_hours(), 4))
+        print('median:', round(median(self.hours), 4))
+        print()
+        self.get_punchcard()
+        print(self.hg.sd)
 
     def removebreaks(self, lunches=False):
         """Removes breaks from the punchcard, allows for accurate money calculations"""

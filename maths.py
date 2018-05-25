@@ -8,7 +8,7 @@ Collection of common and advanced math operations
 import math
 import statistics
 
-from clay import isUnix as _isUnix
+from clay.shell import isUnix as _isUnix
 
 if _isUnix():
     LIMPATH = r'/home/clayton/Desktop/get_liminf.log'

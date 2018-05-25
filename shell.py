@@ -9,9 +9,12 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-from clay import isUnix as _isUnix, HOME_DIR as _HOME_DIR, isIdle as _isIdle
+# import a temporary version of isUnix to allow for constant declarations
+from clay import _isUnix, HOME_DIR as _HOME_DIR
 
 FILTERED_ARGS = list(filter(lambda name: not(name in ('python', 'python.exe')), _sys.argv))
+
+FLASK_APP = 'app.py' # common name for Flask web apps
 
 TIMEOUT_CMD = 'sleep ' if _isUnix() else 'timeout '
 
@@ -21,7 +24,7 @@ cd = _os.chdir # def
 
 def clear():
     """Clears the screen"""
-    if _isIdle():
+    if isIdle():
         print('\n'*40)
     elif _isUnix():
         _os.system('clear')
@@ -39,19 +42,20 @@ def chext(filepath, ext):
 
 def copy(src, dst):
     """Copies the source item to destination using shutil.copy"""
-    print('Copying "{}" to "{}"...'.format(src, dst))
+    print('Copying "{}" to "{}"...'.format(src, dst), end=' ')
     from shutil import copy as cp
     try:
         cp(src, dst)
         succeed = True
+        print()
     except Exception as e:
         print(e)
         succeed = False
-    if _isIdle():
+    if isIdle():
         if succeed:
-            print('Item copied')
+            print('Complete')
         else:
-            print('Copy failed')
+            print('Failed')
 
 # for linux users
 cp = copy # def
@@ -71,12 +75,27 @@ def filemanager(directory=_os.curdir):
 
 def getDocsFolder():
     """Returns the location of the documents folder for this computer.
-    Assumes a similar naming convention to work."""
+    Assumes a similar filesystem naming convention to work."""
     from clay.shell import ssdExists as _ssdExists
     if _ssdExists():
         return r'E:\Docs'
     else:
         return _os.path.join(_os.environ['HOME'], 'Documents')
+
+def isIdle():
+    """Returns true if the script is running within IDLE,
+       false otherwise"""
+    return 'idlelib' in _sys.modules
+
+def isPowershell():
+    """Returns true if the script is running within PowerShell,
+       false otherwise"""
+    return len(_sys.argv[0]) > 0 and (not((':' in _sys.argv[0])) or _sys.argv[0].startswith('.'))
+
+def isUnix():
+    """Returns true if the script is running within a Unix
+       machine, false otherwise"""
+    return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
 class JavaCompiler(object):
     """Class Java can be used to compile Java(tm) source files to bytecode"""
@@ -159,9 +178,9 @@ def notify(e, seconds=2.25):
 
 def pause(consoleonly=False):
     """Pauses the console execution"""
-    if (_isIdle() or _isUnix()) and not(consoleonly):
+    if (isIdle() or isUnix()) and not(consoleonly):
         input('Press enter to continue . . . ')
-    elif not(_isIdle()):
+    elif not(isIdle()):
         _subprocess.call('pause', shell=True)
 
 def ren(src, dst, directory=_os.curdir, recurse=False):
@@ -261,16 +280,19 @@ def rm_from_trash(target):
         key = 'win32'
     _os.system('{} "{}"'.format(rms[key][i], target))
 
-def set_title(title=_os.path.basename(FILTERED_ARGS[0]), add=str(), args=False):
+def set_title(title=_os.path.basename(FILTERED_ARGS[0]), add=str(),
+              args=False, flask_default_name=True):
     """Sets the title of the current shell instance. Default is the modules name
     You can use your own additional text or use the command-line arguments"""
     name = title
-    if args:
+    if name == FLASK_APP:
+        add = _os.path.split(_os.path.dirname(_os.path.abspath(FILTERED_ARGS[0])))[-1]
+    if args and len(FILTERED_ARGS) > 1:
         name += ' ' + ' '.join(FILTERED_ARGS[1:])
     if add:
         name += ' - {}'.format(add)
     name = name.replace('<', '^<').replace('>', '^>')
-    if _isIdle() or _isUnix():
+    if isIdle() or isUnix():
         print('set title -> {}'.format(name))
     else:
         _os.system('title ' + name)
@@ -283,10 +305,10 @@ def ssdExists():
 def start(program):
     """Starts a given program"""
     try:
-        if _isUnix():
-            _os.system(program)
-        else:
-            _os.system('start {}'.format(program))
+        command = str()
+        if not(_isUnix()):
+            command += 'start '
+        _os.system(command + program)
     except Exception as e:
         print("Oops, couldn't start:", e)
 

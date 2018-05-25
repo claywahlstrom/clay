@@ -1,6 +1,6 @@
 
 """
-Common file operations done easier with Python
+files: Common file operations done easier with Python
 
 """
 
@@ -9,8 +9,8 @@ import requests as _requests
 import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
-from clay import WEB_HDR as _WEB_HDR
 from clay.shell import ssdExists as _ssdExists
+from clay.web import WEB_HDR as _WEB_HDR
 
 def appendfile(filename, string=str()):
     """Appends the string to the end of the given file.

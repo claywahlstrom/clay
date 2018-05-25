@@ -1,4 +1,4 @@
-get_liminf for <function test_i at 0x05D5B930>
+get_liminf for <function test_alternating at 0x056A13D8>
 1000, now 1e-06, NEXT -9.98002996004994e-07
 2000, now 2.5e-07, NEXT -2.4975018737507806e-07
 3000, now 1.1111111111111111e-07, NEXT -1.1103707405762002e-07

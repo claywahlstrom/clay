@@ -14,8 +14,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay import isUnix as _isUnix, isIdle as _isIdle
-from clay import WEB_HDR
+from clay.shell import getDocsFolder as _getDocsFolder, isIdle as _isIdle, isUnix as _isUnix
 
 CHUNK_CAP = 1e6 # 1MB
 
@@ -27,6 +26,14 @@ for n in LINK_SIZES:
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 TEST_LINK = 'https://minecraft.net/en-us/'
+
+WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+           #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+           'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,image/apng,*/*;q=0.8',
+           'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
+           'Accept-Encoding': 'gzip, deflate, br',
+           'Accept-Language': 'en-US,en;q=0.8;q=0.5',
+           'Connection': 'keep-alive'}
 
 class Cache(object):
     """Class Cache can be used to manage file caching on your local machine,
@@ -55,26 +62,37 @@ class Cache(object):
     def exists(self):
         """Returns a boolean of whether the file exists"""
         return _os.path.exists(self.title)
-
-    def load(self):
-        """Returns binary content from self.title"""
-        print('Loading from cache "{}"...'.format(self.title))
+        
+    def _get_content(self):
+        """Returns the content of this cached file"""
+        assert self.exists()
         with open(self.title, 'rb') as fp:
             fread = fp.read()
         return fread
 
+    def length(self):
+        """Returns the length of the byte file"""
+        return len(self._get_content())
+
+    def load(self):
+        """Returns binary content from self.title"""
+        print('Loading from cache "{}"...'.format(self.title), end=' ')
+        cont = self._get_content()
+        print('Done')
+        return cont
+
     def reload(self):
         """Alias for `store`, but easier to remember for humans
-        Commonly performed outside of a script
-        """
+           Commonly performed outside of a script"""
         print('Performing a cache reload for "{}"...'.format(self.title))
         self.store()
 
     def store(self):
         """Stores binary content of the requested uri, returns None"""
-        print('Storing into cache "{}"...'.format(self.title))
+        print('Storing into cache "{}"...'.format(self.title), end=' ')
         with open(self.title, 'wb') as fp:
             fp.write(_requests.get(self.uri).content)
+        print('Done')
 
 def download(url, title=str(), full_title=False,
              destination='.', log_name='dl_log.txt', speed=False):
@@ -145,7 +163,7 @@ def download(url, title=str(), full_title=False,
     else:
         taken = time() - before
         print('\ntook {}s'.format(taken))
-        if not('idlelib' in sys.modules or _isUnix()):
+        if not(_isIdle() or _isUnix()):
             set_title('Completed {}'.format(title))
         log_string = '{} on {} of {} bytes [{}]\n'.format(title, dt.datetime.today(), size, url)
         print('Complete\n')
@@ -164,7 +182,7 @@ def download(url, title=str(), full_title=False,
 class Elements(object):
     """Class Elements can find and store elements from a given web page or markup"""
 
-    def __init__(self, page=None, element=None, method='find_all', reload_local=False):
+    def __init__(self, page=None, element=None, method='find_all', use_local=False):
         """Initalizes a new Elements object"""
         if page is None and element is None:
             page = TEST_LINK
@@ -172,17 +190,22 @@ class Elements(object):
         self.request = None
         if type(page) == bytes:
             self.src = page
-        elif _os.path.exists(page) and not(reload_local):
+        elif _os.path.exists(page) and not(use_local):
             with open(page, 'rb') as fp:
                 self.src = fp.read()
         else:
-            self.request = _requests.get(page, headers=WEB_HDR)
+            betterheaders = WEB_HDR.copy()
+            self.request = _requests.get(page, headers=betterheaders)
+            if not(self.request.content.startswith(b'<')):
+                betterheaders.pop('Accept-Encoding')
+                self.request = _requests.get(page, headers=betterheaders)
             self.src = self.request.content
+        self.page = page
         self.soup = _BS(self.src, 'html.parser')
         self.element = element
         self.method = method
 
-    def find_element(self):
+    def find_elements(self):
         self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
         if not(self.__found):
             print('No elements found')
@@ -194,13 +217,15 @@ class Elements(object):
         self.element = element
 
     def show(self, attribute='text', file=_sys.stdout):
-        print('Elements:', file=file)
+        print('Elements for', self.page + ':', file=file)
         for i in self.get_found():
             try:
-                if attribute in ('string', 'text'):
-                    print(eval('i.{}'.format(attribute)), file=file)
+                if attribute == 'text':
+                    print(i.getText(), file=file)
+                elif attribute == 'string':
+                    print(i.string, file=file)
                 else:
-                    print(eval('i["{}"]'.format(attribute)), file=file)
+                    print(i[attribute], file=file)
             except KeyError as e:
                 print('Key', e, 'for', i, 'not found')
 
@@ -319,15 +344,18 @@ def launch(uri, browser='firefox'):
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
 if __name__ == '__main__':
-    print(download(LINKS['1MB'], destination=getDocsFolder(), speed=True), 'bytes per second')
+    print(download(LINKS['2MB'], destination=_getDocsFolder(), speed=True), 'bytes per second')
     print(get_basename('https://www.minecraft.net/change-language?next=/en/', full=False))
     print(get_basename(LINKS['1MB'], full=True))
     print(get_title(TEST_LINK))
     print(get_basename(TEST_LINK))
     print('title from markup:', get_title(TEST_LINK))
-    we = Elements()
-    we.find_element()
-    we.show(attribute='href')
+    we1 = Elements('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
+    we1.find_elements()
+    we1.show()
+    we2 = Elements()
+    we2.find_elements()
+    we2.show(attribute='href')
     print('ANCHORS')
     print(find_anchors(TEST_LINK, internal=False))
 

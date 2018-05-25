@@ -15,9 +15,8 @@ import os as _os
 import time as _time
 import winsound as _ws
 
-from clay import isUnix as _isUnix
 from clay.files import save as _save
-from clay.shell import set_title, notify as _notify
+from clay.shell import set_title, notify as _notify, isUnix as _isUnix
 
 # scale types
 NATURAL_MINOR = [0, 2, 3, 5, 7, 8, 10, 12]

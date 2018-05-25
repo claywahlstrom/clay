@@ -17,8 +17,7 @@ import time as _time
 from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
-from clay import WEB_HDR as _WEB_HDR
-from clay.web import get_title as _get_title
+from clay.web import get_title as _get_title, WEB_HDR as _WEB_HDR
 
 COM = ', '
 PER = '. '

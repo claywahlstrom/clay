@@ -13,8 +13,7 @@ from re import findall
 import sys as _sys
 import time as _time
 
-from clay import isIdle as _isIdle
-from clay.shell import getDocsFolder as _getDocsFolder
+from clay.shell import getDocsFolder as _getDocsFolder, isIdle as _isIdle
 
 
 EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
