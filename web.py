@@ -35,7 +35,7 @@ WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
            'Accept-Language': 'en-US,en;q=0.8;q=0.5',
            'Connection': 'keep-alive'}
 
-class Cache(object):
+class CacheManager(object):
     """Class Cache can be used to manage file caching on your local machine,
        accepts one uri. The caching system will use the local version of
        the file if it exists. Otherwise it will be downloaded from the server.
@@ -44,17 +44,19 @@ class Cache(object):
 
     """
 
-    def __init__(self, uri, alt_title=None):
-        """Initializes a new Cache object using the given uri"""
+    def __init__(self):
+        """Initializes a new Cache object"""
+        pass
 
+    def setfile(self, uri, title=None):
+        """Sets the cache to point to the given uri with the optional title"""
         from clay.web import get_basename as _get_basename
 
-        self.uri = uri
+        if title is None:
+            title = _get_basename(uri)[0]
+        self.title = title
 
-        if alt_title is None:
-            self.title = _get_basename(uri)[0]
-        else:
-            self.title = alt_title
+        self.uri = uri
 
         if not(_os.path.exists(self.title)):
             self.store()

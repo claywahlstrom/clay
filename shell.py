@@ -111,21 +111,23 @@ class JavaCompiler(object):
         self.directory = directory
 
     def set_path(self, directory):
+        """Sets the path of this compiler to the given directory"""
         self.directory = directory
         
-    def compile(self, flags='g Xlint:unchecked', exclude=None):
+    def compile(self, flags='g Xlint:unchecked', exclude=None, recurse=True):
         """Compiles the source files in this directory with the given flags
            (debugging info included by default) and excludes any files
            containing the given string `exclude`"""
         from clay.shell import lsgrep
         if self.classes is None:
-            self.classes = (_os.path.splitext(x)[0] for x in lsgrep(JavaCompiler.SRC_EXT, self.directory))
+            self.classes = (_os.path.splitext(x)[0] for x in lsgrep(JavaCompiler.SRC_EXT, self.directory, recurse=True))
         if exclude is not None and len(exclude) > 0:
             self.classes = [x for x in self.classes if not(exclude in x)]
         if len(flags) > 0:
-            opt_str = '-' + ' -'.join(flags.split()) + ' '
+            opt_str = '-' + ' -'.join(flags.split())
         else:
             opt_str = str()
+        statechanged = False
         for src in self.classes:
             jname = src + JavaCompiler.SRC_EXT
             jclass = src + '.class'
@@ -140,7 +142,10 @@ class JavaCompiler(object):
 
             if jstat - jcomp >= 5: # if edited more than five seconds ago
                 print('Compiling:', src)
-                _os.system('javac ' + opt_str + jname)
+                _os.system(f'javac {opt_str} {jname}')
+                statechanged = True
+        if not(statechanged):
+            print(f'Nothing new to compile in "{self.directory}" when recurse={recurse}')
 
 def ls(directory=_os.curdir, shell=False):
     """Returns the listing of contents for the given `directory`.
@@ -152,19 +157,18 @@ def ls(directory=_os.curdir, shell=False):
     else:
         return _os.listdir(directory)
 
-def lsgrep(regex, directory=_os.curdir, fullpath=True):
-    """Finds and returns all files containing `regex` (string or list)
-    sing re.findall"""
-    listing = _os.listdir(directory)
-    if type(regex) == list:
-        results = list()
-        for x in listing:
-            if all(len(findall(char, x)) > 0 for char in regex):
-                results.append(x)
-    else:
-        from re import findall
-        results = [x for x in listing if findall(regex, x)]
-    results = [_os.path.join(directory, x) if fullpath else x for x in results]
+def lsgrep(regex, directory=_os.curdir, recurse=False):
+    """Finds and returns all files containing `regex` (string or list) using re.findall"""
+    import re
+    if type(regex) == str:
+        regex = [regex]
+    results = list()
+    for root, dirs, files in _os.walk(directory):
+        for x in files:
+            if all(len(re.findall(char, x)) > 0 for char in regex):
+                results.append(_os.path.join(root, x))
+            if not(recurse):
+                break
     return results
 
 from os import mkdir # def
@@ -314,9 +318,10 @@ def start(program):
 
 def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
-    if _isIdle():
+    assert seconds > -1 or type(seconds) == int
+    if isIdle() or seconds > 99999:
         if not(hidden):
-            print('Waiting for ' + seconds + '...')
+            print('Waiting for', seconds, 'seconds...')
         _time.sleep(seconds)
     else:
         command = TIMEOUT_CMD + str(seconds)
