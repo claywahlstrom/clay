@@ -91,14 +91,17 @@ def printfile(filename):
     with open(filename, 'rb') as fp:
         print(fp.read())
 
-def save(text, name='saved_text.txt'):
+def save(text, name='saved_text.txt', use_epoch=True):
     """Saves the given text to the file with sequential numbering"""
     SP = _os.path.splitext(name)
-    x = 0
-    name = _save_helper(SP, x)
-    while _os.path.exists(name):
-        x += 1
+    if use_epoch:
+        name = '{}-{}{}'.format(SP[0], int(time.time()), SP[-1])
+    else:
+        x = 0
         name = _save_helper(SP, x)
+        while _os.path.exists(name):
+            x += 1
+            name = _save_helper(SP, x)
     with open(name, 'w') as fp:
         fp.write(str(text))
     return name
@@ -106,7 +109,7 @@ def save(text, name='saved_text.txt'):
 def _save_helper(SP, x):
     """Returns a possible filename. Helps `save` with finding a
        valid name for a file"""
-    return '{}{:03d}{}'.format(SP[0], x, SP[-1])
+    return '{}-{:03d}{}'.format(SP[0], x, SP[-1])
         
 def switch_lf(filename):
     """Switches the linefeed type from a unix-based machine to
