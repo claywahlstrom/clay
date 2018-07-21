@@ -64,18 +64,22 @@ class Histogram(object):
 
     """
     def __init__(self, columns=None, iterable=None,
-                 title=None, max_width=SCREEN_WD):
+                 title=None, max_width=SCREEN_WD, sort=True):
         if not columns is None:
             assert type(columns) == tuple or \
                    type(columns) == list, 'columns need to be tuple'
         if type(iterable) == bytes:
             iterable = iterable.decode('utf8', errors='ignore')
+        sd = _SortableDict()
         if columns and not iterable:
-            sd = _SortableDict({col: 0 for col in columns})
+            for col in columns:
+                sd[col] = 0
         else:
             columns = iterable
-            sd = _SortableDict({col: iterable.count(col) for col in columns})
-        sd.sort()
+            for col in columns:
+                sd[col] = iterable.count(col)
+        if sort:
+            sd.sort()
 
         if title is None:
             title = '['
@@ -112,8 +116,14 @@ class Histogram(object):
         print('width', width)
         print('max val', max_val)
         for (k, v) in self.sd.items():
-            print('{:>{}}'.format(k, largest_key),
-                  '0' * int(width * v / max_val))
+            print('{:>{}}'.format(k, largest_key), end=' ')
+            try:
+                if v <= SCREEN_WD - largest_key - 1:
+                    print('0' * int(v))
+                else:
+                    print('0' * int(v * width / max_val))
+            except Exception as e:
+                print(e)
         self.max_val = max_val
         self.largest_key = largest_key
         self.width = width
