@@ -4,12 +4,11 @@ essays: Contains a template for analyzing essays
 
 """
 
-__all__ = ['Essay', 'savetopics']
-
 # ! fix topics method for 'e.g.', 'et al. author' and other abbreviations, list in EXCEPTIONS
 EXCEPTIONS = ['e.g.', 'et al.', 'i.e.'] # work in progress, may not be needed if not many in essay
 
 from re import findall as _findall
+import sys as _sys
 
 from clay.lists import rmdup as _rmdup
 
@@ -19,6 +18,7 @@ class Essay(object):
         line_sep to single '\n'"""
     def __init__(self, source, line_start=1, line_sep='\n'):
         self.line_start = line_start
+        self.line_sep = line_sep
         end = '\n\n' # default
         if type(source) == bytes:
             if b'\x0c' in text:
@@ -35,6 +35,9 @@ class Essay(object):
             self.text = self.text[:(self.text).index(end)] # remove extra fat
         except:
             print('Couldn\'t remove extra fat from text')
+            
+    def __repr__(self):
+        return f'Essay(source={{{self.source[:20]}...}}, line_start={self.line_start})'
         
     def extract_paren(self, page_num=True, http_only=False):
         """Returns citations extracted from essay.
@@ -127,15 +130,22 @@ def savetopics(essay, filename='savedtopics.txt'):
     print('Topics written to', filename)
 
 if __name__ == '__main__':
-    with open('essay.txt') as f:
-        fread = f.read()
-    e = Essay(fread, line_start=3, line_sep='\n')
+    import pprint
+    if len(_sys.argv) > 1:
+        with open(_sys.argv[-1]) as f:
+            fread = f.read()
+        e = Essay(fread)
+    else:
+        with open('essay.txt') as f:
+            fread = f.read()
+        e = Essay(fread, line_start=3, line_sep='\n')
     e.stats()
     e.wrongcaps()
     e.midcaps()
     e.extraspace()
     print('Topics')
-    print(e.topics())
-    e.fix_spaces()
-    with open('essayfixper.txt','w') as f:
-        f.write(e.text)
+    pprint.pprint(e.topics())
+    if len(_sys.argv) <= 1:
+        e.fix_spaces()
+        with open('essayfixper.txt','w') as f:
+            f.write(e.text)
