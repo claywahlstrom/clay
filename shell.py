@@ -167,8 +167,8 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
         for x in files:
             if all(len(re.findall(char, x)) > 0 for char in regex):
                 results.append(_os.path.join(root, x))
-            if not(recurse):
-                break
+        if not(recurse):
+            break
     return results
 
 from os import mkdir # def

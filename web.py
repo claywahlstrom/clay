@@ -223,7 +223,7 @@ class Elements(object):
         for i in self.get_found():
             try:
                 if attribute == 'text':
-                    print(i.getText(), file=file)
+                    print(i.get_text(), file=file)
                 elif attribute == 'string':
                     print(i.string, file=file)
                 else:
