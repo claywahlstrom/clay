@@ -185,7 +185,8 @@ class Song(object):
 
     def save(self):
         """Saves this song to a new file"""
-        _save('\n'.join(('{} {}'.format(note.name, note.length) for note in self.notes)) + '\n' + str(self.tempo), 'notes.txt')
+        text = '\n'.join(('{} {}'.format(note.name, note.length) for note in self.notes)) + '\n' + str(self.tempo)
+        _save(text, 'notes.txt', use_epoch=False)
         set_title(add='File saved')
 
     def select(self, direction):
