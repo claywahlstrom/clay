@@ -8,7 +8,7 @@ Basic operations for lines, lists, and files
 
 TEST_LIST = list(['h', 'e', 'l', 'l', 'o'])
 
-def jnrows(file, sep=', '):
+def joinlines(file, sep=', '):
     """Reads and returns the lines of text from the
        given file (object or str) joined by ', '"""
     if type(arg) == list:
@@ -28,8 +28,8 @@ def printall(items):
         for item in items:
             print(item)
 
-def readmeat(meat, lines=0, numbers=True):
-    """Reads the given meat (list of str or str), w/ or w/o line numbers."""
+def readlines(meat, lines=0, numbered=True):
+    """Reads the given meat (list of str or str), w/ or w/o lines numbered."""
     if type(meat) == str:
         with open(meat,'r') as f:
             chunks = [x.rstrip() for x in f.readlines()]
@@ -41,7 +41,7 @@ def readmeat(meat, lines=0, numbers=True):
         lines = len(chunks)
     chunks = chunks[:lines]
     for num, line in enumerate(chunks):
-        if numbers:
+        if numbered:
             print(str(num).rjust(len(str(lines))), end=' ')
         print(line)
 
@@ -56,7 +56,7 @@ def rmdup(lizt):
     return new
 
 if __name__ == '__main__':
-    print(jnrows(TEST_LIST))
+    print(joinlines(TEST_LIST))
     printall(TEST_LIST)
-    readmeat('essay.txt', 4)
+    readlines('essay.txt', 4)
     rmdup(TEST_LIST)
