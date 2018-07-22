@@ -2,7 +2,7 @@
 """
 web module
 
-TODO: fix the web header to fix google.com JS rendering problem with accept-char
+TODO: fix the web header to fix google.com rendering JS problem with accept-char
 
 """
 
@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup as _BS
 
 from clay.shell import getDocsFolder as _getDocsFolder, isIdle as _isIdle, isUnix as _isUnix
 
-CHUNK_CAP = 1e6 # 1MB
+CHUNK_CAP = int(1e6) # 1MB
 
 # download links for testing
 LINKS = dict()
