@@ -32,6 +32,10 @@ KELVIN_OFFSET = 273.15 # degrees
 OHMS_TABLE = {'I': 'V/R',
               'V': 'I*R',
               'R': 'V/I'}
+# Standard SI prefixes
+PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
+            'Mega', 'kilo', '', 'milli', 'micro(u)', 'nano', # '' is the base
+            'pico', 'femto', 'atto', 'zepto', 'yocto']
 
 def apply_ohms_law(V=None, I=None, R=None):
     """Fills in and returns the missing value to satisfy Ohm's law"""
@@ -103,6 +107,30 @@ def get_lorenz_factor(velocity):
     """Returns the Lorenz factor for the given object moving at velocity v"""
     return 1 / _math.sqrt(1 - velocity ** 2 / c ** 2)
 
+def get_prefix(scalar, units='m'):
+    """Adjusts the given scalar to a better prefix and prints it out"""
+    negative = False
+    amount = scalar
+    if amount < 0:
+        negative = True
+        amount *= -1
+    position = PREFIXES.index('')
+    pre = str()
+
+    while amount > 1000:
+        position -= 1
+        pre = PREFIXES[position]
+        amount /= 1000
+
+    while amount < 1:
+        position += 1
+        pre = PREFIXES[position]
+        amount *= 1000
+        
+    if negative:
+        amount *= -1
+    print(scalar, units, '=>', amount, pre, units)
+
 def get_urms(temp, molar_mass):
     """"Returns the root mean square velocity using the given molar mass (g)
         and temperature (*C)"""
@@ -148,6 +176,9 @@ class Position(object):
 
 if __name__ == '__main__':
     print('drop time', get_drop_time(displacement=abs(a_g / 2), v_i=0))
+    get_prefix(24582000)
+    get_prefix(0.0021040, units='m/s')
+    get_prefix(0.00021040)
     pos = Position([0, 4.905, 19.62, 44.145, 78.48, 122.625])
     print('vel =', pos.vel())
     print('accel =', pos.accel())
