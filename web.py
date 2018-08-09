@@ -2,10 +2,12 @@
 """
 web module
 
-TODO: fix the web header to fix google.com rendering JS problem with accept-char
+TODO: fix the web header to fix google.com rendering JS problem using
+          accept-char types
 
 """
 
+import json as _json
 import os as _os
 from subprocess import call as _call
 import sys as _sys
@@ -14,7 +16,10 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay.shell import getDocsFolder as _getDocsFolder, isIdle as _isIdle, isUnix as _isUnix
+from clay.shell import getDocsFolder as _getDocsFolder, \
+    isIdle as _isIdle, \
+    isUnix as _isUnix
+from clay.util import ObjectInitializer as _ObjectInitializer
 
 CHUNK_CAP = int(1e6) # 1MB
 
@@ -29,7 +34,7 @@ TEST_LINK = 'https://minecraft.net/en-us/'
 
 WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
            #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-           'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,image/apng,*/*;q=0.8',
+           'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
            'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
            'Accept-Encoding': 'gzip, deflate, br',
            'Accept-Language': 'en-US,en;q=0.8;q=0.5',
@@ -48,7 +53,35 @@ class CacheManager(object):
         """Initializes a new Cache object"""
         pass
 
-    def setfile(self, uri, title=None):
+    def exists(self):
+        """Returns a boolean of whether the file exists"""
+        return _os.path.exists(self.title)
+
+    def get_content(self):
+        """Returns the content of this cached file"""
+        assert self.exists()
+        with open(self.title, 'rb') as fp:
+            fread = fp.read()
+        return fread
+
+    def length(self):
+        """Returns the length of the byte file"""
+        return len(self.get_content())
+
+    def load(self):
+        """Returns binary content from self.title"""
+        print('Loading from cache "{}"...'.format(self.title), end=' ')
+        cont = self.get_content()
+        print('Done')
+        return cont
+
+    def reload(self):
+        """Alias for `store`, but easier to remember for humans
+           Commonly performed outside of a script"""
+        print('Performing a cache reload for "{}"...'.format(self.title))
+        self.store()
+
+    def set(self, uri, title=None):
         """Sets the cache to point to the given uri with the optional title"""
         from clay.web import get_basename as _get_basename
 
@@ -60,34 +93,6 @@ class CacheManager(object):
 
         if not(_os.path.exists(self.title)):
             self.store()
-
-    def exists(self):
-        """Returns a boolean of whether the file exists"""
-        return _os.path.exists(self.title)
-        
-    def _get_content(self):
-        """Returns the content of this cached file"""
-        assert self.exists()
-        with open(self.title, 'rb') as fp:
-            fread = fp.read()
-        return fread
-
-    def length(self):
-        """Returns the length of the byte file"""
-        return len(self._get_content())
-
-    def load(self):
-        """Returns binary content from self.title"""
-        print('Loading from cache "{}"...'.format(self.title), end=' ')
-        cont = self._get_content()
-        print('Done')
-        return cont
-
-    def reload(self):
-        """Alias for `store`, but easier to remember for humans
-           Commonly performed outside of a script"""
-        print('Performing a cache reload for "{}"...'.format(self.title))
-        self.store()
 
     def store(self):
         """Stores binary content of the requested uri, returns None"""
@@ -344,6 +349,62 @@ def launch(uri, browser='firefox'):
                 _call(['google-chrome', link], shell=True)
             else:
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
+
+class Users(object):
+    def __init__(self, file='users'):
+        self.file = file
+        self.default_model = None
+        self.db = None
+
+    def __check_exists(self, ip):
+        if not(ip in self.db):
+            self.db[ip] = self.get_default_model().to_dict()
+
+    def get_default_model(self):
+        return self.default_model
+
+    def read(self):
+        if not(_os.path.exists(self.file)):
+            self.db = {} # dict
+            self.write()
+        with open(self.file) as fp:
+            self.db = _json.load(fp)
+        print('users read')
+
+    def remove(self, ip):
+        if ip in self.db:
+            self.db.pop(ip)
+            self.write()
+            print('user entry for ip', ip, 'removed')
+        else:
+            print('user ip not found')
+
+    def set_default_model(self, model):
+        self.default_model = model
+
+    def update(self, ip, model):
+        self.__check_exists(ip)
+
+        for attr in model.get_attributes():
+            self.db[ip][attr] = getattr(model, attr)
+
+        print('ip', ip, 'updated')
+
+        self.write()
+
+    def update_prop(self, ip, prop, value):
+        self.__check_exists(ip)
+        self.db[ip][prop] = value
+
+    def write(self):
+        with open(self.file, 'w') as fp:
+            _json.dump(self.db, fp)
+        print('users written')
+
+class ViewModel(_ObjectInitializer):
+    """Class ViewModel can be used to set properties
+       to be rendered in a web page"""
+    pass
 
 if __name__ == '__main__':
     print(download(LINKS['2MB'], destination=_getDocsFolder(), speed=True), 'bytes per second')
