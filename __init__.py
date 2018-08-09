@@ -47,10 +47,7 @@ __all__ = ['align',
            'web',
            'wintitles']
 
-import os as _os
 import sys as _sys
 
+# create a temporary version of isUnix to allow for constant declarations
 _isUnix = lambda: any(_sys.platform.startswith(x) for x in ('linux', 'darwin'))
-
-HOME_DIR = _os.environ['HOME'] if _isUnix() else _os.environ['USERPROFILE']
-

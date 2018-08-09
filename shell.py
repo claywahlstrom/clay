@@ -1,31 +1,34 @@
 
 """
-shell: commands that can be used to manage your system or retrieve information
+shell: commands that can be used to manage your system or
+       retrieve information about it
 
 """
 
 import os as _os
+import string as _string
 import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-# import a temporary version of isUnix to allow for constant declarations
-from clay import _isUnix, HOME_DIR as _HOME_DIR
+from clay import _isUnix
 
 FILTERED_ARGS = list(filter(lambda name: not(name in ('python', 'python.exe')), _sys.argv))
 
-FLASK_APP = 'app.py' # common name for Flask web apps
+FLASK_APP = 'app.py' # a common name for Flask web apps
+
+HOME_DIR = _os.environ['HOME'] if _isUnix() else _os.environ['USERPROFILE']
 
 TIMEOUT_CMD = 'sleep ' if _isUnix() else 'timeout '
 
-TRASH = _os.path.join(_HOME_DIR, 'Desktop', 'TRASH')
+TRASH = _os.path.join(HOME_DIR, 'Desktop', 'TRASH')
 
-cd = _os.chdir # def
+cd = _os.chdir # alias
 
 def clear():
-    """Clears the screen"""
+    """Clears the console window"""
     if isIdle():
-        print('\n'*40)
+        print('\n' * 40)
     elif _isUnix():
         _os.system('clear')
     else:
@@ -33,7 +36,7 @@ def clear():
 
 def chext(filepath, ext):
     """Changes file extension of the given file to `ext`"""
-    new = '.'.join(_os.path.splitext(filepath)[:-1]+[ext]) # split into chunks and add list to name
+    new = '.'.join(_os.path.splitext(filepath)[:-1] + [ext]) # split into chunks and add list to name
     try:
         _os.rename(filepath, new)
         print('Ext changed')
@@ -43,7 +46,7 @@ def chext(filepath, ext):
 def copy(src, dst):
     """Copies the source item to destination using shutil.copy"""
     print('Copying "{}" to "{}"...'.format(src, dst), end=' ')
-    from shutil import copy as cp
+    from shutil import copy as cp # avoids recursion
     try:
         cp(src, dst)
         succeed = True
@@ -58,29 +61,37 @@ def copy(src, dst):
             print('Failed')
 
 # for linux users
-cp = copy # def
-
-# for nt users
-cwd = _os.getcwd # def
+cp = copy # alias
+cwd = _os.getcwd # alias
 # for linux users
-pwd = _os.getcwd # def
+pwd = _os.getcwd # alias
 
-def filemanager(directory=_os.curdir):
-    """Opens the file manager to the specified directory"""
-    if _isUnix(): # This should work for most systems
-        fm_name = 'xdg-open'
+def file_manager(directory=_os.curdir):
+    """Opens the system file manager to the specified directory"""
+    from clay.shell import isUnix
+    if isUnix():
+        fm_name = 'xdg-open' # This should work for most systems
     else:
         fm_name = 'explorer'
     _os.system('{} "{}"'.format(fm_name, directory))
 
 def getDocsFolder():
     """Returns the location of the documents folder for this computer.
-    Assumes a similar filesystem naming convention to work."""
-    from clay.shell import ssdExists as _ssdExists
-    if _ssdExists():
+       Assumes a similar filesystem naming convention to work."""
+    from clay.shell import get_disk_drives as get_disk_drives
+    if 'E:\\' in get_disk_drives():
         return r'E:\Docs'
     else:
         return _os.path.join(_os.environ['HOME'], 'Documents')
+
+def get_disk_drives():
+    """Returns a list of drive root paths that are available
+       on this machine. Ex. C:\\"""
+    drives = list()
+    for letter in _string.ascii_uppercase:
+        if _os.path.exists(letter + ':\\'):
+            drives.append(letter + ':\\')
+    return drives
 
 def isIdle():
     """Returns true if the script is running within IDLE,
@@ -93,12 +104,13 @@ def isPowershell():
     return len(_sys.argv[0]) > 0 and (not((':' in _sys.argv[0])) or _sys.argv[0].startswith('.'))
 
 def isUnix():
-    """Returns true if the script is running within a Unix
-       machine, false otherwise"""
+    """Returns true if the script is running within a Unix machine,
+       false otherwise"""
     return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
 class JavaCompiler(object):
-    """Class Java can be used to compile Java(tm) source files to bytecode"""
+    """Class JavaCompiler can be used to compile Java(tm) source
+       files to bytecode"""
     
     SRC_EXT = '.java'
     
@@ -162,7 +174,7 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
     import re
     if type(regex) == str:
         regex = [regex]
-    results = list()
+    results = lit()
     for root, dirs, files in _os.walk(directory):
         for x in files:
             if all(len(re.findall(char, x)) > 0 for char in regex):
@@ -172,9 +184,9 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
     return results
 
 from os import mkdir # def
-md = _os.mkdir # def
+md = _os.mkdir # alias
 
-from shutil import move as mv # def
+from shutil import move as mv # alias
 
 def notify(e, seconds=2.25):
     print(e)
@@ -189,7 +201,7 @@ def pause(consoleonly=False):
 
 def ren(src, dst, directory=_os.curdir, recurse=False):
     """Renames src to dst, or with recurse=True...
-    Rename all items with old to new using str.replace(old,new)"""
+       Rename all items with old to new using str.replace(old,new)"""
     if recurse:
         print('Replacing all "{}" with "{}"...'.format(src, dst))
         x = 0
@@ -209,7 +221,7 @@ def ren(src, dst, directory=_os.curdir, recurse=False):
 
 def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
     """Moves a file/folder to the TRASH, or with recurse...
-    Recursive version rm, Optional prompting"""
+       Recursive version rm, Optional prompting"""
 
     from clay.shell import rm_item
 
@@ -235,7 +247,7 @@ def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
         
 def rm_item(directory, name):
     """Moves an item from the given directory with its name including its
-    path neutral version of its origin. Helps `rm` accomplish its task"""
+       path neutral version of its origin. Helps `rm` accomplish its task"""
 
     DEBUG = False
     
@@ -278,7 +290,7 @@ def rm_from_trash(target):
     else:
         i = 1
 
-    if _isUnix():
+    if isUnix():
         key = 'linux'
     else:
         key = 'win32'
@@ -287,7 +299,7 @@ def rm_from_trash(target):
 def set_title(title=_os.path.basename(FILTERED_ARGS[0]), add=str(),
               args=False, flask_default_name=True):
     """Sets the title of the current shell instance. Default is the modules name
-    You can use your own additional text or use the command-line arguments"""
+       You can use your own additional text or use the command-line arguments"""
     name = title
     if name == FLASK_APP:
         add = _os.path.split(_os.path.dirname(_os.path.abspath(FILTERED_ARGS[0])))[-1]
@@ -301,16 +313,11 @@ def set_title(title=_os.path.basename(FILTERED_ARGS[0]), add=str(),
     else:
         _os.system('title ' + name)
 
-def ssdExists():
-    """Returns true if the solid state drive location 'E:\Docs' exists,
-    otherwise false"""
-    return _os.path.exists(r'E:\Docs')
-
 def start(program):
     """Starts a given program"""
     try:
         command = str()
-        if not(_isUnix()):
+        if not(isUnix()):
             command += 'start '
         _os.system(command + program)
     except Exception as e:
@@ -318,7 +325,7 @@ def start(program):
 
 def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
-    assert seconds > -1 or type(seconds) == int
+    assert seconds > -1 and type(seconds) == int
     if isIdle() or seconds > 99999:
         if not(hidden):
             print('Waiting for', seconds, 'seconds...')

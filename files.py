@@ -9,7 +9,6 @@ import requests as _requests
 import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
-from clay.shell import ssdExists as _ssdExists
 from clay.web import WEB_HDR as _WEB_HDR
 
 def appendfile(filename, string=str()):
@@ -65,13 +64,12 @@ def get_content(filename, binary=False):
 
 def get_size(name):
     """Returns the size of the given file or uri"""
-    from requests import head
     if _os.path.exists(name):
         size = _os.path.getsize(name)
     else:
         if _os.path.basename(name):
             try:
-                response = head(name, headers=_WEB_HDR)
+                response = _requests.head(name, headers=_WEB_HDR)
                 size = int(response.headers['Content-Length'])
             except Exception as e:
                 _traceback.print_exc()
