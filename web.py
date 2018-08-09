@@ -19,7 +19,6 @@ from bs4 import BeautifulSoup as _BS
 from clay.shell import getDocsFolder as _getDocsFolder, \
     isIdle as _isIdle, \
     isUnix as _isUnix
-from clay.util import ObjectInitializer as _ObjectInitializer
 
 CHUNK_CAP = int(1e6) # 1MB
 
@@ -400,11 +399,6 @@ class Users(object):
         with open(self.file, 'w') as fp:
             _json.dump(self.db, fp)
         print('users written')
-
-class ViewModel(_ObjectInitializer):
-    """Class ViewModel can be used to set properties
-       to be rendered in a web page"""
-    pass
 
 if __name__ == '__main__':
     print(download(LINKS['2MB'], destination=_getDocsFolder(), speed=True), 'bytes per second')
