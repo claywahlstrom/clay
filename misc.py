@@ -5,7 +5,7 @@ misc: content that doesn't have a separate module
 TODO (Pollen): allow multiple zipcodes for the given sources
                  - retrieve each api link
                  - use zip codes to lookup the dictionary of url sources
-
+               move to util module
 """
 
 import datetime as _dt
@@ -16,22 +16,7 @@ import time as _time
 from bs4 import BeautifulSoup as _BeautifulSoup
 import requests as _requests
 
-from clay.shell import isUnix as _isUnix
 from clay.web import WEB_HDR as _WEB_HDR
-
-def human_hex(dec):
-    """Converts decimal values to human readable hex.
-       Mainly used in engineering class"""
-    return hex(dec)[2:]
-
-def map_args(function, iterable, *args, **kwargs):
-    """Maps iterable to a function with arguments/keywords.
-       Dynamic types can be used"""
-    return type(iterable)(function(x, *args, **kwargs) for x in iterable)
-
-def map_args_test(x, y=2, z=3):
-    """A test function for the map_args function. Returns the sum of x, y, z"""
-    return x + y + z
 
 class Pollen(object):
 
@@ -56,8 +41,8 @@ class Pollen(object):
         self.zipcode = zipcode
         self.print_sources = print_sources
         self.source = source
-        self.setsource(source)
-        self.setzipcode(zipcode)
+        self.set_source(source)
+        self.set_zipcode(zipcode)
         self.__has_built = False
         self.build()
         
@@ -159,14 +144,14 @@ class Pollen(object):
         """Returns the type of pollen forecasted for tomorrow"""
         return self.get_day(1) # checks for valid db in get_day
         
-    def printall(self):
+    def print_db(self):
         """Prints all of the db information in a table format"""
         self.__check_built()
         print('Pollen data for', self.zipcode)
         for i, j in self.db.items():
             print('{:>{}}: {}'.format(i, len('Tonight'), j))
 
-    def setsource(self, source):
+    def set_source(self, source):
         """Sets the source for this Pollen object. Requires `build` to be called to update data"""
         if not(source in Pollen.SOURCE_SPAN.keys()):
             raise ValueError(f'source must be one from [{", ".join(Pollen.SOURCE_SPAN.keys())}]')
@@ -176,13 +161,13 @@ class Pollen(object):
         self.source = source
         self.__has_built = False
 
-    def setzipcode(self, zipcode):
+    def set_zipcode(self, zipcode):
         """Sets the zipcode for this Pollen object. Requires `build` to be called to update data"""
         if (self.source != 'weather text' and not(zipcode in Pollen.SOURCE_URLS.keys())) or \
             not(zipcode in Pollen.SOURCE_URLS.keys()) or zipcode < 0 or zipcode > 99501:
             raise ZipCodeNotFoundException(zipcode)
         self.zipcode = zipcode
-        self.setsource(self.source) # ensures data is updated if the method is 'weather text'
+        self.set_source(self.source) # ensures data is updated if the method is 'weather text'
 
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
@@ -208,31 +193,28 @@ if __name__ == '__main__':
     import sys
     import traceback
     
-    print('human hex for 2700', human_hex(2700))
-    print('map args on test function', map_args(map_args_test, (1, 4, 16, 25), z = 4))
-
     p = Pollen('weather text')
     p.printall()
-    p.setsource('weather values')
-    p.setzipcode(98105)
+    p.set_source('weather values')
+    p.set_zipcode(98105)
     p.build()
     p.printall()
     
     print('The next two tests will fail.')
     try:
-        p.setsource('wrong source')
+        p.set_source('wrong source')
     except Exception:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb)
     print()
     try:
-        p.setzipcode(97132)
+        p.set_zipcode(97132)
     except Exception:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb)
 
     # other unit tests
     # for i in Pollen.SOURCE_SPAN.keys():
-        # p.setsource(i)
+        # p.set_source(i)
         # p.build()
         # p.printall()
