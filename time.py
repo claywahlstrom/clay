@@ -104,7 +104,7 @@ class SunTime(object):
         if day < 0 or day >= len(self.data):
             raise ValueError('day must be from 0 to ' + str(len(self.data) - 1))
 
-    def __satisfy(self, day):
+    def __validate(self, day):
         """Verifies that the requested day is valid and this SunTime is up to date"""
         self.__check_valid(day)
         self.__check_date()
@@ -120,17 +120,17 @@ class SunTime(object):
 
     def get_sunrise(self, day=0):
         """Returns string of the sunrise time"""
-        self.__satisfy(day)
+        self.__validate(day)
         return self.data[day][0]
 
     def get_sunset(self, day=0):
         """Returns string of the sunset time"""
-        self.__satisfy(day)
+        self.__validate(day)
         return self.data[day][1]
 
     def get_solar_noon(self, day=0):
         """Returns string of the solar noon time"""
-        self.__satisfy(day)
+        self.__validate(day)
         return self.data[day][4]
 
     def rebuild(self):

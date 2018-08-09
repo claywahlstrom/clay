@@ -52,7 +52,7 @@ class WindowHandler(object):
         """Returns a list of all of the window handle names"""   
         titles = get_wintitles()
         if self.regex:
-            return tuple(name for title in titles for name in re.findall(self.name, title))
+            return tuple(name for title in titles for name in _re.findall(self.name, title))
         return tuple(title for title in titles if self.name in title)
 
     def isactive(self):
