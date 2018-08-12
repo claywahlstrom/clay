@@ -5,7 +5,6 @@ Music: for creating and playing music
 Steps are relative to A.
 Registers are in ovtaves with the lowest pitch of 55.
 
-TODO: comment Song
 
 """
 
@@ -144,7 +143,7 @@ class Song(object):
     def load(self):
         """Loads a notes file written in standard format"""
         file = 'notes{:03d}.txt'.format(int(input('load song #? ')))
-        notes = list()
+        notes = []
         if file == 'new':
             _notify('Creating a new template...', 0.5)
             tempo = eval(input('tempo? '))

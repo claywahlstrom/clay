@@ -46,7 +46,7 @@ class Search(object):
             return 'No results'
 
     def build_results(self):
-        self.raw_text = 'Search for "{}" in "{}" took {} seconds\n'.format(self.string, self.folder, self.duration)
+        self.raw_text = f'Search for "{self.string}" in "{self.folder}" took {round(self.duration, 5)} seconds\n'
         self.raw_text += '\n'.join([res + '\n\t' + \
                                     '\n\t'.join([val for val in self.results[res]]) \
                                     for res in list(self.results.keys())])
@@ -89,7 +89,7 @@ class Search(object):
                             self.matches += 1
                             if self.ext is None or len(self.ext) > 0 and f.endswith(self.ext):
                                 if root not in list(self.results.keys()): # create new entry if dir not entered
-                                    self.results[root] = list()
+                                    self.results[root] = []
                                 self.results[root].append(f)
 
             self.duration = _time.time() - time_start

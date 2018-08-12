@@ -21,7 +21,7 @@ def foreach_window(hwnd, lParam):
 def get_wintitles():
     """Returns a list of active window titles"""
     global titles
-    titles = list()
+    titles = []
     EnumWindows(EnumWindowsProc(foreach_window), 0)
     while str() in titles: # remove blank entries
         titles.remove(str())

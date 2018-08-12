@@ -1,6 +1,6 @@
 
 """
-Clusters: for managing data such as variables, lists and dictionaries
+Collections: for managing data such as variables, lists and dictionaries
 
 """
 
@@ -9,22 +9,16 @@ import sys as _sys
 
 class FixedSizeQueue(object):
     """Object that maintains length when items are added to it."""
-    def __init__(self, ls=list(), max_size=10):
-        self.__ls = ls[:]
+    def __init__(self, ls=[], max_size=10):
+        self.__ls = _collections.deque(ls[:], max_size)
         self.max_size = max_size
 
     def __len__(self):
         return len(self.__ls)
 
-    def __clean(self):
-        """Removes elements from the queue until max size has been reached"""
-        while len(self.__ls) > self.max_size:
-            (self.__ls).pop(0)
-
     def add(self, element):
         """Adds the given element to the back of the queue"""
-        (self.__ls).append(item)
-        self.__clean()
+        (self.__ls).append(element)
 
     def get_average(self):
         """Returns the average for this queue if the elements are summable"""
@@ -40,7 +34,7 @@ class Grouping(object):
     """Holds a list of objects to display. Mainly used for tracking variables
        in the debugging phase of a project."""
     
-    def __init__(self, objs=list(), module='__main__'):
+    def __init__(self, objs=[], module='__main__'):
         assert type(objs) == list, 'Not a list of strings'
 
         self.objs = objs
@@ -102,6 +96,7 @@ class SortableDict(_collections.OrderedDict):
 
 if __name__ == '__main__':
 
+    import pprint
     from random import randint
     from time import sleep
 
@@ -125,7 +120,7 @@ if __name__ == '__main__':
     s.add('d')
     print('after add')
     s.show()
-    s.write_file('clusters_test.txt')
+    s.write_file('collections_test.txt')
 
     person = {'friends': [{'id': 0, 'name': 'Carla James'},
                           {'id': 1, 'name': 'Patel Lewis'},
@@ -135,7 +130,9 @@ if __name__ == '__main__':
               'greeting': 'Hello, Celia Vaughan! You have 7 unread messages.',
               'longitude': -69.800663, 'balance': '$3,701.90'}
 
-    print(person, type(person))
+    print('before sort')
+    print(person)
     celia = SortableDict(person)
     celia.sort()
-    print(celia, type(celia))
+    print('after sort')
+    pprint.pprint(celia)

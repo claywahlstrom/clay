@@ -9,7 +9,7 @@ tables: Make basic tables and plots
 
 import sys as _sys
 
-from clay.clusters import SortableDict as _SortableDict
+from clay.collections import SortableDict as _SortableDict
 
 SCREEN_WD = 80
 
@@ -122,12 +122,13 @@ class Histogram(object):
             print('Using shortened keys')
             shorten_keys = True
             longest_key_len = Histogram.SHORT_LENGTH
+        width = min(width, SCREEN_WD) - longest_key_len - 1
         max_val = max(list(self.sd.values()))
 
         print('  Histogram for', self.title)
         print('longest key len', longest_key_len)
-        print('          width', width)
-        print('        max val', max_val)
+        print('    graph width', width)
+        print('      max value', max_val)
         print('          using', using)
         print('     with count', with_count)
         shorten_wings = 5 * ((Histogram.SHORT_LENGTH - 3) // 10)

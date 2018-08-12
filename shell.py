@@ -87,7 +87,7 @@ def getDocsFolder():
 def get_disk_drives():
     """Returns a list of drive root paths that are available
        on this machine. Ex. C:\\"""
-    drives = list()
+    drives = []
     for letter in _string.ascii_uppercase:
         if _os.path.exists(letter + ':\\'):
             drives.append(letter + ':\\')
@@ -174,7 +174,7 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
     import re
     if type(regex) == str:
         regex = [regex]
-    results = lit()
+    results = []
     for root, dirs, files in _os.walk(directory):
         for x in files:
             if all(len(re.findall(char, x)) > 0 for char in regex):

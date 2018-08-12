@@ -48,7 +48,7 @@ def readlines(meat, lines=0, numbered=True):
 def rmdup(lizt):
     """Returns a non-duplicated version of the given list"""
     len_before = len(lizt)
-    new = list()
+    new = []
     for n in lizt:
         if n not in new:
             new.append(n)

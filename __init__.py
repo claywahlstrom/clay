@@ -28,8 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 __all__ = ['align',
            'boxart',
-           'clusters',
-           'essays',
+           'collections',
            'files',
            'google',
            'graphing',

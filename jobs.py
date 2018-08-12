@@ -11,7 +11,7 @@ import datetime
 import math
 import pprint
 
-from clay.clusters import SortableDict
+from clay.collections import SortableDict
 from clay.graphing import Histogram
 from clay.maths import average, median
 
@@ -165,7 +165,7 @@ class Attendance(object):
                 mon = row['date'].split('-')[0]
                 if not(mon in months):
                     print('new', mon, file=fp)
-                    months[mon] = list()
+                    months[mon] = []
                 print('adding', row['hours'], 'to', mon, file=fp)
                 months[mon].append(row['hours'])
             fp.close()
@@ -195,7 +195,7 @@ class Attendance(object):
                     print('date is bigger than last. using existing week', file=fp)
                 else:
                     print('date is smaller than last. adding a new week...', file=fp)
-                    sorted_weeks[str(len(sorted_weeks))] = list()
+                    sorted_weeks[str(len(sorted_weeks))] = []
                 prev = date
                 sorted_weeks[str(len(sorted_weeks) - 1)].append(row['hours'])
                 print(' ' * 4, end=str(), file=fp)

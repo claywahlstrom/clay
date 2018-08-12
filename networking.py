@@ -43,8 +43,8 @@ class Report(object):
     .\align.py | 587
     .\badquotes.txt | 308
     .\boxes.py | 2027
-    .\clusters.py | 3391
-    .\clusters_test.txt | 1363
+    .\collections.py | 3391
+    .\collections_test.txt | 1363
     ...
 
     TODO: file IO
@@ -63,7 +63,7 @@ class Report(object):
 
     def generate(self):
         """Generates a report in the format (filename, filesize)"""
-        report = list()
+        report = []
         Walk = _os.walk(self.directory)
 
         for root, dirs, files in Walk:
@@ -171,8 +171,8 @@ class AdvancedSocket(object):
     def getdiffs(self, src, dst):
         """Detects changes and removals to get from the given src state
            to the dst state"""
-        changed = list()
-        removing = list()
+        changed = []
+        removing = []
         self.sendbin(dst.encode(UTF_CHAR))
 
         d_src = self.loaddiff(src)

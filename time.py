@@ -81,7 +81,7 @@ class SunTime(object):
             scraped = scraped[1:]
 
         # parse the data into rows
-        data = list()
+        data = []
         for i in range(0, len(scraped), SunTime.COLS):
             data.append(scraped[i: i + SunTime.COLS])
 
