@@ -51,7 +51,7 @@ def differentiate(f, x, deltax=1e-12):
 def get_factors(number):
     """Returns a list of factors for the given int"""
     assert type(number) == int, 'type int is required'
-    factors = dict()
+    factors = {}
     for num in range(1, number + 1):
         if number % num == 0: # if no remainder
             factors[num] = int(number / num)

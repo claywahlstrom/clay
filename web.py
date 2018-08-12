@@ -23,7 +23,7 @@ from clay.shell import getDocsFolder as _getDocsFolder, \
 CHUNK_CAP = int(1e6) # 1MB
 
 # download links for testing
-LINKS = dict()
+LINKS = {}
 LINK_SIZES = list(map(lambda n: str(n) + 'MB', [1, 2, 5, 10, 20, 50, 100, 200, 512]))
 for n in LINK_SIZES:
     LINKS[n] = 'http://download.thinkbroadband.com/' + str(n) + '.zip'
@@ -81,7 +81,7 @@ class CachedFile(object):
 
     def load(self):
         """Returns binary content from self.title"""
-        print('Loading from cache "{}"...'.format(self.title), end=' ')
+        print('Loading cached file "{}"...'.format(self.title), end=' ')
         cont = self.get_local()
         print('Done')
         return cont
@@ -109,7 +109,7 @@ class CachedFile(object):
     def store(self):
         """Writes the binary content of the requested uri to the disk.
            Writes and erases the remote content copy if it exists."""
-        print('Storing into cache "{}"...'.format(self.title), end=' ')
+        print('Storing cached file "{}"...'.format(self.title), end=' ')
         with open(self.title, 'wb') as fp:
             if self.remote_content is not None:
                 fp.write(self.remote_content)

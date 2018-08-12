@@ -208,7 +208,7 @@ class AdvancedSocket(object):
 
     def loaddiff(self, Dir):
         """Loads and returns the differces as a dict"""
-        Dict = dict()
+        Dict = {}
         for root, dirs, files in _os.walk(Dir):
             for file in files:
                 name = _os.path.join(root, file)

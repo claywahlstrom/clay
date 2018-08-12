@@ -74,8 +74,8 @@ class Attendance(object):
         self.db       = db
         self.perhour  = perhour
         self.offset   = offset
-        self.filtered = dict()
-        self.pt       = dict()
+        self.filtered = {}
+        self.pt       = {}
         self.state    = state
 
     def get_average_hours(self):

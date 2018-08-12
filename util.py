@@ -100,7 +100,7 @@ class Pollen(object):
         if self.source == 'weather text':
             params = _WEB_HDR
         else:
-            params = dict()
+            params = {}
         req = _requests.get(uri, params=params)
         retried = False
         tries = 1
@@ -126,7 +126,7 @@ class Pollen(object):
 
         if self.source == 'weather text':
             found = page.select('button > div')
-            db = dict()
+            db = {}
             if len(found) > 0:
                 for elm in found:
                     divs = elm.select('div')

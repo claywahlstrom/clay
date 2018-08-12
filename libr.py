@@ -181,7 +181,7 @@ class Citation(object):
         page = req.content
         soup = _BS(page, 'html.parser')
         now = _time.ctime().split()
-        data = dict()
+        data = {}
 
         data['title'] = _get_title(soup)
         data['date_retr'] = ' '.join([str(int(now[2])), now[1] + '.',now[-1]])

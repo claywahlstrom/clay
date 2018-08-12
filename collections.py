@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     a = 'string'
     b = int(4)
-    c = dict()
+    c = {}
     s = Grouping(['a', 'b', 'c'])
     print('before add')
     s.show()
