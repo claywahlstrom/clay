@@ -62,18 +62,19 @@ def get_content(filename, binary=False):
         fread = fp.read()
     return fread
 
-def get_size(name):
-    """Returns the size of the given file or uri"""
-    if _os.path.exists(name):
+def get_size(name, local=True):
+    """Returns the size of the given file or uri.
+       Returns 0 if no size was found."""
+    size = 0 # default if no size is found
+    if _os.path.exists(name) and not(local):
         size = _os.path.getsize(name)
     else:
-        if _os.path.basename(name):
-            try:
-                response = _requests.head(name, headers=_WEB_HDR)
+        if _os.path.basename(name) or not(local):
+            response = _requests.head(name, headers=_WEB_HDR)
+            if 'Content-Length' in response.headers:
                 size = int(response.headers['Content-Length'])
-            except Exception as e:
-                _traceback.print_exc()
-                size = 0
+            else:
+                size = len(_requests.get(name, headers=_WEB_HDR).content)
         else:
             raise Exception('Basename not found. Need an absolute url path')
     return size

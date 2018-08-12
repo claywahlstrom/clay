@@ -39,7 +39,7 @@ WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
            'Accept-Language': 'en-US,en;q=0.8;q=0.5',
            'Connection': 'keep-alive'}
 
-class CacheManager(object):
+class CachedFile(object):
     """Class Cache can be used to manage file caching on your local machine,
        accepts one uri. The caching system will use the local version of
        the file if it exists. Otherwise it will be downloaded from the server.
@@ -50,27 +50,39 @@ class CacheManager(object):
 
     def __init__(self):
         """Initializes a new Cache object"""
-        pass
+        self.reloaded = False
+        self.remote_content = None
 
     def exists(self):
         """Returns a boolean of whether the file exists"""
         return _os.path.exists(self.title)
 
-    def get_content(self):
-        """Returns the content of this cached file"""
+    def get_local(self):
+        """Returns the content of the local cached file"""
         assert self.exists()
         with open(self.title, 'rb') as fp:
             fread = fp.read()
         return fread
 
+    def get_remote(self):
+        """Returns the content of the remote file. Stores a copy
+           in this object for future reloads to reduce bandwidth."""
+        self.remote_content = _requests.get(self.uri).content
+        return self.remote_content
+
+    def is_updated(self):
+        """Returns True if the cached file has the same
+           length as the remote file, False otherwise"""
+        return len(self.get_local()) == len(self.get_remote())
+
     def length(self):
-        """Returns the length of the byte file"""
-        return len(self.get_content())
+        """Returns the length of the locally cached byte file"""
+        return len(self.get_local())
 
     def load(self):
         """Returns binary content from self.title"""
         print('Loading from cache "{}"...'.format(self.title), end=' ')
-        cont = self.get_content()
+        cont = self.get_local()
         print('Done')
         return cont
 
@@ -89,16 +101,23 @@ class CacheManager(object):
         self.title = title
 
         self.uri = uri
+        self.__init__()
 
         if not(_os.path.exists(self.title)):
             self.store()
 
     def store(self):
-        """Stores binary content of the requested uri, returns None"""
+        """Writes the binary content of the requested uri to the disk.
+           Writes and erases the remote content copy if it exists."""
         print('Storing into cache "{}"...'.format(self.title), end=' ')
         with open(self.title, 'wb') as fp:
-            fp.write(_requests.get(self.uri).content)
+            if self.remote_content is not None:
+                fp.write(self.remote_content)
+                self.remote_content = None
+            else:
+                fp.write(self.get_remote())
         print('Done')
+        self.reloaded = True
 
 def download(url, title=str(), full_title=False,
              destination='.', log_name='dl_log.txt', speed=False):
@@ -257,7 +276,7 @@ def find_anchors(location, query={}, internal=True, php=False):
             fread = bc.read()
     soup = _BS(fread, 'html.parser')
     raw_links = soup.find_all('a')
-    links = list()
+    links = []
     if php or internal:
         for x in raw_links:
             try:
