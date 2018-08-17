@@ -1,6 +1,6 @@
 
 """
-libr: a librarian's library
+libr: tools for scholars and librarians
 
 TODO (Citation): break up build method into subroutines
 

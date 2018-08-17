@@ -119,6 +119,72 @@ class CachedFile(object):
         print('Done')
         self.reloaded = True
 
+class Database(object):
+    def __init__(self, file, pk):
+        self.file = file
+        self.pk = pk
+        self.db = None
+        self.default_model = None
+        self.__has_read = False
+
+    def __ensure_connected(self):
+        if not(self.__has_read):
+            raise RuntimeError('database has not been read')
+        
+    def __ensure_exists(self, pk):
+        if not(self.db is None or pk in self.db):
+            self.db[pk] = self.get_default_model().to_dict()
+    
+    def create_if_not_exists(self, pk):
+        self.__ensure_connected()
+        self.__ensure_exists(pk)
+
+    def get_default_model(self):
+        return self.default_model
+        
+    def read(self):
+        if not(_os.path.exists(self.file)):
+            self.db = {} # dict
+            self.write()
+        with open(self.file) as fp:
+            self.db = _json.load(fp)
+        if self.db is not None:
+            self.__has_read = True
+
+    def remove(self, pk):
+        self.__ensure_connected()
+        if pk in self.db:
+            self.db.pop(pk)
+            self.write()
+            print('user entry for pk', pk, 'removed')
+        else:
+            print('user pk not found')
+
+    def set_default_model(self, model):
+        self.default_model = model
+
+    def update(self, pk, model):
+        self.__ensure_connected()
+        self.__ensure_exists(pk)
+
+        for attr in model.get_attributes():
+            self.db[pk][attr] = getattr(model, attr)
+
+        print('pk', pk, 'updated')
+
+        self.write()
+
+    def update_prop(self, pk, prop, value):
+        self.__ensure_connected()
+        self.__ensure_exists(pk)
+        self.db[pk][prop] = value
+
+    def write(self):
+        self.__ensure_connected()
+        with open(self.file, 'w') as fp:
+            _json.dump(self.db, fp)
+        print('database written')
+        
 def download(url, title=str(), full_title=False,
              destination='.', log_name='dl_log.txt', speed=False):
     """Downloads data from the given url and logs the relevant information
@@ -368,56 +434,9 @@ def launch(uri, browser='firefox'):
             else:
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
-class Users(object):
-    def __init__(self, file='users'):
-        self.file = file
-        self.default_model = None
-        self.db = None
-
-    def __check_exists(self, ip):
-        if not(ip in self.db):
-            self.db[ip] = self.get_default_model().to_dict()
-
-    def get_default_model(self):
-        return self.default_model
-
-    def read(self):
-        if not(_os.path.exists(self.file)):
-            self.db = {} # dict
-            self.write()
-        with open(self.file) as fp:
-            self.db = _json.load(fp)
-        print('users read')
-
-    def remove(self, ip):
-        if ip in self.db:
-            self.db.pop(ip)
-            self.write()
-            print('user entry for ip', ip, 'removed')
-        else:
-            print('user ip not found')
-
-    def set_default_model(self, model):
-        self.default_model = model
-
-    def update(self, ip, model):
-        self.__check_exists(ip)
-
-        for attr in model.get_attributes():
-            self.db[ip][attr] = getattr(model, attr)
-
-        print('ip', ip, 'updated')
-
-        self.write()
-
-    def update_prop(self, ip, prop, value):
-        self.__check_exists(ip)
-        self.db[ip][prop] = value
-
-    def write(self):
-        with open(self.file, 'w') as fp:
-            _json.dump(self.db, fp)
-        print('users written')
+class Users(Database):
+    def __init__(self, primary_key, file='users'):
+        super(Users, self).__init__(file, primary_key)
 
 if __name__ == '__main__':
     print(download(LINKS['2MB'], destination=_getDocsFolder(), speed=True), 'bytes per second')
