@@ -151,10 +151,15 @@ class Attendance(object):
                                    Attendance.STATES[self.state]['hours']) * \
                                    Attendance.STATES[self.state]['length']
 
-    def select(self, attrib):
+    def select(self, attrib, until_date=None):
         if not(attrib in self.headers):
             raise ValueError('attrib must be a header. Headers are ' + ', '.join(self.headers))
-        return (row[attrib] for row in self.db)
+        selection = []
+        for row in self.db:
+            if row['date'] == until_date:
+                break
+            selection.append(row[attrib])
+        return selection
 
     def setup_pt(self, by=None):
         """Sets up the 'Pivot Table' for the given field. Sets up both tables if by is None"""
