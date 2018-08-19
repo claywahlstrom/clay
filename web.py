@@ -31,7 +31,7 @@ LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 TEST_LINK = 'https://minecraft.net/en-us/'
 
-WEB_HDR = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
            #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
            'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
            'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
@@ -216,14 +216,14 @@ def download(url, title=str(), full_title=False,
     try:
         print('size', end=' ')
         if not('.' in title) or 'htm' in title or 'php' in title:
-            response = _requests.get(url, params=query, headers=WEB_HDR)
+            response = _requests.get(url, params=query, headers=WEB_HDRS)
             before = time() # start timer
             size = len(response.text)
             print(size, 'bytes')
             fp.write(response.text.encode('utf-8'))
             fp.close()
         else:
-            response = _requests.get(url, params=query, headers=WEB_HDR, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
+            response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
             before = time() # start timer
             size = int(response.headers.get('content-length'))
             chunk = size // 100
@@ -285,7 +285,7 @@ class Elements(object):
             with open(page, 'rb') as fp:
                 self.src = fp.read()
         else:
-            betterheaders = WEB_HDR.copy()
+            betterheaders = WEB_HDRS.copy()
             self.request = _requests.get(page, headers=betterheaders)
             if not(self.request.content.startswith(b'<')):
                 betterheaders.pop('Accept-Encoding')
@@ -336,7 +336,7 @@ class Elements(object):
 def find_anchors(location, query={}, internal=True, php=False):
     """Extracts links from a location. Accepts filename or url"""
     if 'http' in location:
-        fread = _requests.get(location, params=query).content#headers=WEB_HDR, params=query).content
+        fread = _requests.get(location, params=query).content#headers=WEB_HDRS, params=query).content
     else:
         with open(location,'r') as bc:
             fread = bc.read()
@@ -388,7 +388,7 @@ def get_file_uri(path):
 
 def get_file(uri):
     """Returns the response from the given `uri`"""
-    response = urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDR))
+    response = urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
     return response.read()
 
 def get_html(uri, query=None, headers=True):
@@ -396,7 +396,7 @@ def get_html(uri, query=None, headers=True):
     if query is not None:
         assert type(query) == dict
     if headers:
-        fread = _requests.get(uri, params=query, headers=WEB_HDR)
+        fread = _requests.get(uri, params=query, headers=WEB_HDRS)
     else:
         fread = _requests.get(uri, params=query)
     text = fread.text.encode('utf-8')

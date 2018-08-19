@@ -9,7 +9,7 @@ import requests as _requests
 import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
-from clay.web import WEB_HDR as _WEB_HDR
+from clay.web import WEB_HDRS as _WEB_HDRS
 
 def appendfile(filename, string=str()):
     """Appends the string to the end of the given file.
@@ -70,11 +70,11 @@ def get_size(name, local=True):
         size = _os.path.getsize(name)
     else:
         if _os.path.basename(name) or not(local):
-            response = _requests.head(name, headers=_WEB_HDR)
+            response = _requests.head(name, headers=_WEB_HDRS)
             if 'Content-Length' in response.headers:
                 size = int(response.headers['Content-Length'])
             else:
-                size = len(_requests.get(name, headers=_WEB_HDR).content)
+                size = len(_requests.get(name, headers=_WEB_HDRS).content)
         else:
             raise Exception('Basename not found. Need an absolute url path')
     return size

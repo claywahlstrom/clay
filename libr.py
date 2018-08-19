@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
 from clay.lists import rmdup as _rmdup
-from clay.web import get_title as _get_title, WEB_HDR as _WEB_HDR
+from clay.web import get_title as _get_title, WEB_HDRS as _WEB_HDRS
 
 COM_SP = ', '
 # ! fix topics method for 'e.g.', 'et al. author' and other abbreviations, list in PER_EXCEPTIONS
@@ -242,9 +242,9 @@ def define(words):
     baseuri = 'http://dictionary.cambridge.org/dictionary/english/'
     inituri = baseuri + '?q=' + words.replace(' ','+')
     try:
-        f = _requests.get(inituri, headers=_WEB_HDR).content
+        f = _requests.get(inituri, headers=_WEB_HDRS).content
         uri = baseuri + words
-        f = _requests.get(uri, headers=_WEB_HDR).content
+        f = _requests.get(uri, headers=_WEB_HDRS).content
         soup = _BS(f, 'html.parser')
         print('definitions for', words.capitalize())
         for i in [g.text for g in soup.select('.entry-body__el .def')]:
