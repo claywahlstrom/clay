@@ -7,16 +7,42 @@ TODO (Pollen): allow multiple zipcodes for the given sources
                  - use zip codes to lookup the dictionary of url sources
 
 """
+
+import collections as _collections
 import datetime as _dt
 import inspect as _inspect
 import json as _json
 import math as _math
 import time as _time
+import sys as _sys
 
 from bs4 import BeautifulSoup as _BeautifulSoup
 import requests as _requests
 
-from clay.web import WEB_HDR as _WEB_HDR
+from clay.web import WEB_HDRS as _WEB_HDRS
+
+class FixedSizeQueue(object):
+    """Object that maintains length when items are added to it."""
+    def __init__(self, ls=[], max_size=10):
+        self.__ls = _collections.deque(ls[:], max_size)
+        self.max_size = max_size
+
+    def __len__(self):
+        return len(self.__ls)
+
+    def add(self, element):
+        """Adds the given element to the back of the queue"""
+        (self.__ls).append(element)
+
+    def get_average(self):
+        """Returns the average for this queue if the elements are summable"""
+        if len(self.__ls) == 0:
+            raise Exception('length must be >= 1')
+        return sum(self.__ls) / len(self.__ls)
+
+    def get_list(self):
+        """Returns this queue"""
+        return self.__ls
 
 def human_hex(dec):
     """Converts decimal values to human readable hex.
@@ -98,7 +124,7 @@ class Pollen(object):
     def __get_markup(self, uri):
         """Retrieves the markup with up to 4 max tries"""
         if self.source == 'weather text':
-            params = _WEB_HDR
+            params = _WEB_HDRS
         else:
             params = {}
         req = _requests.get(uri, params=params)
@@ -209,11 +235,75 @@ class Pollen(object):
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
 
+class SortableDict(_collections.OrderedDict):
+    """Sortable dict, child of collections.OrderedDict"""
+    def sort(self, reverse=False, debug=False):
+        """Sorts this dict"""
+        part = list(self.keys()) # extract keys
+        part.sort(reverse=reverse) # sorts keys
+        if debug:
+            print('sorted keys =', part)
+        copy = self.copy()
+        self.clear()
+        for key in part:
+            self[key] = copy[key]
+        
 class ViewModel(ObjectInitializer):
     """Class ViewModel can be used to set properties
        to be rendered in a web page"""
     pass
 
+class Watch(object):
+    """Holds a list of objects to display. Mainly used for tracking variables
+       in the debugging phase of a project."""
+    
+    def __init__(self, objs=[], module='__main__'):
+        assert type(objs) == list, 'Not a list of strings'
+
+        self.objs = objs
+        self.module = module
+
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__,)
+        return '%s(%r)' % (self.__class__.__name__, self.objs)
+
+    def add(self, var):
+        """Adds the given object to this Watch"""
+        if type(var) == list:
+            for v in var:
+                (self.objs).append(v)
+        elif type(var) == str:
+            (self.objs).append(var)
+        else:
+            raise ValueError()
+
+    def get_dict(self):
+        """Returns this Watch's dict"""
+        return _sys.modules[self.module].__dict__
+
+    def remove(self, var):
+        """Removes the given object from this Watch"""
+        if type(var) == list:
+            for v in var:
+                (self.objs).remove(v)
+        elif type(var) == str:
+            (self.objs).remove(var)
+
+    def show(self, useLocals=None):
+        """Prints out the key, value pairs for this Watch"""
+        groupdict = self.get_dict()
+        if useLocals:
+            groupdict.update(useLocals)
+        for ob in self.objs:
+            print(ob, '->', groupdict[ob])
+
+    def write_file(self, filename):
+        """Writes this Watch to the given file"""
+        string = 'stat_dict = {}'.format(self.get_dict())
+        with open(filename,'w') as fp:
+            fp.write(string)
+    
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
         super(ZipCodeNotFoundException, self).__init__(repr(self), *args, **kwargs)
@@ -235,6 +325,31 @@ class ZipCodeNotFoundException(Exception):
 
 if __name__ == '__main__':
 
+    import pprint
+    from random import randint
+
+    print('--------')
+    myav = FixedSizeQueue(max_size=5)
+    myav.add(0) # ensures while-loop entry
+    while myav.get_average() < 10:
+        myav.add(randint(0, 15))
+        print('list', myav.get_list())
+        print('  len', len(myav))
+        print('  av ', myav.get_average())
+    print('--------')
+
+    a = 'string'
+    b = int(4)
+    c = {}
+    s = Watch(['a', 'b', 'c'])
+    print('before add')
+    s.show()
+    d = float(542.2)
+    s.add('d')
+    print('after add')
+    s.show()
+    s.write_file('watch_test.txt')
+
     print('human hex for 2700 is', human_hex(2700))
     array = (1, 4, 16, 25)
     print('map args for', array, '->', map_args(map_args_test, array, z = 4))
@@ -249,7 +364,6 @@ if __name__ == '__main__':
     print('prints', obj.three, '-> expects 3')
     print('get attrs prints', len(obj.get_attributes()) == 3, '-> expects True')
 
-    import sys
     import traceback
     
     p = Pollen('weather text')
@@ -263,11 +377,26 @@ if __name__ == '__main__':
     try:
         p.set_source('wrong source')
     except Exception:
-        exc_type, exc_value, exc_tb = sys.exc_info()
+        exc_type, exc_value, exc_tb = _sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb)
     print()
     try:
         p.set_zipcode(97132)
     except Exception:
-        exc_type, exc_value, exc_tb = sys.exc_info()
+        exc_type, exc_value, exc_tb = _sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb)
+        
+    person = {'friends': [{'id': 0, 'name': 'Carla James'},
+                          {'id': 1, 'name': 'Patel Lewis'},
+                          {'id': 2, 'name': 'Lacey Brady'}],
+              'isActive': True, 'name': 'Celia Vaughan',
+              'gender': 'female', 'age': 36,
+              'greeting': 'Hello, Celia Vaughan! You have 7 unread messages.',
+              'longitude': -69.800663, 'balance': '$3,701.90'}
+
+    print('before sort')
+    print(person)
+    celia = SortableDict(person)
+    celia.sort()
+    print('after sort')
+    pprint.pprint(celia)
