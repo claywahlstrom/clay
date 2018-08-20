@@ -2,8 +2,8 @@
 """
 web module
 
-TODO: fix the web header to fix google.com rendering JS problem using
-          accept-char types
+TODO (web-header): fix the web header to fix google.com rendering JS problem using
+                       accept-char types
 
 """
 
@@ -188,7 +188,7 @@ class Database(object):
 def download(url, title=str(), full_title=False,
              destination='.', log_name='dl_log.txt', speed=False):
     """Downloads data from the given url and logs the relevant information
-    in the same directory"""
+       in this package's directory"""
 
     # http://stackoverflow.com/a/16696317/5645103
 
@@ -202,7 +202,7 @@ def download(url, title=str(), full_title=False,
 
     flag = False
     if log_name:
-        log_path = _os.path.join(destination, log_name)
+        log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
     current = _os.getcwd()
     _os.chdir(destination) # better file handling
     print('curdir', _os.getcwd())
@@ -256,11 +256,11 @@ def download(url, title=str(), full_title=False,
         print('\ntook {}s'.format(taken))
         if not(_isIdle() or _isUnix()):
             set_title('Completed {}'.format(title))
-        log_string = '{} on {} of {} bytes [{}]\n'.format(title, dt.datetime.today(), size, url)
+        log_string = '{} {} of {} bytes @ {}\n'.format('[' + url + ']', title, size, dt.datetime.today())
         print('Complete\n')
     finally:
         if not(fp.closed):
-            fpInitializes.close()
+            fp.close()
     if log_name:
         with open(log_path,'a+') as lp:
             lp.write(log_string)
