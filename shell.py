@@ -108,56 +108,82 @@ def isUnix():
        false otherwise"""
     return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
-class JavaCompiler(object):
-    """Class JavaCompiler can be used to compile Java(tm) source
-       files to bytecode"""
-    
-    SRC_EXT = '.java'
-    
-    def __init__(self, classes=None, directory=_os.curdir):
+class Compiler(object):
+
+    def __init__(self, compiler_name, src_ext, dst_ext, sources=None, directory=_os.curdir):
         """Initializes the compiler. Default for classes is all in the given
            directory or expects a list or tuple, otherwise and ValueError is thrown"""
-        if classes is not None and (type(classes) != list or type(classes) != tuple):
-            raise ValueError('`classes` must be an iterable')
-        self.classes = classes
+        if sources is not None and not(type(sources) in (list, tuple)):
+            raise ValueError('`sources` must be an iterable')
+        self.compiler_name = compiler_name
+        self.src_ext = src_ext
+        self.dst_ext = dst_ext
+        self.sources = sources
         self.directory = directory
-
+        self.flags = []
+        
     def set_path(self, directory):
         """Sets the path of this compiler to the given directory"""
         self.directory = directory
-        
-    def compile(self, flags='g Xlint:unchecked', exclude=None, recurse=True):
+
+    def add_flag(self, flag):
+        self.flags.append(flag)
+
+    def clear_flags(self):
+        self.flags.clear()
+
+    def compile(self, exclude=None, recurse=True):
         """Compiles the source files in this directory with the given flags
            (debugging info included by default) and excludes any files
            containing the given string `exclude`"""
         from clay.shell import lsgrep
-        if self.classes is None:
-            self.classes = (_os.path.splitext(x)[0] for x in lsgrep(JavaCompiler.SRC_EXT, self.directory, recurse=True))
+        sources = self.sources
+        if sources is None:
+            sources = [_os.path.splitext(x)[0] for x in lsgrep(self.src_ext, self.directory, recurse=True)]
         if exclude is not None and len(exclude) > 0:
-            self.classes = [x for x in self.classes if not(exclude in x)]
-        if len(flags) > 0:
-            opt_str = '-' + ' -'.join(flags.split())
+            sources = list(filter(lambda x: all(not(y in x) for y in exclude), sources))
+        if len(self.flags) > 0:
+            opt_str = '-' + ' -'.join(self.flags)
         else:
             opt_str = str()
         statechanged = False
-        for src in self.classes:
-            jname = src + JavaCompiler.SRC_EXT
-            jclass = src + '.class'
-            if not(_os.path.exists(jname)):
+        for src in sources:
+            src_name = src + self.src_ext
+            dst_name = src + self.dst_ext
+            if not(_os.path.exists(src_name)):
                 print(src, 'doesn\'t exist, skipping...')
                 continue
-            jstat = _os.stat(jname).st_mtime
-            try:
-                jcomp = _os.stat(jclass).st_mtime
-            except:
-                jcomp = 0 # file doesn't exist
+            src_mtime = _os.stat(src_name).st_mtime
+            if _os.path.exists(dst_name):
+                dst_mtime = _os.stat(dst_name).st_mtime
+            else:
+                dst_mtime = 0 # file doesn't exist
 
-            if jstat - jcomp >= 5: # if edited more than five seconds ago
-                print('Compiling:', src)
-                _os.system(f'javac {opt_str} {jname}')
+            if src_mtime - dst_mtime >= 5: # if edited more than five seconds ago
+                print(f'Compiling ({self.compiler_name}):', src)
+                cmd = self.compiler_name
+                if self.compiler_name == 'csc': # C# specific handling
+                    cmd += f' /out:{dst_name} '
+                cmd += f'{opt_str} {src_name}'
+                _os.system(cmd)
                 statechanged = True
         if not(statechanged):
             print(f'Nothing new to compile in "{self.directory}" when recurse={recurse}')
+
+class CSharpCompiler(Compiler):
+
+    def __init__(self, sources=None, directory=_os.curdir):
+        super(CSharpCompiler, self).__init__('csc', '.cs', '.exe', sources, directory)
+        self.add_flag('nologo')
+
+class JavaCompiler(Compiler):
+    """Class JavaCompiler can be used to compile Java(tm) source
+       files to bytecode"""
+    
+    def __init__(self, sources=None, directory=_os.curdir):
+        super(JavaCompiler, self).__init__('javac', '.java', '.class', sources, directory)
+        self.add_flag('g')
+        self.add_flag('Xlint:unchecked')
 
 def ls(directory=_os.curdir, shell=False):
     """Returns the listing of contents for the given `directory`.
@@ -335,3 +361,8 @@ def timeout(seconds, hidden=False):
         if hidden:
             command += ' >nul'
         _os.system(command)
+
+
+if __name__ == '__main__':
+    jc = JavaCompiler(directory=r'C:\Users\Clayton\Google Drive\UW Remote Work\Java Remote\gravity')
+    jc.compile(exclude=['-', 'unused'])
