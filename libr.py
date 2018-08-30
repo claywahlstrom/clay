@@ -2,7 +2,6 @@
 """
 libr: tools for scholars and librarians
 
-TODO (Citation): break up build method into subroutines
 
 """
 
@@ -173,7 +172,7 @@ class Citation(object):
     def __init__(self, link):
         self.link = link
         self.build_dict()
-        self.build_string()
+        self.to_string()
 
     def build_dict(self):
         """Sets up the variables"""
@@ -214,7 +213,7 @@ class Citation(object):
         self.req = req
         self.page = page
 
-    def build_string(self):
+    def to_string(self):
         """Builds the citation string and stores it in the string member"""
         string = str()
         if 'author' in self.data.keys():
@@ -229,13 +228,7 @@ class Citation(object):
         if 'publisher' in self.data.keys():
             string += self.data['publisher'] + COM_SP
         string += COM_SP.join([self.data['date_retr'], self.data['url']]) + PER_SP[0] # using data
-        self.string = string
-
-    def get(self):
-        return self.string
-
-    def show(self):
-        print(self.get())
+        return string
 
 def define(words):
     """Prints possible definitions for a word by using Cambridge's dictionary"""
@@ -305,7 +298,7 @@ if __name__ == '__main__':
 
     link = 'http://www.datascribble.com/deep-learning/deep-learning-tensorflow-series-part-1-neural-network/'
     cit = Citation(link)
-    cit.show()
+    print(cit.to_string())
 
     define('vector quantity')
 
