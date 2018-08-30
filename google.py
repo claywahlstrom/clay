@@ -1,32 +1,45 @@
 
 """
-Opens Google(TM) apps with Python
+google: open common Google(TM) apps using Python
 
 """
 
 DEF_BROWSER = 'firefox'
 
-def g_app(name, browser, url):
+def launch_gs_app(name, browser, url):
     from subprocess import call
-    print('Opensing {} in {}'.format(name, browser))
+    print(f'Opening {name} in {browser}...', end=' ')
     call('start {} "{}"'.format(browser, url), shell=True)
+    print('Done')
 
-def calendar(browser=DEF_BROWSER):
-    g_app('calendar', browser, 'https://calendar.google.com')
+class GoogleSuite(object):
+
+    SEARCH_URL = 'https://www.google.com/?gws_rd=ssl#newwindow=1&{}'
     
-def drive(browser=DEF_BROWSER):
-    g_app('drive', browser, 'https://drive.google.com')
+    def __init__(self, browser=DEF_BROWSER):
+        self.browser = browser
 
-def mail(browser=DEF_BROWSER):
-    g_app('mail', browser, 'https://mail.google.com')
+    def calendar(self):
+        launch_gs_app('calendar', self.browser, 'https://calendar.google.com')
+        
+    def drive(self):
+        launch_gs_app('drive', self.browser, 'https://drive.google.com')
 
-def maps(browser=DEF_BROWSER):
-    g_app('maps', browser, 'https://www.google.com/maps')
+    def mail(self):
+        launch_gs_app('mail', self.browser, 'https://mail.google.com')
 
-def translate(browser='chrome'):
-    g_app('translate', browser, 'https://translate.google.com/')
+    def maps(self):
+        launch_gs_app('maps', self.browser, 'https://www.google.com/maps')
 
-def search(query, browser=DEF_BROWSER):
-    from urllib.parse import urlencode
-    g_app('search', browser, 'https://www.google.com/?gws_rd=ssl#newwindow=1&{}'.format(urlencode([('q', query)])))
+    def translate(self):
+        launch_gs_app('translate', self.browser, 'https://translate.google.com/')
 
+    def search(self, query):
+        from urllib.parse import urlencode
+        launch_gs_app('search', self.browser, GoogleSuite.SEARCH_URL.format(urlencode([('q', query)])))
+
+if __name__ == '__main__':
+    gs = GoogleSuite('chrome')
+    gs.mail()
+    gs.drive()
+    gs.search('test search')
