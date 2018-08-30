@@ -9,7 +9,7 @@ GetWindowTextW = _ctypes.windll.user32.GetWindowTextW
 GetWindowTextLengthW = _ctypes.windll.user32.GetWindowTextLengthW
 IsWindowVisible = _ctypes.windll.user32.IsWindowVisible
  
-def foreach_window(hwnd, lParam):
+def _foreach_window(hwnd, lParam):
     """Callback func for the EnumWindowsProc"""
     if IsWindowVisible(hwnd):
         length = GetWindowTextLengthW(hwnd)
@@ -22,18 +22,18 @@ def get_wintitles():
     """Returns a list of active window titles"""
     global titles
     titles = []
-    EnumWindows(EnumWindowsProc(foreach_window), 0)
+    EnumWindows(EnumWindowsProc(_foreach_window), 0)
     while str() in titles: # remove blank entries
         titles.remove(str())
     return titles
 
 class WindowHandler(object):
-    """Class WindowHandler can be used to find Window titles by name"""
+    """Class WindowHandler can be used to find Window titles by their name"""
     
-    def __init__(self, name, regex=False):
-        """Initializes a new WindowHandler with the given name and whether
-           the name is regex or not"""
-        self.name = name
+    def __init__(self, query, regex=False):
+        """Initializes a new WindowHandler with the given query and whether
+           the query is regex or not"""
+        self.query = query
         self.regex = regex
 
     def getfirst(self):
@@ -49,22 +49,22 @@ class WindowHandler(object):
         return self.getnames()[index]
 
     def getnames(self):
-        """Returns a list of all of the window handle names"""   
+        """Returns a list of all of the window handle names"""  
         titles = get_wintitles()
         if self.regex:
-            return tuple(name for title in titles for name in _re.findall(self.name, title))
-        return tuple(title for title in titles if self.name in title)
+            return tuple(query for title in titles for query in _re.findall(self.query, title))
+        return tuple(title for title in titles if self.query in title)
 
     def isactive(self):
-        """Returns True if this window handle name is active, False otherwise"""
+        """Returns True if this window handle query is active, False otherwise"""
         return bool(self.getnames())
 
     def wait(self):
-        """Waits until this window handle name is active, retries every 1.0 second interval"""
+        """Waits until a window with this query is active, retries every 1.0 second interval"""
         if not self.isactive():
             print('Waiting for a new window')
             while not self.isactive():
                 _time.sleep(1.0)
 
 if __name__ == '__main__':
-    print(WindowHandle('.*Python.*', regex=True).getnames())
+    print(WindowHandler('.*Python.*', regex=True).getnames())
