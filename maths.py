@@ -13,12 +13,12 @@ from clay.shell import isUnix as _isUnix
 if _isUnix():
     LIMPATH = r'/home/clayton/Desktop/get_liminf.log'
 else:
-    LIMPATH = r'C:\Python36\Lib\site-packages\clay\get_liminf.log'
+    LIMPATH = r'C:\Python37\Lib\site-packages\clay\get_liminf.log'
 ### finally clear the file
 ##with open(LIMPATH, 'w') as fp:
 ##    pass
 
-average = statistics.mean # def
+average = statistics.mean # alias
 
 class Circle(object):
     """A class for managing basic circular functions"""
@@ -233,7 +233,7 @@ def get_series_sum(f, a=1, b=None, log=True):
 # natural log
 ln = math.log #def
 
-median = statistics.median # def
+median = statistics.median # alias
 
 def newtons_method(f, x):
     """Given a function and float guess, returns the roots using
