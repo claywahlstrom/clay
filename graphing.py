@@ -9,7 +9,7 @@ tables: Make basic tables and plots
 
 import sys as _sys
 
-from clay.collections import SortableDict as _SortableDict
+from clay.util import SortableDict as _SortableDict
 
 SCREEN_WD = 80
 
@@ -115,14 +115,17 @@ class Histogram(object):
             # otherwise, adjust width for better representation of floats
             width = self.max_width
             using = 'floats'
+        if width + longest_key_len + 1 > SCREEN_WD:
+            using = 'floats'
+        width = max(width, SCREEN_WD) - longest_key_len - 1
         if with_count:
             max_count_len = max(map(len, map(str, list(self.sd.values()))))
-            width -= 3 - max_count_len
+            width -= 3 + max_count_len
         if longest_key_len > width:
             print('Using shortened keys')
             shorten_keys = True
             longest_key_len = Histogram.SHORT_LENGTH
-        width = min(width, SCREEN_WD) - longest_key_len - 1
+
         max_val = max(list(self.sd.values()))
 
         print('  Histogram for', self.title)

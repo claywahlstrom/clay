@@ -11,9 +11,9 @@ import datetime
 import math
 import pprint
 
-from clay.collections import SortableDict
 from clay.graphing import Histogram
 from clay.maths import average, median
+from clay.util import SortableDict
 
 DAYS_OF_THE_WEEK = ('Monday',
                     'Tuesday',
@@ -41,7 +41,7 @@ class Attendance(object):
        anything to work."""
 
     PT_TYPES = ('week', 'month')
-    STATES = {'WA': {'hours': 8, 'length': 0.5},
+    STATES = {'WA': {'hours': 6, 'length': 0.5},
               'OR': {'hours': 5, 'length': 1.0}}
 
     def __init__(self, take_home_ratio, perhour, state, offset=0):
