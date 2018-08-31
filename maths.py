@@ -343,7 +343,7 @@ if __name__ == '__main__':
     print(get_series_sum(test_alternating, log=True))
 
     import clay.graphing as g
-    g.graph(test_alternating, 0, 30)
+    g.tabulatef(test_alternating, 0, 30)
 
     print('expecting 15')
     print(get_series_sum(test_convergent, a=0))

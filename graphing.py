@@ -7,6 +7,7 @@ tables: Make basic tables and plots
 
 """
 
+from collections import OrderedDict as _OrderedDict
 import sys as _sys
 
 from clay.util import SortableDict as _SortableDict
@@ -23,8 +24,8 @@ def tabulate(dictionary, name=str()):
     for i in dictionary:
         print(str(i) + ' ' * (largestlen - len(i)), ':', dictionary[i])
 
-def graph(func, start=-5, end=5, step=1, spacing=9,
-          precision=10, roundto=14, file=_sys.stdout):
+def tabulatef(func, start=-5, end=5, step=1, spacing=9,
+              precision=10, roundto=14, file=_sys.stdout):
     """Prints a table of values from the given a function,
        bounds, step, and output location"""
     print(str(func), file=file)
@@ -52,35 +53,17 @@ def test_function(x):
     """Function for testing `table`"""
     return x ** (4 / 3) / float(x)
 
-class Histogram(object):
-    """Counts objects into groups for histogram analysis.
-
-    Consumes columns as a range of values, required
-    Consumes str or bytes as text, optional
-
-    Initial values for each group is zero if no text is supplied.
-
-    Always safe to have max_width be one less than the actual screen width.
-
-    """
+class Graph(object):
 
     SHORT_LENGTH = 30
+    
+    def __init__(self, data, title=None, max_width=SCREEN_WD, sort=True):
+        if type(data) not in (_OrderedDict, dict):
+            raise ValueError('data needs to be in key-value pairs')
 
-    def __init__(self, columns=None, iterable=None,
-                 title=None, max_width=SCREEN_WD, sort=True):
-        if not columns is None:
-            assert type(columns) == tuple or \
-                   type(columns) == list, 'columns need to be tuple'
-        if type(iterable) == bytes:
-            iterable = iterable.decode('utf8', errors='ignore')
         sd = _SortableDict()
-        if columns and not iterable:
-            for col in columns:
-                sd[col] = 0
-        else:
-            columns = iterable
-            for col in columns:
-                sd[col] = iterable.count(col)
+        for indep in data:
+            sd[indep] = data[indep]
         if sort:
             sd.sort()
 
@@ -89,11 +72,11 @@ class Histogram(object):
             for i in list(sd.keys())[:3]:
                 title += "'{}', ".format(i)
             title += "..., '{}']".format(list(sd.keys())[-1])
-        self.title = title
-        self.cols = columns
-        self.sd = sd
-        self.iterable = iterable
+
+        self.data = data
         self.max_width = max_width
+        self.sd = sd
+        self.title = title
 
     def __repr__(self):
         if not self:
@@ -124,19 +107,19 @@ class Histogram(object):
         if longest_key_len > width:
             print('Using shortened keys')
             shorten_keys = True
-            longest_key_len = Histogram.SHORT_LENGTH
+            longest_key_len = Graph.SHORT_LENGTH
 
         max_val = max(list(self.sd.values()))
 
-        print('  Histogram for', self.title)
+        print('      Graph for', self.title)
         print('longest key len', longest_key_len)
         print('    graph width', width)
         print('      max value', max_val)
         print('          using', using)
         print('     with count', with_count)
-        shorten_wings = 5 * ((Histogram.SHORT_LENGTH - 3) // 10)
+        shorten_wings = 5 * ((Graph.SHORT_LENGTH - 3) // 10)
         for i, (k, v) in enumerate(self.sd.items()):
-            if shorten_keys and len(k) > Histogram.SHORT_LENGTH:
+            if shorten_keys and len(k) > Graph.SHORT_LENGTH:
                 k = k[:shorten_wings] + '...' + k[-shorten_wings:]
             print('{:>{}}'.format(k, longest_key_len), end=' ')
             if with_count:
@@ -161,9 +144,39 @@ class Histogram(object):
         self.sd.clear()
         for i,j in enumerate(std):
             self.sd[j[0]] = j[-1]
+    
+class Histogram(Graph):
+    """Counts objects into groups for histogram analysis.
+
+    Consumes columns as a range of values, required
+    Consumes str or bytes as text, optional
+
+    Initial values for each group is zero if no text is supplied.
+
+    Always safe to have max_width be one less than the actual screen width.
+
+    """
+
+    def __init__(self, columns=None, data=None, title=None,
+                 max_width=SCREEN_WD, sort=True):
+        if columns is not None and type(columns) not in (tuple, list):
+            raise ValueError('columns needs to be tuple')
+
+        if type(data) == bytes:
+            data = data.decode('utf8', errors='ignore')
+        sd = _SortableDict()
+        if columns and not data:
+            for col in columns:
+                sd[col] = 0
+        else:
+            columns = data
+            for col in columns:
+                sd[col] = data.count(col)
+        
+        super(Histogram, self).__init__(sd, title=title, max_width=max_width, sort=sort)
 
 if __name__ == '__main__':
-    s = Histogram(('bc', 'sac', 'aaa'), 'abbcssaaaaaaaaaaacccssacbbcaddsaacc')
+    s = Histogram(columns=('bc', 'sac', 'aaa'), data='abbcssaaaaaaaaaaacccssacbbcaddsaacc')
     s.build()
 
-    graph(test_function, -2, 10, 1.012791487897, roundto=5)
+    tabulatef(test_function, -2, 10, 1.012791487897, roundto=5)
