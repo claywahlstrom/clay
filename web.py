@@ -306,7 +306,7 @@ class CRUDRepository(object):
             _json.dump(self.db, fp)
         print('database written')
 
-def download(url, title=str(), full_title=False,
+def download(url, title='', full_title=False,
              destination='.', log_name='dl_log.txt', speed=False):
     """Downloads data from the given url and logs the relevant information
        in this package's directory"""
@@ -533,7 +533,7 @@ def get_html(uri, query=None, headers=True):
     text = fread.text.encode('utf-8')
     return text
 
-def get_mp3(link, title=str()):
+def get_mp3(link, title=''):
     """Downloads the given link from mp3juices.cc"""
     from clay.web import download
     if not(title):

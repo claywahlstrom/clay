@@ -5,6 +5,7 @@ shell: commands that can be used to manage your system or
 
 """
 
+import inspect as _inspect
 import os as _os
 import string as _string
 import subprocess as _subprocess
@@ -147,7 +148,7 @@ class Compiler(object):
         if len(self.flags) > 0:
             opt_str = '-' + ' -'.join(self.flags)
         else:
-            opt_str = str()
+            opt_str = ''
         statechanged = False
         for src in sources:
             src_name = src + self.src_ext

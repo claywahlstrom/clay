@@ -23,8 +23,8 @@ def get_wintitles():
     global titles
     titles = []
     EnumWindows(EnumWindowsProc(_foreach_window), 0)
-    while str() in titles: # remove blank entries
-        titles.remove(str())
+    while '' in titles: # remove blank entries
+        titles.remove('')
     return titles
 
 class WindowHandler(object):

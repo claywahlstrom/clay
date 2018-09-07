@@ -14,10 +14,10 @@ from clay.util import SortableDict as _SortableDict
 
 SCREEN_WD = 80
 
-def tabulate(dictionary, name=str()):
+def tabulate(dictionary, name=''):
     """Prints a basic table from the given dictionary called `name`"""
     assert type(dictionary) != list
-    if name != str():
+    if len(name) > 0:
         print(name.upper())
         print('-' * 30)
     largestlen = max(map(len, list(dictionary.keys())))

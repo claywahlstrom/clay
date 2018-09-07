@@ -215,7 +215,7 @@ class Citation(object):
 
     def to_string(self):
         """Builds the citation string and stores it in the string member"""
-        string = str()
+        string = ''
         if 'author' in self.data.keys():
             au = self.data['author']
             if au.count(' '): # multiple words

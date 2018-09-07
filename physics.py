@@ -115,7 +115,7 @@ def get_prefix(scalar, units='m'):
         negative = True
         amount *= -1
     position = PREFIXES.index('')
-    pre = str()
+    pre = ''
 
     while amount > 1000:
         position -= 1

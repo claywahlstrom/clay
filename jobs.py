@@ -195,7 +195,7 @@ class Attendance(object):
                 dateday = offsetby(date.weekday(), self.offset)
                 print(row['date'], file=fp) # print the date
                 print('    prev {} : date {}'.format(prevday, dateday), file=fp)
-                print(' ' * 4, end=str(), file=fp)
+                print(' ' * 4, end='', file=fp)
                 if prevday < dateday and len(sorted_weeks) > 0:
                     print('date is bigger than last. using existing week', file=fp)
                 else:
@@ -203,7 +203,7 @@ class Attendance(object):
                     sorted_weeks[str(len(sorted_weeks))] = []
                 prev = date
                 sorted_weeks[str(len(sorted_weeks) - 1)].append(row['hours'])
-                print(' ' * 4, end=str(), file=fp)
+                print(' ' * 4, end='', file=fp)
                 thisweek = sorted_weeks[str(len(sorted_weeks) - 1)]
                 print(thisweek, '-> average =', average(thisweek), file=fp)
             fp.close()

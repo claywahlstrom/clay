@@ -98,7 +98,7 @@ class Song(object):
 
        Receives optional file name, selection, and subdivision
        Defaults:
-           file     :: type str()
+           file     :: type str
            selected :: int(0)
            sub      :: float(0.25)
            tempo    :: int(60)
@@ -109,7 +109,7 @@ class Song(object):
            deleting notes
     """
 
-    def __init__(self, file=str(), selected=0, sub=0.25, tempo=60):
+    def __init__(self, file='', selected=0, sub=0.25, tempo=60):
         """Initializes a new Song object from the given file name"""
         self.selected = selected
         self.sub = round(sub, 4) # 64th note length limit

@@ -25,7 +25,7 @@ STR_LIM = 75 # path printing termination number
 
 class Search(object):
     """A class for searching a file system"""
-    def __init__(self, method='name', folder='.', string=str(), ext=None):
+    def __init__(self, method='name', folder='.', string='', ext=None):
         """Searches files by method, folder, regex string, ext"""
         if ext is not None and type(ext) != str:
             raise ValueError('extension must be a string')

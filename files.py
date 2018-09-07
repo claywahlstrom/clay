@@ -170,7 +170,7 @@ def _save_helper(SP, x):
        valid name for a file"""
     return '{}-{:03d}{}'.format(SP[0], x, SP[-1])
 
-def replace_text(name, old, new, recurse=False, ext=str()):
+def replace_text(name, old, new, recurse=False, ext=''):
     """Replaces `name` with binary string params `old` and `new`"""
     from clay.files import _rt_helper
     if recurse:
