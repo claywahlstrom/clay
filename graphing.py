@@ -56,14 +56,18 @@ def test_function(x):
 class Graph(object):
 
     SHORT_LENGTH = 30
-    
-    def __init__(self, data, title=None, max_width=SCREEN_WD, sort=True):
-        if type(data) not in (_OrderedDict, dict):
-            raise ValueError('data needs to be in key-value pairs')
 
-        sd = _SortableDict()
-        for indep in data:
-            sd[indep] = data[indep]
+    def __init__(self, data, title=None, max_width=SCREEN_WD, sort=True):
+        if type(data) == _SortableDict:
+            sd = data
+        else:
+            if type(data) not in (_OrderedDict, dict):
+                raise ValueError('data needs to be in key-value pairs')
+
+            sd = _SortableDict()
+            for indep in data:
+                sd[indep] = data[indep]
+
         if sort:
             sd.sort()
 
@@ -84,7 +88,7 @@ class Graph(object):
         return '%s(%r)' % (self.__class__.__name__, list(self.sd.items()))
 
     def build(self, limit=0, shorten_keys=False, with_count=False):
-        if type(self.cols[0]) == str:
+        if type(list(self.sd.keys())[0]) == str:
             longest_key_len = max(map(len, map(str, list(self.sd.keys()))))
         else: # for ints and floats
             # longest str repr of a number
@@ -144,16 +148,16 @@ class Graph(object):
         self.sd.clear()
         for i,j in enumerate(std):
             self.sd[j[0]] = j[-1]
-    
+
 class Histogram(Graph):
     """Counts objects into groups for histogram analysis.
 
-    Consumes columns as a range of values, required
-    Consumes str or bytes as text, optional
+       Consumes columns as a range of values, required
+       Consumes str or bytes as text, optional
 
-    Initial values for each group is zero if no text is supplied.
+       Initial values for each group is zero if no text is supplied.
 
-    Always safe to have max_width be one less than the actual screen width.
+       Always safe to have max_width be one less than the actual screen width.
 
     """
 
@@ -172,7 +176,7 @@ class Histogram(Graph):
             columns = data
             for col in columns:
                 sd[col] = data.count(col)
-        
+
         super(Histogram, self).__init__(sd, title=title, max_width=max_width, sort=sort)
 
 if __name__ == '__main__':
