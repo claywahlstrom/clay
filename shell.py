@@ -13,11 +13,13 @@ import time as _time
 
 from clay import _isUnix
 
-FILTERED_ARGS = list(filter(lambda name: not(name in ('python', 'python.exe')), _sys.argv))
-
 FLASK_APP = 'app.py' # a common name for Flask web apps
 
 HOME_DIR = _os.environ['HOME'] if _isUnix() else _os.environ['USERPROFILE']
+
+RUNTIME_ARGS = _sys.argv
+if len(RUNTIME_ARGS[0]) == 0:
+    RUNTIME_ARGS[0] = 'python.exe'
 
 TIMEOUT_CMD = 'sleep ' if _isUnix() else 'timeout '
 
@@ -75,15 +77,6 @@ def file_manager(directory=_os.curdir):
         fm_name = 'explorer'
     _os.system('{} "{}"'.format(fm_name, directory))
 
-def getDocsFolder():
-    """Returns the location of the documents folder for this computer.
-       Assumes a similar filesystem naming convention to work."""
-    from clay.shell import get_disk_drives as get_disk_drives
-    if 'E:\\' in get_disk_drives():
-        return r'E:\Docs'
-    else:
-        return _os.path.join(_os.environ['HOME'], 'Documents')
-
 def get_disk_drives():
     """Returns a list of drive root paths that are available
        on this machine. Ex. C:\\"""
@@ -92,6 +85,15 @@ def get_disk_drives():
         if _os.path.exists(letter + ':\\'):
             drives.append(letter + ':\\')
     return drives
+
+def get_docs_folder():
+    """Returns the location of the documents folder for this computer.
+       Assumes a similar filesystem naming convention to work."""
+    from clay.shell import get_disk_drives
+    if 'E:\\' in get_disk_drives():
+        return r'E:\Docs'
+    else:
+        return _os.path.join(_os.environ['HOME'], 'Documents')
 
 def isIdle():
     """Returns true if the script is running within IDLE,
@@ -322,36 +324,38 @@ def rm_from_trash(target):
         key = 'win32'
     _os.system('{} "{}"'.format(rms[key][i], target))
 
-def set_title(title=_os.path.basename(FILTERED_ARGS[0]), add=str(),
-              args=False, flask_default_name=True):
-    """Sets the title of the current shell instance. Default is the modules name
-       You can use your own additional text or use the command-line arguments"""
-    name = title
-    if name == FLASK_APP:
-        add = _os.path.split(_os.path.dirname(_os.path.abspath(FILTERED_ARGS[0])))[-1]
-    if args and len(FILTERED_ARGS) > 1:
-        name += ' ' + ' '.join(FILTERED_ARGS[1:])
-    if add:
-        name += ' - {}'.format(add)
-    name = name.replace('<', '^<').replace('>', '^>')
+def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
+              flask_default_name=True):
+    """Sets the title of the current shell instance. Default is
+       the modules name. You can use your own additional text or
+       use the command-line arguments"""
+    if title == FLASK_APP:
+        add = _os.path.split(_os.path.dirname(_os.path.abspath(RUNTIME_ARGS[0])))[-1]
+    if args:
+        if len(RUNTIME_ARGS) > 1:
+            name += ' ' + ' '.join(RUNTIME_ARGS[1:])
+    if len(add) > 0:
+        title += ' - '  + add
+    title = title.replace('<', '^<').replace('>', '^>')
     if isIdle() or isUnix():
-        print('set title -> {}'.format(name))
+        print('set title -> ' + title)
     else:
-        _os.system('title ' + name)
+        _os.system('title ' + title)
 
 def start(program):
     """Starts a given program"""
     try:
-        command = str()
+        command = ''
         if not(isUnix()):
             command += 'start '
         _os.system(command + program)
     except Exception as e:
-        print("Oops, couldn't start:", e)
+        print('Oops, could not start:', e)
 
 def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
-    assert seconds > -1 and type(seconds) == int
+    if seconds < 0 or type(seconds) != int:
+        raise ValueError('seconds must be >= and type int')
     if isIdle() or seconds > 99999:
         if not(hidden):
             print('Waiting for', seconds, 'seconds...')

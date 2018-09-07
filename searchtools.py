@@ -13,7 +13,7 @@ from re import findall
 import sys as _sys
 import time as _time
 
-from clay.shell import getDocsFolder as _getDocsFolder, isIdle as _isIdle
+from clay.shell import get_docs_folder as _get_docs_folder, isIdle as _isIdle
 
 
 EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
@@ -145,5 +145,5 @@ def print_containing_files(string, directory, ext=None):
 
 if __name__ == '__main__':
     import pprint
-    s = Search('cont', _os.path.join(_getDocsFolder(), r'Clay\Notes'), 'the')
+    s = Search('cont', _os.path.join(_get_docs_folder(), r'Clay\Notes'), 'the')
     pprint.pprint(executable_search('chrome'))
