@@ -65,12 +65,80 @@ class FixedSizeQueue(object):
         """Returns this queue"""
         return self.__ls
 
-def get_first_or_default(queryable, value_to_check, prop=None, default=None):
-    for each in queryable:
-        if prop is None and each == value_to_check or \
-           hasattr(each, prop) and getattr(each, prop) == value_to_check:
-            return each
-    return default
+class Linq(object):
+
+    """Class Linq can be used to query and filter data like
+       Microsoft's (c) LINQ feature used in C#"""
+
+    def __init__(self):
+        """Initializes this Linq object"""
+        self.__queryable = None
+        self.__members = None
+        self.__select_called = False
+
+    def __get_query_source(self):
+        if self.__members is None:
+            query_source = self.__queryable
+        else:
+            query_source = self.__members
+        return query_source
+
+    def first_or_default(self, default=None):
+        """Returns the first item in this query or None if empty"""
+        if self.__queryable is None or self.__members is None:
+            raise RuntimeError('queryable or members cannot be none')
+        if len(self.__members) > 0:
+            return self.__members[0]
+        return default
+
+    def query(self, queryable):
+        """Sets the query source using the given queryable"""
+        self.__init__() # reset vars
+        self.__queryable = queryable
+        return self
+
+    def select(self, props):
+        """Returns a list of properties selected from each member.
+           If used, it must be the last step as it returns items
+           and not a Linq object."""
+        if type(props) == str:
+            props = [props]
+        if not(type(props) in (list, tuple)):
+            raise ValueError('properties must be a list or tuple')
+        filtered = []
+        query_source = self.__get_query_source()            
+        for each in query_source:
+            selectable = []
+            for prop in props:
+                if type(each) == dict and prop in each:
+                    selectable.append(each[prop])
+                elif hasattr(each, prop):
+                    selectable.append(getattr(each, prop))
+                else:
+                    print(each, 'does not have property', prop)
+                    selectable.append(None)
+            if len(props) == 1:
+                selectable = selectable[0]
+            filtered.append(selectable)
+        self.__members = filtered
+        self.__select_called = True
+        return self
+
+    def to_list(self):
+        """Returns this query as a list"""
+        return self.__members
+
+    def where(self, lambda_expression):
+        """Filters elements where the lambda expression evaluates to True"""
+        if self.__select_called:
+            raise RuntimeWarning('members cannot be overwritten after select called')
+        members = []
+        query_source = self.__get_query_source()
+        for each in query_source:
+            if lambda_expression(each):
+                members.append(each)
+        self.__members = members
+        return self
 
 def human_hex(dec):
     """Converts decimal values to human readable hex.
