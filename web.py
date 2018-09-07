@@ -24,7 +24,7 @@ import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
 from clay.shell import \
-    getDocsFolder as _getDocsFolder, \
+    get_docs_folder as _get_docs_folder, \
     isIdle as _isIdle, \
     isUnix as _isUnix
 
@@ -109,7 +109,7 @@ class CachedFile(object):
 
         if not('http' in uri):
             raise ValueError('invalid uri')
-        
+
         from clay.web import get_basename as _get_basename
 
         if title is None:
@@ -136,7 +136,7 @@ class CachedFile(object):
         self.reloaded = True
 
 class CourseCatalogUW(object):
-    
+
     """This class can be used to lookup courses by their ID
        on the University of Washington's Course Catalog.
 
@@ -144,9 +144,9 @@ class CourseCatalogUW(object):
            CEE for a list of all classes in the department
            AES 1-25 or PHYS 12 or PHIL 1 for a narrowed listing
            MATH 126 for a description of the course
-       
+
        Casing is ignored
-       
+
     """
 
     CATALOG_URI = 'https://www.washington.edu/students/crscat/'
@@ -194,7 +194,7 @@ class CourseCatalogUW(object):
                         while len(str(levels[i])) < 3:
                             levels[i] *= 10
                     temp = []
-                    for i, number in enumerate(numbers): # previous: any(str(number).startswith(str(level)) for level in levels) or 
+                    for i, number in enumerate(numbers): # previous: any(str(number).startswith(str(level)) for level in levels) or
                         if len(levels) > 1 and (number >= levels[0] and number <= levels[-1] or \
                             (levels[0] > levels[-1] and number <= levels[0] and number >= levels[-1])) or \
                             str(number).startswith(str(parts[1])): # no range specifed clause
@@ -251,18 +251,18 @@ class CRUDRepository(object):
     def __ensure_connected(self):
         if not(self.__has_read):
             raise RuntimeError('database has not been read')
-        
+
     def __ensure_exists(self, pk):
         if not(self.db is None or pk in self.db):
             self.db[pk] = self.get_default_model().to_dict()
-    
+
     def create_if_not_exists(self, pk):
         self.__ensure_connected()
         self.__ensure_exists(pk)
 
     def get_default_model(self):
         return self.default_model
-        
+
     def read(self):
         if not(_os.path.exists(self.file)):
             self.db = {} # dict
@@ -305,7 +305,7 @@ class CRUDRepository(object):
         with open(self.file, 'w') as fp:
             _json.dump(self.db, fp)
         print('database written')
-        
+
 def download(url, title=str(), full_title=False,
              destination='.', log_name='dl_log.txt', speed=False):
     """Downloads data from the given url and logs the relevant information
@@ -338,6 +338,8 @@ def download(url, title=str(), full_title=False,
         print('size', end=' ')
         if not('.' in title) or 'htm' in title or 'php' in title:
             response = _requests.get(url, params=query, headers=WEB_HDRS)
+            if response.status_code != 200:
+                raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
             before = time() # start timer
             size = len(response.text)
             print(size, 'bytes')
@@ -345,6 +347,8 @@ def download(url, title=str(), full_title=False,
             fp.close()
         else:
             response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
+            if response.status_code != 200:
+                raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
             before = time() # start timer
             size = int(response.headers.get('content-length'))
             chunk = size // 100
@@ -369,7 +373,7 @@ def download(url, title=str(), full_title=False,
             finally:
                 fp.close()
     except Exception as e:
-        print('\n'+type(e).__name__, e.args)
+        print('\n' + str(e))
         log_string = url+' failed\n'
         flag = True
     else:
@@ -383,7 +387,7 @@ def download(url, title=str(), full_title=False,
         if not(fp.closed):
             fp.close()
     if log_name:
-        with open(log_path,'a+') as lp:
+        with open(log_path, 'a+') as lp:
             lp.write(log_string)
     else:
         print(log_string.strip())
@@ -392,10 +396,11 @@ def download(url, title=str(), full_title=False,
         return size / taken
 
 class Elements(object):
-    """Class Elements can find and store elements from a given web page or markup"""
+    """Class Elements can be used to find and store elements
+       from a given web page or markup"""
 
     def __init__(self, page=None, element=None, method='find_all', use_local=False):
-        """Initalizes a new Elements object"""
+        """Initalizes this Elements object"""
         if page is None and element is None:
             page = TEST_LINK
             element = 'link'
@@ -417,7 +422,7 @@ class Elements(object):
         self.element = element
         self.method = method
 
-    def find_elements(self):
+    def find(self):
         self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
         if not(self.__found):
             print('No elements found')
@@ -429,7 +434,7 @@ class Elements(object):
         self.element = element
 
     def show(self, attribute='text', file=_sys.stdout):
-        print('Elements for', self.page + ':', file=file)
+        print('Elements:', file=file)
         for i in self.get_found():
             try:
                 if attribute == 'text':
@@ -455,7 +460,12 @@ class Elements(object):
             fp.write(self.src)
 
 def find_anchors(location, query={}, internal=True, php=False):
-    """Extracts links from a location. Accepts filename or url"""
+    """Returns anchor references from a location (file name or uri)
+           query    = query params sent in the request
+           internal = uses internal site referenes if True
+           php      = determines whether references with query params are included
+    """
+
     if 'http' in location:
         fread = _requests.get(location, params=query).content#headers=WEB_HDRS, params=query).content
     else:
@@ -579,7 +589,7 @@ class Pollen(object):
         self.set_zipcode(zipcode)
         self.__has_built = False
         self.build()
-        
+
     def __repr__(self):
         """Returns the string representation of this Pollen instance"""
         return f'Pollen(source={{{self.source}}}, zipcode={self.zipcode}, print_sources={self.print_sources})'
@@ -686,7 +696,7 @@ class Pollen(object):
     def get_tomorrow(self):
         """Returns the type of pollen forecasted for tomorrow"""
         return self.get_day(1) # checks for valid db in get_day
-        
+
     def print_db(self):
         """Prints all of the db information in a table format"""
         self.__check_built()
@@ -733,30 +743,30 @@ class ZipCodeNotFoundException(Exception):
         return string
 
 if __name__ == '__main__':
-    print(download(LINKS['2MB'], destination=_getDocsFolder(), speed=True), 'bytes per second')
+    print(download(LINKS['2MB'], destination=_get_docs_folder(), speed=True), 'bytes per second')
     print(get_basename('https://www.minecraft.net/change-language?next=/en/', full=False))
     print(get_basename(LINKS['1MB'], full=True))
     print(get_title(TEST_LINK))
     print(get_basename(TEST_LINK))
     print('title from markup:', get_title(TEST_LINK))
     we1 = Elements('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
-    we1.find_elements()
+    we1.find()
     we1.show()
     we2 = Elements()
-    we2.find_elements()
+    we2.find()
     we2.show(attribute='href')
     print('ANCHORS')
     print(find_anchors(TEST_LINK, internal=False))
-    
+
     import traceback
-    
+
     p = Pollen('weather text')
     p.print_db()
     p.set_source('weather values')
     p.set_zipcode(98105)
     p.build()
     p.print_db()
-    
+
     print('The next two tests will throw exceptions.')
     try:
         p.set_source('wrong source')
