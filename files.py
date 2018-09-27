@@ -48,22 +48,25 @@ class File(object):
 
     """Class File can be used to access a file on the disk"""
 
-    def __init__(self, name):
+    def __init__(self, name, create_if_not_exists=False):
         """Initializes this file"""
         if not(_os.path.exists(name)):
-            raise FileNotFoundError(name)
+            if create_if_not_exists:
+                with open(name, 'w') as fp:
+                    pass
+            else:
+                raise FileNotFoundError(name)
+        
         self.name = name
 
-    def append(self, string=''):
+    def append(self, string):
         """Appends the string to the end of this file.
            No new line is preceded"""
-        while len(string) == 0:
-            string = input('line: ')
         with open(self.name, 'ab') as fp:
             try:
-                f.write(string.encode('utf8')) # for non-binary strings
+                fp.write(string.encode('utf8')) # for non-binary strings
             except:
-                f.write(string) # for binary strings
+                fp.write(string) # for binary strings
 
     def get_char_count(self, char):
         """Returns the count occurence of char in this file"""
