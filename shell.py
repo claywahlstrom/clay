@@ -124,7 +124,7 @@ class Compiler(object):
         self.sources = sources
         self.directory = directory
         self.flags = []
-        
+
     def set_path(self, directory):
         """Sets the path of this compiler to the given directory"""
         self.directory = directory
@@ -182,7 +182,7 @@ class CSharpCompiler(Compiler):
 class JavaCompiler(Compiler):
     """Class JavaCompiler can be used to compile Java(tm) source
        files to bytecode"""
-    
+
     def __init__(self, sources=None, directory=_os.curdir):
         super(JavaCompiler, self).__init__('javac', '.java', '.class', sources, directory)
         self.add_flag('g')
@@ -229,8 +229,9 @@ def pause(consoleonly=False):
         _subprocess.call('pause', shell=True)
 
 def ren(src, dst, directory=_os.curdir, recurse=False):
-    """Renames src to dst, or with recurse=True...
-       Rename all items with old to new using str.replace(old,new)"""
+    """Renames src to dst. Renames all items in the current
+       directory if recurse is True using str.replace(src, dst)"""
+
     if recurse:
         print('Replacing all "{}" with "{}"...'.format(src, dst))
         x = 0
@@ -240,17 +241,17 @@ def ren(src, dst, directory=_os.curdir, recurse=False):
                 x += 1
             except:
                 print("Couldn't rename", src)
-        print('{} item(s) renamed'.format(x))
+        print('renamed {} item(s)'.format(x))
     else:
         try:
             _os.rename(src, dst)
-            print('"{}" renamed to "{}"'.format(src, dst))
+            print('renamed "{}" to "{}"'.format(src, dst))
         except Exception as e:
             print('Error:', e)
 
 def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
-    """Moves a file/folder to the TRASH, or with recurse...
-       Recursive version rm, Optional prompting"""
+    """Moves a file/folder to the TRASH. Recursive version rm if recurse
+       is True with optional prompting"""
 
     from clay.shell import rm_item
 
@@ -260,7 +261,8 @@ def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
     if recurse:
         sure = not(prompt)
         if prompt:
-            sure = input('Are you sure you want to delete all containing "{}" in "{}"? '.format(criteria, directory))
+            sure = input('Are you sure you want to delete all ' + \
+                         'containing "{}" in "{}"? '.format(criteria, directory))
         x = 0
         if sure.lower() in ('1', 'yes'):
             criteria = name_or_criteria
@@ -273,13 +275,13 @@ def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
     else:
         name = name_or_criteria
         rm_item(directory, name)
-        
+
 def rm_item(directory, name):
     """Moves an item from the given directory with its name including its
        path neutral version of its origin. Helps `rm` accomplish its task"""
 
     DEBUG = False
-    
+
     from shutil import move
     from clay.shell import rm_from_trash
 
@@ -306,7 +308,7 @@ def rm_item(directory, name):
         print('"{}" deleted'.format(target))
     except Exception as e:
         print(e)
-        # reverse any changes if something went wrong
+        # rollback removal if something went wrong
         move(new_path, name)
 
 def rm_from_trash(target):
