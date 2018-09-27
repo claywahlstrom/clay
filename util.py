@@ -42,103 +42,94 @@ class Anonymous(object):
             result[attr] = getattr(self, attr)
         return result
 
-class FixedSizeQueue(object):
+class FixedSizeQueue(_collections.deque):
     """Object that maintains length when items are added to it."""
-    def __init__(self, ls=[], max_size=10):
-        self.__ls = _collections.deque(ls[:], max_size)
-        self.max_size = max_size
-
-    def __len__(self):
-        return len(self.__ls)
-
-    def add(self, element):
-        """Adds the given element to the back of the queue"""
-        (self.__ls).append(element)
 
     def get_average(self):
         """Returns the average for this queue if the elements are summable"""
-        if len(self.__ls) == 0:
+        if len(self) == 0:
             raise Exception('length must be >= 1')
-        return sum(self.__ls) / len(self.__ls)
-
-    def get_list(self):
-        """Returns this queue"""
-        return self.__ls
+        return sum(self) / len(self)
 
 class Linq(object):
 
     """Class Linq can be used to query and filter data like
        Microsoft's (c) LINQ feature used in C#"""
 
-    def __init__(self):
-        """Initializes this Linq object"""
-        self.__queryable = None
-        self.__members = None
-        self.__select_called = False
+    __queryable_set = False
+    __select_called = False
+        
+    def __check_queryable_exists():
+        if not(Linq.__queryable_set):
+            raise RuntimeError('queryable must be set')
 
-    def __get_query_source(self):
-        if self.__members is None:
-            query_source = self.__queryable
-        else:
-            query_source = self.__members
-        return query_source
+    def __end_query():
+        Linq.__queryable_set = False # select is the last statement
 
-    def first_or_default(self, default=None):
+    def count():
+        Linq.__check_queryable_exists()
+        Linq.__end_query()
+        return sum(1 for item in Linq.__queryable)
+
+    def first_or_default(default=None):
         """Returns the first item in this query or None if empty"""
-        if self.__queryable is None or self.__members is None:
-            raise RuntimeError('queryable or members cannot be none')
-        if len(self.__members) > 0:
-            return self.__members[0]
-        return default
+        Linq.__check_queryable_exists()
+        Linq.__end_query()
+        return next(iter(Linq.__queryable), default)
 
-    def query(self, queryable):
+    def query(queryable):
         """Sets the query source using the given queryable"""
-        self.__init__() # reset vars
-        self.__queryable = queryable
-        return self
+        Linq.__queryable = queryable
+        Linq.__queryable_set = True
+        Linq.__select_called = False
+        return Linq
 
-    def select(self, props):
+    def select(props):
         """Returns a list of properties selected from each member.
            If used, it must be the last step as it returns items
            and not a Linq object."""
+        Linq.__check_queryable_exists()
         if type(props) == str:
             props = [props]
         if not(type(props) in (list, tuple)):
             raise ValueError('properties must be a list or tuple')
         filtered = []
-        query_source = self.__get_query_source()            
-        for each in query_source:
-            selectable = []
+        for each in Linq.__queryable:
+            entity = []
             for prop in props:
                 if type(each) == dict and prop in each:
-                    selectable.append(each[prop])
+                    entity.append(each[prop])
                 elif hasattr(each, prop):
-                    selectable.append(getattr(each, prop))
+                    entity.append(getattr(each, prop))
                 else:
                     print(each, 'does not have property', prop)
-                    selectable.append(None)
+                    entity.append(None)
             if len(props) == 1:
-                selectable = selectable[0]
-            filtered.append(selectable)
-        self.__members = filtered
-        self.__select_called = True
-        return self
+                entity = entity[0]
+            filtered.append(entity)
+        Linq.__queryable = filtered
+        Linq.__select_called = True
+        return Linq.to_list()
 
-    def to_list(self):
+    def to_list():
         """Returns this query as a list"""
-        return self.__members
+        Linq.__check_queryable_exists()
+        Linq.__end_query()
+        return Linq.__queryable
 
-    def where(self, lambda_expression):
+    def where(lambda_expression):
         """Filters elements where the lambda expression evaluates to True"""
-        if self.__select_called:
-            raise RuntimeWarning('members cannot be overwritten after select called')
-        members = []
-        query_source = self.__get_query_source()
-        for each in query_source:
-            if lambda_expression(each):
-                members.append(each)
-        self.__members = members
-        return self
+        Linq.__check_queryable_exists()
+        if Linq.__select_called:
+            raise RuntimeWarning('where cannot be called after select')
+        Linq.__queryable = list(filter(lambda_expression, Linq.__queryable))
+        return Linq
+
+    def whereif(predicate, lambda_expression):
+        if predicate:
+            return Linq.where(lambda_expression)
+        else:
+            return Linq
 
 def human_hex(dec):
     """Converts decimal values to human readable hex.
@@ -228,18 +219,33 @@ if __name__ == '__main__':
     from random import randint
 
     print('--------')
-    myav = FixedSizeQueue(max_size=5)
-    myav.add(0) # ensures while-loop entry
+    myav = FixedSizeQueue([], 5)
+    myav.append(0) # ensures while-loop entry
     while myav.get_average() < 10:
-        myav.add(randint(0, 15))
-        print('list', myav.get_list())
+        myav.append(randint(0, 15))
+        print('list', myav)
         print('  len', len(myav))
         print('  av ', myav.get_average())
     print('--------')
 
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
 
-    print(get_first_or_default(objs, 2, 'a'))
+    print(Linq.query(objs).where(lambda x: x.a == 2).first_or_default())
+
+    test_queryable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
+
+    try:
+        Linq.where(lambda x: True)
+    except Exception as e:
+        print(e)
+    try:
+        Linq.query(test_queryable).select('num').where(lambda x: x['num'] == 2)
+    except Exception as e:
+        print('where is after select:', e)
+    try:
+        print(Linq.query(test_queryable).where(lambda x: x == 2).select('num'))
+    except Exception as e:
+        print(e)
 
     print('human hex for 2700 is', human_hex(2700))
     array = (1, 4, 16, 25)
