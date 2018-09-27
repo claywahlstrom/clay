@@ -2,9 +2,6 @@
 """
 web module
 
-TODO (Pollen): allow multiple zipcodes for the given sources
-                 - retrieve each api link
-                 - use zip codes to lookup the dictionary of url sources
 TODO (web-header): fix the web header to fix google.com rendering JS problem using
                        accept-char types
 
@@ -18,6 +15,7 @@ import re as _re
 import requests as _requests
 from subprocess import call as _call
 import sys as _sys
+import time as _time
 import urllib.request, urllib.error, urllib.parse
 
 import requests as _requests
@@ -315,9 +313,6 @@ def download(url, title='', full_title=False,
 
     assert type(url) == str, 'Lists not supported'
 
-    import datetime as dt
-    from time import time
-
     from clay.shell import set_title
     from clay.web import get_basename
 
@@ -340,7 +335,7 @@ def download(url, title='', full_title=False,
             response = _requests.get(url, params=query, headers=WEB_HDRS)
             if response.status_code != 200:
                 raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
-            before = time() # start timer
+            before = _time.time() # start timer
             size = len(response.text)
             print(size, 'bytes')
             fp.write(response.text.encode('utf-8'))
@@ -349,7 +344,7 @@ def download(url, title='', full_title=False,
             response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
             if response.status_code != 200:
                 raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
-            before = time() # start timer
+            before = _time.time() # start timer
             size = int(response.headers.get('content-length'))
             chunk = size // 100
             if chunk > CHUNK_CAP: # place chunk cap on files >1MB
@@ -377,11 +372,11 @@ def download(url, title='', full_title=False,
         log_string = url+' failed\n'
         flag = True
     else:
-        taken = time() - before
+        taken = _time.time() - before
         print('\ntook {}s'.format(taken))
         if not(_isIdle() or _isUnix()):
             set_title('Completed {}'.format(title))
-        log_string = '{} {} of {} bytes @ {}\n'.format('[' + url + ']', title, size, dt.datetime.today())
+        log_string = '{} {} of {} bytes @ {}\n'.format('[' + url + ']', title, size, _dt.datetime.today())
         print('Complete\n')
     finally:
         if not(fp.closed):
@@ -533,6 +528,10 @@ def get_html(uri, query=None, headers=True):
     text = fread.text.encode('utf-8')
     return text
 
+def get_ip_address():
+    import socket
+    return socket.gethostbyname(socket.gethostname())
+
 def get_mp3(link, title=''):
     """Downloads the given link from mp3juices.cc"""
     from clay.web import download
@@ -554,6 +553,51 @@ def get_vid(vid, vid_type='mp4'):
     from clay.web import download
     download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, vid), title='.'.join([vid, vid_type]))
 
+class HTMLBuilder(object):
+
+    INDENT = '    ' # 4 spaces
+    
+    def __init__(self):
+        self.indent = 0
+        self.builder = ''
+        self.add_tag('html')
+        self.add_tag('head')
+
+    def add_nl(self):
+        self.builder += '\n'
+
+    def add_tag(self, tag, text='', self_closing=False, attrs={}):
+        print('processing', tag, 'indent', self.indent)
+        self.builder += HTMLBuilder.INDENT * self.indent + '<' + tag
+
+        for attr in attrs:
+            self.builder += ' ' + attr + '="' + attrs[attr] + '"'
+
+        if self_closing:
+            self.builder += ' /'
+        else:
+            self.indent += 1
+  
+        self.builder += '>'
+        if len(text) > 0:
+            self.builder += text
+            self.close_tag(tag, has_text=True)
+        self.add_nl()
+
+    def close_tag(self, tag, has_text=False):
+        self.indent -= 1
+        if not(has_text):
+            self.builder += HTMLBuilder.INDENT * self.indent
+
+        self.builder += '</' + tag + '>'
+        if not(has_text):
+            self.add_nl()
+           
+        print('build', tag, 'now', self.indent)
+        
+    def to_string(self):
+        return self.builder
+
 def launch(uri, browser='firefox'):
     """Opens the given uri (string or list) in your favorite browser"""
     if type(uri) == str:
@@ -565,19 +609,69 @@ def launch(uri, browser='firefox'):
             else:
                 _call(['start', browser, link.replace('&', '^&')], shell=True)
 
+class UrlBuilder(object):
+
+    def __init__(self, base):
+        self.url = base
+
+    def with_query_params(self, params):
+        if '?' in self.url: # already exists
+            self.url += '&'
+        else: # does not exist
+            self.url += '?'
+        self.url += urllib.parse.urlencode(params)
+        return self
+        
+    def to_string(self):
+        return self.url
+
+class WeatherUrlBuilder(UrlBuilder):
+
+    def __init__(self):
+        super(WeatherUrlBuilder, self).__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
+        self.with_query_params({'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
+            'format': 'json',
+            'language': 'en-US'})
+
+    def with_geocode(self, lat, lon):
+        self.url += '&' + urllib.parse.urlencode({'geocode': str(lat) + ',' + str(lon)})
+        return self
+    
+class WundergroundUrlBuilder(UrlBuilder):
+
+    def __init__(self):
+        super(WundergroundUrlBuilder, self).__init__('https://www.wunderground.com/health/us/')
+        
+    def with_location(self, state, city, station):
+        self.url += '/'.join((state, city, station))
+        self.with_query_params({'cm_ven': 'localwx_modpollen'})
+        return self
+        
+    def to_string(self):
+        return self.url
+
+class PollenUrlBuilderFactory(object):
+
+    def __init__(self):
+        self.weather = WeatherUrlBuilder()
+        self.wunderground = WundergroundUrlBuilder()
+        
+
 class Pollen(object):
 
     """Class Pollen can be used to retrieve and store information about
        the pollen forecast from The Weather Channel (tm) and Wunderground (tm)"""
 
+    URL_FACTORY = PollenUrlBuilderFactory()
+
     MAX_REQUESTS = 4
     SOURCE_SPAN = {'weather text': 7, 'weather values': 7, 'wu poll': 4}
-    SOURCE_URLS = {98105: {'weather text': 'https://weather.com/forecast/allergy/l/',
-                           'weather values': 'https://api.weather.com/v2/indices/pollen/daypart/7day?apiKey=6532d6454b8aa370768e63d6ba5a832e&geocode=47.654003%2C-122.309166&format=json&language=en-US',
-                           'wu poll': 'https://www.wunderground.com/health/us/wa/seattle/KWASEATT446?cm_ven=localwx_modpollen'},
-                   98684: {'weather text': 'https://weather.com/forecast/allergy/l/',
-                           'weather values': 'https://api.weather.com/v2/indices/pollen/daypart/7day?apiKey=6532d6454b8aa370768e63d6ba5a832e&geocode=45.639816%2C-122.497902&format=json&language=en-US',
-                           'wu poll': 'https://www.wunderground.com/health/us/wa/camas/KWACAMAS42?cm_ven=localwx_modpollen'}}
+    SOURCE_URLS = {98105: {'weather values': URL_FACTORY.weather.with_geocode(47.654003, -122.309166).to_string(),
+                           'wu poll': URL_FACTORY.wunderground.with_location('wa', 'seattle', 'WASEATT446').to_string()},
+                   98684: {'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).to_string(),
+                           'wu poll': URL_FACTORY.wunderground.with_location('wa', 'camas', 'KWACAMAS42').to_string()}}
+    for url in SOURCE_URLS:
+        SOURCE_URLS[url]['weather text'] = 'https://weather.com/forecast/allergy/l/'
     TYPES = ('grass', 'ragweed', 'tree')
     WEATHER_QUERY_PARAMS = ':4:US'
 
@@ -633,6 +727,7 @@ class Pollen(object):
         uri = self.uri
         if self.source == 'weather text' and add_weather_query:
             uri += self.WEATHER_QUERY_PARAMS
+
         markup = self.__get_markup(uri)
 
         page = _BS(markup, 'html.parser')
@@ -723,6 +818,25 @@ class UserRepository(CRUDRepository):
     def __init__(self, primary_key, file='users'):
         super(UserRepository, self).__init__(file, primary_key)
 
+class UserWhitelist(object):
+
+    FORBIDDEN_STATUS_CODE = 403
+    
+    def __init__(self, db_filename):
+        if not(_os.path.exists(db_filename)):
+            raise FileNotFoundError(db_filename)
+        self.filename = db_filename
+        self.users = self.read_users()
+
+    def read_users(self):
+        with open(self.filename) as fp:
+            users = [user for user in fp.read().strip().split('\n') \
+                         if not(user.startswith('#'))]
+        return users
+
+    def is_authorized(self, user):
+        return user in self.users
+
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
         super(ZipCodeNotFoundException, self).__init__(repr(self), *args, **kwargs)
@@ -749,14 +863,17 @@ if __name__ == '__main__':
     print(get_title(TEST_LINK))
     print(get_basename(TEST_LINK))
     print('title from markup:', get_title(TEST_LINK))
+    print()
     we1 = Elements('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
     we1.find()
     we1.show()
     we2 = Elements()
     we2.find()
     we2.show(attribute='href')
+    print()
     print('ANCHORS')
     print(find_anchors(TEST_LINK, internal=False))
+    print()
 
     import traceback
 
