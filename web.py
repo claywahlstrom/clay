@@ -3,7 +3,7 @@
 web module
 
 TODO (web-header): fix the web header to fix google.com rendering JS problem using
-                       accept-char types
+                       alternate accept-char types
 
 """
 
@@ -23,8 +23,8 @@ from bs4 import BeautifulSoup as _BS
 
 from clay.shell import \
     get_docs_folder as _get_docs_folder, \
-    isIdle as _isIdle, \
-    isUnix as _isUnix
+    is_idle as _is_idle, \
+    is_unix as _is_unix
 
 CHUNK_CAP = int(1e6) # 1MB
 
@@ -45,7 +45,7 @@ WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
            'Accept-Language': 'en-US,en;q=0.8;q=0.5',
            'Connection': 'keep-alive'}
 
-class CachedFile(object):
+class CacheableFile(object):
     """Class Cache can be used to manage file caching on your local machine,
        accepts one uri. The caching system will use the local version of
        the file if it exists. Otherwise it will be downloaded from the server.
@@ -108,10 +108,8 @@ class CachedFile(object):
         if not('http' in uri):
             raise ValueError('invalid uri')
 
-        from clay.web import get_basename as _get_basename
-
         if title is None:
-            title = _get_basename(uri)[0]
+            title = WebDocument(uri).get_basename()[0]
         self.title = title
 
         self.uri = uri
@@ -153,19 +151,19 @@ class CourseCatalogUW(object):
         pages = {}
 
         pages['list'] = _BS(_requests.get(CourseCatalogUW.CATALOG_URI).content, 'html.parser')
-        DEPTS = [item['href'] for item in pages['list'].select('a')]
-        DEPTS = [item[:item.index('.')] for item in DEPTS if not('/' in item) and item.endswith('.html')]
-        DEPTS.sort()
+        depts = [item['href'] for item in pages['list'].select('a')]
+        depts = [item[:item.index('.')] for item in depts if not('/' in item) and item.endswith('.html')]
+        depts.sort()
 
-        self.DEPTS = DEPTS
-        self.MAX_LENGTH = max(map(len, DEPTS))
+        self.depts = depts
+        self.MAX_LENGTH = max(map(len, depts))
         self.pages = pages
 
     def get_departments(self):
-        return self.DEPTS
+        return self.depts
 
     def print_departments(self):
-        for i, j in enumerate(self.DEPTS):
+        for i, j in enumerate(self.depts):
             if i % 6 != 0:
                 print(j, end=int(_math.ceil(_math.ceil(self.MAX_LENGTH / 8) - len(j) / 8)) * '\t')
             else:
@@ -177,14 +175,14 @@ class CourseCatalogUW(object):
         header = None # department header
         course_list = []
         parts = text.strip().lower().split()
-        if len(parts) > 0 and parts[0] in self.DEPTS: # if a valid department
+        if len(parts) > 0 and parts[0] in self.depts: # if a valid department
             if not(parts[0] in self.pages): # insert into cache
                 link = CourseCatalogUW.CATALOG_URI + parts[0] + '.html'
                 self.pages[parts[0]] = _BS(_requests.get(link).content, 'html.parser')
             already_set = False
             found = self.pages[parts[0]].select('p b') # get all class elements
             if len(parts) == 2:
-                if len(parts[1]) != 3 or '-' in parts[1]: # if not specific class
+                if len(parts[1]) < 3 or '-' in parts[1]: # if not specific class
                     levels = list(map(int, parts[1].split('-')))
                     # remove spaces for oddly named titles and departments
                     numbers = [int(_re.findall('\d+', item.get_text().lower().replace(' ', ''))[0]) for item in found]
@@ -201,13 +199,13 @@ class CourseCatalogUW(object):
                     if levels[0] > levels[-1]:  # sorts backwards queries in descending order
                         found = sorted(found, key=lambda x: x.get_text(), reverse=True)
                 else: # if full course name given
-                    name_prefix = parts[0]
-                    # configure custom prefixes
-                    if name_prefix == 'musensem':
-                        name_prefix = 'musen'
 
-                    found = self.pages[parts[0]].find('a', attrs={'name': name_prefix + parts[1]})
-                    if found is not None:
+                    found = [anchor for anchor in self.pages[parts[0]].select('a[name^=""]') \
+                        if anchor.has_attr('name') and len(anchor['name']) > 0 and \
+                            anchor['name'].endswith(parts[1])]
+                    
+                    if len(found) > 0:
+                        found = found[0]
                         instructor = ''
                         if found.p.i is not None:
                             instructor = found.p.i.get_text().strip()
@@ -234,161 +232,6 @@ class CourseCatalogUW(object):
         return {'message': message,
                 'results': {'course_list': course_list,
                             'header': header}}
-
-class CRUDRepository(object):
-
-    def __init__(self, file, pk):
-        """Initializes this CRUD repository under the given file
-           using the given primary key"""
-        self.file = file
-        self.pk = pk
-        self.db = None
-        self.default_model = None
-        self.__has_read = False
-
-    def __ensure_connected(self):
-        if not(self.__has_read):
-            raise RuntimeError('database has not been read')
-
-    def __ensure_exists(self, pk):
-        if not(self.db is None or pk in self.db):
-            self.db[pk] = self.get_default_model().to_dict()
-
-    def create_if_not_exists(self, pk):
-        self.__ensure_connected()
-        self.__ensure_exists(pk)
-
-    def get_default_model(self):
-        return self.default_model
-
-    def read(self):
-        if not(_os.path.exists(self.file)):
-            self.db = {} # dict
-            self.write()
-        with open(self.file) as fp:
-            self.db = _json.load(fp)
-        if self.db is not None:
-            self.__has_read = True
-
-    def delete(self, pk):
-        self.__ensure_connected()
-        if pk in self.db:
-            self.db.pop(pk)
-            self.write()
-            print('user entry for pk', pk, 'removed')
-        else:
-            print('user pk not found')
-
-    def set_default_model(self, model):
-        self.default_model = model
-
-    def update(self, pk, model):
-        self.__ensure_connected()
-        self.__ensure_exists(pk)
-
-        for attr in model.get_attributes():
-            self.db[pk][attr] = getattr(model, attr)
-
-        print('pk', pk, 'updated')
-
-        self.write()
-
-    def update_prop(self, pk, prop, value):
-        self.__ensure_connected()
-        self.__ensure_exists(pk)
-        self.db[pk][prop] = value
-
-    def write(self):
-        self.__ensure_connected()
-        with open(self.file, 'w') as fp:
-            _json.dump(self.db, fp)
-        print('database written')
-
-def download(url, title='', full_title=False,
-             destination='.', log_name='dl_log.txt', speed=False):
-    """Downloads data from the given url and logs the relevant information
-       in this package's directory"""
-
-    # http://stackoverflow.com/a/16696317/5645103
-
-    assert type(url) == str, 'Lists not supported'
-
-    from clay.shell import set_title
-    from clay.web import get_basename
-
-    flag = False
-    if log_name:
-        log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
-    current = _os.getcwd()
-    _os.chdir(destination) # better file handling
-    print('curdir', _os.getcwd())
-
-    if title: # if title already set
-        query = None
-    else:
-        title, query = get_basename(url, full=full_title)
-    fp = open(title, 'wb')
-    print('Retrieving "{}"...\ntitle {}\nquery {}...'.format(url, title, query))
-    try:
-        print('size', end=' ')
-        if not('.' in title) or 'htm' in title or 'php' in title:
-            response = _requests.get(url, params=query, headers=WEB_HDRS)
-            if response.status_code != 200:
-                raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
-            before = _time.time() # start timer
-            size = len(response.text)
-            print(size, 'bytes')
-            fp.write(response.text.encode('utf-8'))
-            fp.close()
-        else:
-            response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
-            if response.status_code != 200:
-                raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
-            before = _time.time() # start timer
-            size = int(response.headers.get('content-length'))
-            chunk = size // 100
-            if chunk > CHUNK_CAP: # place chunk cap on files >1MB
-                chunk = CHUNK_CAP # 1MB
-            print(size, 'bytes')
-            print("Writing to file in chunks of {} bytes...".format(chunk))
-            actual = 0
-            try:
-                for chunk in response.iter_content(chunk_size=chunk):
-                    if len(chunk) == 0: break
-                    fp.write(chunk)
-                    actual += len(chunk)
-                    percent = int(actual / size * 100)
-                    if _isIdle() or _isUnix():
-                        if percent % 5 == 0: # if multiple of 5 reached...
-                            print('{}%'.format(percent), end=' ', flush=True)
-                    else:
-                        set_title('{}% {}/{}'.format(percent, actual, size))
-            except Exception as e:
-                print(e)
-            finally:
-                fp.close()
-    except Exception as e:
-        print('\n' + str(e))
-        log_string = url+' failed\n'
-        flag = True
-    else:
-        taken = _time.time() - before
-        print('\ntook {}s'.format(taken))
-        if not(_isIdle() or _isUnix()):
-            set_title('Completed {}'.format(title))
-        log_string = '{} {} of {} bytes @ {}\n'.format('[' + url + ']', title, size, _dt.datetime.today())
-        print('Complete\n')
-    finally:
-        if not(fp.closed):
-            fp.close()
-    if log_name:
-        with open(log_path, 'a+') as lp:
-            lp.write(log_string)
-    else:
-        print(log_string.strip())
-    _os.chdir(current) # better file handling
-    if speed and not(flag):
-        return size / taken
 
 class Elements(object):
     """Class Elements can be used to find and store elements
@@ -419,7 +262,7 @@ class Elements(object):
 
     def find(self):
         self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
-        if not(self.__found):
+        if len(self.__found) == 0:
             print('No elements found')
 
     def get_found(self):
@@ -458,8 +301,7 @@ def find_anchors(location, query={}, internal=True, php=False):
     """Returns anchor references from a location (file name or uri)
            query    = query params sent in the request
            internal = uses internal site referenes if True
-           php      = determines whether references with query params are included
-    """
+           php      = determines whether references with query params are included"""
 
     if 'http' in location:
         fread = _requests.get(location, params=query).content#headers=WEB_HDRS, params=query).content
@@ -484,76 +326,26 @@ def find_anchors(location, query={}, internal=True, php=False):
                 links.append(x['href'])
             except:
                 links.append(x)
-    return links
-
-def get_basename(uri, full=False, show=False):
-    """Returns the basename and query of the specified uri"""
-    if '?' in uri:
-        url, query = uri.split('?')
-    else:
-        url, query = uri, None
-    title = _os.path.basename(url)
-    add_ext = True
-    if any(ext in title for ext in ('htm', 'aspx', 'php')) or len(_os.path.basename(title)) > 0:
-        add_ext = False
-
-    if full:
-        title = url.replace('://', '_').replace('/', '_')
-    if not(title):
-        title = 'index'
-    if add_ext:
-        title += '.html'
-    title = urllib.parse.unquote_plus(title)
-    if show:
-        print('Title', title)
-    return title, query
+    return list(set(links)) # remove duplicates
 
 def get_uri(path):
-    """Returns the web file uri for the given path"""
+    """Returns the web file URI for the given file path"""
     return 'file:///' + path.replace('\\', '/')
-
-def get_file(uri):
-    """Returns the response from the given `uri`"""
-    response = urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
-    return response.read()
-
-def get_html(uri, query=None, headers=True):
-    """Returns the binary response from the given `uri`"""
-    if query is not None:
-        assert type(query) == dict
-    if headers:
-        fread = _requests.get(uri, params=query, headers=WEB_HDRS)
-    else:
-        fread = _requests.get(uri, params=query)
-    text = fread.text.encode('utf-8')
-    return text
-
-def get_ip_address():
-    import socket
-    return socket.gethostbyname(socket.gethostname())
-
-def get_mp3(link, title=''):
-    """Downloads the given link from mp3juices.cc"""
-    from clay.web import download
-    if not(title):
-        title = link[link.index('=') + 1:] + '.mp3'
-    download(link, title=title)
 
 def get_title(uri_or_soup):
     """Returns the title from the markup"""
     if type(uri_or_soup) == str:
-        uri = uri_or_soup
-        soup = _BS(_requests.get(uri).content, 'html.parser')
+        soup = _BS(_requests.get(uri_or_soup).content, 'html.parser')
     else:
         soup = uri_or_soup
     return soup.html.title.text
 
 def get_vid(vid, vid_type='mp4'):
     """Downloads the given YouTube (tm) video id using yt-down.tk, no longer stable"""
-    from clay.web import download
-    download('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, vid), title='.'.join([vid, vid_type]))
+    WebDocument('http://www.yt-down.tk/?mode={}&id={}'.format(vid_type, vid)) \
+        .download(title='.'.join([vid, vid_type]))
 
-class HTMLBuilder(object):
+class HtmlBuilder(object):
 
     INDENT = '    ' # 4 spaces
     
@@ -568,7 +360,7 @@ class HTMLBuilder(object):
 
     def add_tag(self, tag, text='', self_closing=False, attrs={}):
         print('processing', tag, 'indent', self.indent)
-        self.builder += HTMLBuilder.INDENT * self.indent + '<' + tag
+        self.builder += HtmlBuilder.INDENT * self.indent + '<' + tag
 
         for attr in attrs:
             self.builder += ' ' + attr + '="' + attrs[attr] + '"'
@@ -587,7 +379,7 @@ class HTMLBuilder(object):
     def close_tag(self, tag, has_text=False):
         self.indent -= 1
         if not(has_text):
-            self.builder += HTMLBuilder.INDENT * self.indent
+            self.builder += HtmlBuilder.INDENT * self.indent
 
         self.builder += '</' + tag + '>'
         if not(has_text):
@@ -597,17 +389,6 @@ class HTMLBuilder(object):
         
     def to_string(self):
         return self.builder
-
-def launch(uri, browser='firefox'):
-    """Opens the given uri (string or list) in your favorite browser"""
-    if type(uri) == str:
-        uri = [uri]
-    if type(uri) == list:
-        for link in uri:
-            if _isUnix():
-                _call(['google-chrome', link], shell=True)
-            else:
-                _call(['start', browser, link.replace('&', '^&')], shell=True)
 
 class UrlBuilder(object):
 
@@ -636,7 +417,152 @@ class WeatherUrlBuilder(UrlBuilder):
     def with_geocode(self, lat, lon):
         self.url += '&' + urllib.parse.urlencode({'geocode': str(lat) + ',' + str(lon)})
         return self
+
+class WebDocument(object):
+
+    """Can be used to work with files and URIs hosted on the web"""
+
+    def __init__(self, uri):
+        self.set_uri(uri)
+
+    def __repr__(self):
+        return 'WebDocument(uri=%s)' % self.uri
+
+    def download(self, title='', full_title=False, destination='.',
+                 log_name='dl_log.txt', return_speed=False):
+        """Downloads data from the given url and logs the relevant information
+           in this package's directory"""
+
+        # http://stackoverflow.com/a/16696317/5645103
+
+        from clay.shell import set_title
+
+        url = self.uri
+        flag = False
+        if log_name:
+            log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
+        current = _os.getcwd()
+        _os.chdir(destination) # better file handling
+        print('curdir', _os.getcwd())
+
+        if len(title) > 0: # if title already set
+            query = None
+        else:
+            title, query = self.get_basename(full=full_title)
+        fp = open(title, 'wb')
+        print('Retrieving "{}"...\ntitle {}\nquery {}...'.format(url, title, query))
+        try:
+            print('size', end=' ')
+            if not('.' in title) or 'htm' in title or 'php' in title: # small file types (pages)
+                response = _requests.get(url, params=query, headers=WEB_HDRS)
+                if response.status_code != 200:
+                    raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
+                before = _time.time() # start timer
+                size = len(response.text)
+                print(size, 'bytes')
+                fp.write(response.text.encode('utf-8'))
+                fp.close()
+            else: # larger file types
+                response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
+                if response.status_code != 200:
+                    raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
+                before = _time.time() # start timer
+                size = int(response.headers.get('content-length'))
+                chunk = size // 100
+                if chunk > CHUNK_CAP: # place chunk cap on files >1MB
+                    chunk = CHUNK_CAP # 1MB
+                print(size, 'bytes')
+                print("Writing to file in chunks of {} bytes...".format(chunk))
+                actual = 0
+                try:
+                    for chunk in response.iter_content(chunk_size=chunk):
+                        if len(chunk) == 0: break
+                        fp.write(chunk)
+                        actual += len(chunk)
+                        percent = int(actual / size * 100)
+                        if _is_idle() or _is_unix():
+                            if percent % 5 == 0: # if multiple of 5 reached...
+                                print('{}%'.format(percent), end=' ', flush=True)
+                        else:
+                            set_title('{}% {}/{}'.format(percent, actual, size))
+                except Exception as e:
+                    print(e)
+                finally:
+                    fp.close()
+        except Exception as e:
+            print('\n' + str(e))
+            log_string = url+' failed\n'
+            flag = True
+        else:
+            taken = _time.time() - before
+            print(f'\nComplete. Took {round(taken, 5)}s')
+            if not(_is_idle() or _is_unix()):
+                set_title(f'Completed {title}')
+            log_string = f'[{url}] {title} of {size} bytes @ {_dt.datetime.today()}\n'
+        finally:
+            if not(fp.closed):
+                fp.close()
+        if log_name:
+            with open(log_path, 'a+') as lp:
+                lp.write(log_string)
+        else:
+            print(log_string.strip())
+        _os.chdir(current) # better file handling
+        if return_speed and not(flag):
+            return round(size / taken, 5)
+
+    def get_basename(self, full=False):
+        """Returns the basename and query of this document's `uri`"""
+        url_split = urllib.parse.urlsplit(self.uri)
+        query = url_split.query if len(url_split.query) > 0 else None
+        title = _os.path.basename(url_split.path)
+        add_ext = not(any(ext in title for ext in ('htm', 'aspx', 'php'))) and len(title) < 2
+        
+        if len(title) < 2: # if title is '' or '/'
+            title = 'index'
+            add_ext = True
+        if full:
+            title = '.'.join((url_split.netloc, title))
+        if add_ext:
+            title += '.html'
+        title = urllib.parse.unquote_plus(title)
+        return title, query
+
+    def get_html(self, query=None, headers=True):
+        """Returns the binary response from this document's `uri`"""
+        if query is not None:
+            assert type(query) == dict
+        if headers:
+            fread = _requests.get(self.uri, params=query, headers=WEB_HDRS)
+        else:
+            fread = _requests.get(self.uri, params=query)
+        return fread.text.encode('utf-8')
+
+    def get_mp3(self, title=''):
+        """Downloads the this document's `uri` from mp3juices.cc"""
+        if len(title) == 0:
+            title = _os.path.basename(self.uri) + '.mp3'
+        self.download(link, title=title)
+
+    def get_response(self):
+        """Returns the response from this document's `uri`"""
+        request = urllib.request.Request(self.url, headers=WEB_HDRS)
+        response = urllib.request.urlopen(request)
+        return response.read()
+
+    def get_uri(self):
+        return self.uri
     
+    def launch(self, browser='firefox'):
+        """Opens this document's `uri` in your favorite browser"""
+        if _is_unix():
+            _call(['google-chrome', self.uri], shell=True)
+        else:
+            _call(['start', browser, self.uri.replace('&', '^&')], shell=True)
+
+    def set_uri(self, uri):
+        self.uri = uri
+
 class WundergroundUrlBuilder(UrlBuilder):
 
     def __init__(self):
@@ -656,7 +582,6 @@ class PollenUrlBuilderFactory(object):
         self.weather = WeatherUrlBuilder()
         self.wunderground = WundergroundUrlBuilder()
         
-
 class Pollen(object):
 
     """Class Pollen can be used to retrieve and store information about
@@ -814,36 +739,13 @@ class Pollen(object):
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
 
-class UserRepository(CRUDRepository):
-    def __init__(self, primary_key, file='users'):
-        super(UserRepository, self).__init__(file, primary_key)
-
-class UserWhitelist(object):
-
-    FORBIDDEN_STATUS_CODE = 403
-    
-    def __init__(self, db_filename):
-        if not(_os.path.exists(db_filename)):
-            raise FileNotFoundError(db_filename)
-        self.filename = db_filename
-        self.users = self.read_users()
-
-    def read_users(self):
-        with open(self.filename) as fp:
-            users = [user for user in fp.read().strip().split('\n') \
-                         if not(user.startswith('#'))]
-        return users
-
-    def is_authorized(self, user):
-        return user in self.users
-
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
         super(ZipCodeNotFoundException, self).__init__(repr(self), *args, **kwargs)
         self.zipcode = zipcode
 
     def __repr__(self):
-        zipcodes = ", ".join(map(str, Pollen.SOURCE_URLS.keys()))
+        zipcodes = ', '.join(map(str, Pollen.SOURCE_URLS.keys()))
         plural = zipcodes.count(',') > 0
         string = 'The only zipcode'
         if plural:
@@ -857,15 +759,25 @@ class ZipCodeNotFoundException(Exception):
         return string
 
 if __name__ == '__main__':
-    print(download(LINKS['2MB'], destination=_get_docs_folder(), speed=True), 'bytes per second')
-    print(get_basename('https://www.minecraft.net/change-language?next=/en/', full=False))
-    print(get_basename(LINKS['1MB'], full=True))
-    print(get_title(TEST_LINK))
-    print(get_basename(TEST_LINK))
-    print('title from markup:', get_title(TEST_LINK))
+
+    from clay.tests import it
+
+    print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
+                                             return_speed=True), 'bytes per second')
+    print()
+    it('returns basename and query', \
+        WebDocument('https://www.minecraft.net/change-language?next=/en/') \
+            .get_basename(full=False), \
+        ('change-language', 'next=/en/'))
+    it('returns full name and no query', \
+        WebDocument(LINKS['1MB']).get_basename(full=True), \
+        ('download.thinkbroadband.com.1MB.zip', None))
+    it('returns Official Minecraft site html title', get_title(TEST_LINK), 'Official site | Minecraft')
+    it('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
     we1 = Elements('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
     we1.find()
+    it('best music school list contains 21 elements', we1.get_found(), 21, len)
     we1.show()
     we2 = Elements()
     we2.find()
