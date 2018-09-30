@@ -8,7 +8,7 @@ AdvancedSocket difference finder functionality is not fully implemented
 """
 
 
-import os as _os
+import os
 import socket
 import time
 
@@ -16,10 +16,13 @@ DEF_PORT = 1024
 MAX_BUFFER = 10000
 MAX_CONN = 1
 
-UTF_CHAR = 'utf8'
 FILESEP = b'eof' + b'eof'
+UTF_SET = 'utf8'
 
-def nextopenport(ip, port):
+def get_ip_address():
+    return socket.gethostbyname(socket.gethostname())
+
+def get_next_open_port(ip, port):
     """Returns the next open port for the given IP address starting at port"""
     found = False
     while True:
@@ -33,50 +36,8 @@ def nextopenport(ip, port):
             s.close()
         if found:
             break
-    print('port selected ->', port)
+    print('next open port ->', port)
     return port
-
-class Report(object):
-    """A class for generating reports on file systems
-    An exmaple of output:
-    
-    .\align.py | 587
-    .\badquotes.txt | 308
-    .\boxes.py | 2027
-    .\collections.py | 3391
-    .\collections_test.txt | 1363
-    ...
-
-    TODO: file IO
-    
-    """
-    def __init__(self, directory='.'):
-        """Initializes this report using the given directory and stores
-           the result in the string field"""
-        self.directory = directory
-        self.generate()
-        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
-
-    def __repr__(self):
-        """Prints the string representation of this report"""
-        return self.string
-
-    def generate(self):
-        """Generates a report in the format (filename, filesize)"""
-        report = []
-        Walk = _os.walk(self.directory)
-
-        for root, dirs, files in Walk:
-            for file in files:
-                filename = _os.path.join(root, file)
-                report.append((filename, _os.stat(filename).st_size))
-        self.report = report
-
-    def parse(self):
-        """Parses the string field and returns the original report"""
-        splt = [x.split(' | ') for x in self.string.strip().split('\n')]
-        lst = [(x, int(y.strip())) for x, y in splt]
-        return lst
 
 class AdvancedSocket(object):
     """Super-class for Server and Client socket handlers. Extends `object` ATM"""
@@ -115,7 +76,7 @@ class AdvancedSocket(object):
         time.sleep(0.01)
         return stream
 
-    def sendbin(self, text, charset=UTF_CHAR):
+    def sendbin(self, text, charset=UTF_SET):
         """Sends the text through the stream"""
         if type(text) == str:
             text = text.encode(charset)
@@ -136,8 +97,8 @@ class AdvancedSocket(object):
                 pass # alternatively time.sleep(0.01)
 
     def test(self):
-        """Prints information about this socket. Called at the beginning
-           of a session"""
+        """Prints information about this socket and is called
+           at the beginning of a session"""
         print(self.sock, 'started')
 
     def terminate(self):
@@ -146,14 +107,14 @@ class AdvancedSocket(object):
         self.sock.close()
         print('{} closed'.format(self.__class__))
 
-    def writestream(self, filename, buffer=MAX_BUFFER, charset=UTF_CHAR):
+    def writestream(self, filename, buffer=MAX_BUFFER, charset=UTF_SET):
         """Write a file stream to the given filename"""
         stream = self.getstream(buffer, file=True)
         with open(filename, 'wb') as fp:
             print('\r' + str(fp.write(stream)), 'bytes')
         time.sleep(0.1)
 
-    def writestreams(self, files, streamlen, buffer=MAX_BUFFER, charset=UTF_CHAR):
+    def writestreams(self, files, streamlen, buffer=MAX_BUFFER, charset=UTF_SET):
         """Receives file content as one string and parses for each file
            Assumes 'eof' is not contained in the files"""
         print('expected', streamlen)
@@ -173,14 +134,14 @@ class AdvancedSocket(object):
            to the dst state"""
         changed = []
         removing = []
-        self.sendbin(dst.encode(UTF_CHAR))
+        self.sendbin(dst.encode(UTF_SET))
 
         d_src = self.loaddiff(src)
 
         print('d_src =', d_src)
 
         stream = self.getbin()
-        d_dst = eval(stream.decode(UTF_CHAR))
+        d_dst = eval(stream.decode(UTF_SET))
         # check for changed or added
         for thing in d_src:
             if thing in d_dst and d_src[thing] != d_dst[thing] or not(thing in d_dst):
@@ -199,21 +160,21 @@ class AdvancedSocket(object):
 
         from subprocess import check_output
 
-        recv = self.getbin().decode(UTF_CHAR)
+        recv = self.getbin().decode(UTF_SET)
         d_dst = self.loaddiff(recv)
 
         print('dd =', d_dst)
-        self.sendstream(str(d_dst).encode(UTF_CHAR))
+        self.sendstream(str(d_dst).encode(UTF_SET))
         self.d_dst = d_dst
 
     def loaddiff(self, Dir):
         """Loads and returns the differces as a dict"""
         Dict = {}
-        for root, dirs, files in _os.walk(Dir):
+        for root, dirs, files in os.walk(Dir):
             for file in files:
-                name = _os.path.join(root, file)
-                key = name[name.index(_os.path.sep)+1:]
-                Dict[key] = _os.stat(name).st_size
+                name = os.path.join(root, file)
+                key = name[name.index(os.path.sep)+1:]
+                Dict[key] = os.stat(name).st_size
         return Dict.copy()
 
 class Client(AdvancedSocket):
@@ -233,9 +194,9 @@ class Server(AdvancedSocket):
     """Class Server can be used to host connections"""
     
     def __init__(self, ip='0.0.0.0', port=DEF_PORT, maxcon=MAX_CONN):
-        port = nextopenport(ip, port)
+        port = get_next_open_port(ip, port)
         serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-##        serv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+#        serv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         serv.bind((ip, port))
         serv.listen(maxcon)
         print('server listening...')
@@ -244,6 +205,9 @@ class Server(AdvancedSocket):
         self.addr = addr
 
 if __name__ == '__main__':
-    report = Report(directory='.')
+
+    from clay.shell import FileSizeReport
+
+    report = FileSizeReport(directory='.')
     print(report)
     print(report.parse())
