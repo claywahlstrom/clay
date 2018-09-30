@@ -13,7 +13,7 @@ from re import findall
 import sys as _sys
 import time as _time
 
-from clay.shell import get_docs_folder as _get_docs_folder, isIdle as _isIdle
+from clay.shell import get_docs_folder as _get_docs_folder, is_idle as _is_idle
 
 
 EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
@@ -106,8 +106,8 @@ class Search(object):
 
     def print_path(self, arg):
         """Prints the path, helper to the search method"""
-        # overwrite the line to clear its contents
-        if _isIdle():
+        # overwrites the line to clear its contents
+        if _is_idle():
             print(arg)
         else:
             print('\x08' * self.last_len + ' ' * self.last_len + \
@@ -129,18 +129,17 @@ def executable_search(string, ext='exe'):
     t = Search('name', folder=r'C:\Program Files (x86)', string=string, ext=ext)
     return dict({s.folder: s.get_results(), t.folder: t.get_results()})
 
-def print_containing_files(string, directory, ext=None):
+def print_containing_files(string, directories, ext=None):
     """Given a string, directory(ies), and optional extension,
        prints the search results for the files containing the
        string"""
-    if type(directory) == str:
-        directories = [directory]
-    else:
-        directories = directory
+    if type(directories) == str:
+        directories = [directories]
+
     for d in directories:
         s = Search('cont', folder=d, string=string, ext=ext)
         print()
-        print(s)
+        print(s) # print results
         print()
 
 if __name__ == '__main__':

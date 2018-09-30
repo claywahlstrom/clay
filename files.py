@@ -153,10 +153,10 @@ def get_size(name, local=True):
             raise Exception('Basename not found. Need an absolute url path')
     return size
 
-def save(text, name='saved_text.txt', use_epoch=True):
+def save(text, name='saved_text.txt', append_epoch=True):
     """Saves the given text to the file with sequential numbering"""
     SP = _os.path.splitext(name)
-    if use_epoch:
+    if append_epoch:
         name = '{}-{}{}'.format(SP[0], int(time.time()), SP[-1])
     else:
         x = 0

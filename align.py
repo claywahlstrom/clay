@@ -5,9 +5,9 @@ for IDLE and 100 for shell.
 
 """
 
-from clay.shell import isIdle as _isIdle
+from clay.shell import is_idle as _is_idle
 
-if _isIdle():
+if _is_idle():
     WIDTH = 80
 else:
     WIDTH = 100

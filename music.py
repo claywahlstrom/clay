@@ -15,7 +15,7 @@ import time as _time
 import winsound as _ws
 
 from clay.files import save as _save
-from clay.shell import set_title, notify as _notify, isUnix as _isUnix
+from clay.shell import set_title, notify as _notify, is_unix as _is_unix
 
 # scale types
 NATURAL_MINOR = [0, 2, 3, 5, 7, 8, 10, 12]
@@ -62,7 +62,7 @@ class Note(object):
             return '%s()' % (self.__class__.__name__,)
         return '%s(%s)' % (self.__class__.__name__, '{}, {}'.format(self.name, self.length))
 
-if _isUnix():
+if _is_unix():
     print("<module 'winsound.py'> not available")
 else:
     from winsound import Beep as note # def
@@ -175,17 +175,13 @@ class Song(object):
 
     def play(self):
         """Plays this song using Windows' Beep"""
-        # original
-##                for note in self.notes:
-##            _ws.Beep(get_hertz(REGS[note.name[-1]], STEP_DICT[note.name[:-1]]),
-##                     int(note.length * LEN_FACTOR * 60 / self.tempo))
         for note in self.notes:
             play_note(note.name[:-1], note.name[-1], note.length, self.tempo) 
 
     def save(self):
         """Saves this song to a new file"""
         text = '\n'.join(('{} {}'.format(note.name, note.length) for note in self.notes)) + '\n' + str(self.tempo)
-        _save(text, 'notes.txt', use_epoch=False)
+        _save(text, 'notes.txt', append_epoch=False)
         set_title(add='File saved')
 
     def select(self, direction):
