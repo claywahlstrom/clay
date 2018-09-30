@@ -2,18 +2,21 @@
 """
 Jobs
 
-Future features: overtime hour detection for increased accuracy
+TODO: support overtime hours and salary calculations
 
 """
 
 from collections import OrderedDict
-import datetime
+import datetime as dt
 import math
 import pprint
 
 from clay.graphing import Histogram
 from clay.maths import average, median
 from clay.util import SortableDict
+
+BREAK_SCHEDULES = {'WA': {'hours': 6, 'length': 0.5},
+                   'OR': {'hours': 5, 'length': 1.0}}
 
 DAYS_OF_THE_WEEK = ('Monday',
                     'Tuesday',
@@ -25,14 +28,6 @@ DAYS_OF_THE_WEEK = ('Monday',
 
 DAYS_PER_WEEK = len(DAYS_OF_THE_WEEK)
 
-def offsetby(day, number):
-    """Returns an integer representing the day number shifted
-    by the given amount"""
-    day -= number
-    if day < 0:
-        day += 7
-    return day
-
 class Attendance(object):
     """Analyzes CSV time-sheets for jobs in the following format:
            month day year,time in,time out,hours worked
@@ -41,14 +36,12 @@ class Attendance(object):
        anything to work."""
 
     PT_TYPES = ('week', 'month')
-    STATES = {'WA': {'hours': 6, 'length': 0.5},
-              'OR': {'hours': 5, 'length': 1.0}}
 
     def __init__(self, take_home_ratio, perhour, state, offset=0):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is for Monday."""
         import os
-        if not(state in Attendance.STATES):
-            raise ValueError(f'state must be in [{", ".join(Attendance.STATES)}]')
+        if not(state in BREAK_SCHEDULES):
+            raise ValueError(f'state must be in [{", ".join(BREAK_SCHEDULES)}]')
         if not(os.path.exists('attendance.csv')):
             raise FileNotFoundError('attendance.csv doesn\'t exist')
         with open('attendance.csv') as fp:
@@ -87,11 +80,7 @@ class Attendance(object):
     def get_total_hours(self):
         return sum(self.get_hours())
 
-    def moneyall(self):
-        """Calculates and prints the take-home estimate for the whole job"""
-        print('estimate take-home using the ratio {}: ${:,.2f}'.format(round(self.take_home_ratio, 4), \
-                                                                       self.get_total_hours() * self.perhour * self.take_home_ratio))
-    def moneyby(self, per):
+    def print_money(self, per):
         """Calculates and prints the take-home estimate for the given period `per`"""
         if per in Attendance.PT_TYPES and per in self.pt:
             exec(f"for i, {per} in enumerate(self.filtered['{per}']): \n \
@@ -101,7 +90,23 @@ class Attendance(object):
         else:
             print(per, 'is not a supported type')
 
-    def printreport(self):
+    def print_money_all(self):
+        """Calculates and prints the take-home estimate for the whole job"""
+        print('estimate take-home using the ratio {}: ${:,.2f}'.format(round(self.take_home_ratio, 4), \
+                                                                       self.get_total_hours() * self.perhour * self.take_home_ratio))
+
+    def print_punchcard(self, names=True):
+        # columns are initialized to 0
+        hg = Histogram(columns=DAYS_OF_THE_WEEK, sort=not(names))
+        for col in hg.data:
+            for row in self.db:
+                date = dt.datetime.strptime(row['date'], '%m-%d-%Y').weekday()
+                if (names and DAYS_OF_THE_WEEK[date] == col) or date == col:
+                    hg.sd[col] += 1
+        self.weekly_hg = hg
+        hg.build()
+
+    def print_report(self):
         hours = self.get_hours()
         print()
         self.setup_pt() # set up both pt's
@@ -113,43 +118,32 @@ class Attendance(object):
         pprint.pprint(self.pt['month'])
         print()
         print('total hours: ', round(self.get_total_hours(), 4))
-        self.moneyby('week')
-        self.moneyall()
+        self.print_money('week')
+        self.print_money_all()
         print()
         print('average:', round(self.get_average_hours(), 4))
         print('median :', round(median(hours), 4))
         print('mode   :', round(max(hours, key=hours.count), 4))
         print()
-        self.punchcard()
+        self.print_punchcard()
         print()
 
-    def punchcard(self, names=True):
-        # columns are initialized to 0
-        hg = Histogram(columns=DAYS_OF_THE_WEEK, sort=not(names))
-        for col in hg.cols:
-            for row in self.db:
-                date = datetime.datetime.strptime(row['date'], '%m-%d-%Y').weekday()
-                if (names and DAYS_OF_THE_WEEK[date] == col) or date == col:
-                    hg.sd[col] += 1
-        hg.build()
-        self.hg = hg
-
-    def removebreaks(self, lunches=False):
+    def remove_breaks(self, lunches=False):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
         print('Removing breaks using the rules for', self.state)
-        print(f"break length is {Attendance.STATES[self.state]['length']}hr")
+        print(f"break length is {BREAK_SCHEDULES[self.state]['length']}hr")
         print('count', end='\t')
         print('date', end='\t\t')
         print('hours (before deduction))')
 
         for i, row in enumerate(self.db):
-            print(math.floor(self.db[i]['hours'] / Attendance.STATES[self.state]['hours']), end='\t')
+            print(math.floor(self.db[i]['hours'] / BREAK_SCHEDULES[self.state]['hours']), end='\t')
             print(self.db[i]['date'], end='\t')
             print(self.db[i]['hours'])
             # remove lunch breaks from hours
             self.db[i]['hours'] -= math.floor(self.db[i]['hours'] / \
-                                   Attendance.STATES[self.state]['hours']) * \
-                                   Attendance.STATES[self.state]['length']
+                                   BREAK_SCHEDULES[self.state]['hours']) * \
+                                   BREAK_SCHEDULES[self.state]['length']
 
     def select(self, attrib, until_date=None):
         if not(attrib in self.headers):
@@ -184,15 +178,15 @@ class Attendance(object):
 
             print('Note: this work week starts on day', self.offset)
 
-            prev = datetime.date(2017, 7, 3) # date before any work starts
+            prev = dt.date(2017, 7, 3) # date before any work starts
 
             fp = open('weeks.log', 'w')
 
             sorted_weeks = OrderedDict()
             for row in self.db:
-                date = datetime.datetime.strptime(row['date'], '%m-%d-%Y')
-                prevday = offsetby(prev.weekday(), self.offset)
-                dateday = offsetby(date.weekday(), self.offset)
+                date = dt.datetime.strptime(row['date'], '%m-%d-%Y')
+                prevday = get_day_offset(prev.weekday(), self.offset)
+                dateday = get_day_offset(date.weekday(), self.offset)
                 print(row['date'], file=fp) # print the date
                 print('    prev {} : date {}'.format(prevday, dateday), file=fp)
                 print(' ' * 4, end='', file=fp)
@@ -215,3 +209,11 @@ class Attendance(object):
         else:
             self.setup_pt('week')
             self.setup_pt('month')
+            
+def get_day_offset(day, number):
+    """Returns an integer representing the day number shifted
+    by the given amount"""
+    day -= number
+    if day < 0:
+        day += 7
+    return day
