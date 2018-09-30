@@ -5,14 +5,8 @@ libr: tools for scholars and librarians
 
 """
 
-# test links:
-# link = 'https://www.youtube.com/watch?v=r9cnHO15YgU'
-# link ='http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html'
-# link = 'https://www.washingtonpost.com/world/europe/european-officials-key-figure-in-paris-attacks-wounded-in-brussels-raid/2016/03/18/b0327da6-ed29-11e5-a9ce-681055c7a05f_story.html'
-# link = 'http://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/organic-food/art-20043880'
-# link = 'http://www.eufic.org/article/en/health-and-lifestyle/food-choice/artid/social-economic-determinants-food-choice/'
 
-from re import findall as _findall
+import re as _re
 import sys as _sys
 import time as _time
 
@@ -29,25 +23,36 @@ PER_SP = '. '
 SHORT_WORDS = ['a','am','an','and',
              'for','in','of',
              'on','the','to']
+TEST_LINKS = [
+    'https://www.youtube.com/watch?v=r9cnHO15YgU',
+    'http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html'
+    'https://www.washingtonpost.com/world/europe/european-officials-key-figure-in-paris-attacks-wounded-in-brussels-raid/2016/03/18/b0327da6-ed29-11e5-a9ce-681055c7a05f_story.html'
+    'http://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/organic-food/art-20043880'
+    'http://www.eufic.org/article/en/health-and-lifestyle/food-choice/artid/social-economic-determinants-food-choice/'
+]
+             
 
 class Essay(object):
-    r"""Class Essay can be used for storing and analyzing essays.
-        Don't use line_start as first sentence. Converts
-        line_sep to single '\n'"""
+    """Class Essay can be used for storing and analyzing essays.
+       Converts the given line separator to single carriage returns
+       (\n). Start line must be >= 1."""
+
     def __init__(self, source, line_start=1, line_sep='\n'):
+        if line_start < 1:
+            raise ValueError('start line must be >= 1')
         self.line_start = line_start
         self.line_sep = line_sep
         end = '\n\n' # default
         if type(source) == bytes:
             if b'\x0c' in text:
-                end = '\x0c' # google doc's new page
+                end = '\x0c' # google doc's new page delimiter
             source = source.decode('utf8')
         self.source = source.replace(line_sep, '\n') # for easier parsing
-        self.text = '\n'.join(self.source.split('\n')[self.line_start-1:]) # get main body
+        self.text = '\n'.join(self.source.split('\n')[self.line_start - 1:]) # get main body
         if self.text == self.text.rstrip(): # if no carriage returns at end, adjust text
             self.text += '\n\n'
         if '\n\n\n' in self.text:
-            end += '\n'
+            end += '\n' # makes the end of this essay unique for easy trimming
 
         try:
             self.text = self.text[:(self.text).index(end)] # remove extra fat
@@ -56,11 +61,15 @@ class Essay(object):
 
     def __repr__(self):
         return f'Essay(source={{{self.source[:20]}...}}, line_start={self.line_start})'
+        
+    def are_paren_bal(self):
+        """Finds if parentheses are balanced, returns boolean"""
+        return self.text.count('(') == self.text.count(')')
 
     def find_extraspace(self):
         """Finds extra spaces, ex. ' .' and '  '"""
         print('Extraspace')
-        print(_findall('(.{6}  .{6})|(.{6} \.[ \w\n]{6})', self.text))
+        print(_re.findall('(.{6}  .{6})|(.{6} \.[ \w\n]{6})', self.text))
 
     def find_firstnlast(self, pdelim='\n'):
         """Simplifies long texts"""
@@ -69,7 +78,7 @@ class Essay(object):
             print('Please check your pdelim arg')
             return
         for p in spl:
-            f = _findall('[A-Z][^\.!?]*[\.!?]', p)
+            f = _re.findall('[A-Z][^\.!?]*[\.!?]', p)
             try:
                 first, last = '[0] ' + f[0], '[-1] ' + f[-1]
                 print(first, last)
@@ -80,23 +89,23 @@ class Essay(object):
         """Finds unexpected capitals"""
         print('Mid caps')
         mids = list(filter(lambda sent: not('I' in sent),
-                           list(_findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
+                           list(_re.findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
         print(mids)
 
     def find_pronouns(self):
         """Finds uncapitalized I's"""
         print('Pronouns (I\'s)')
-        print(_findall('.{6} i .{6}', self.text))
+        print(_re.findall('.{6} i .{6}', self.text))
 
     def find_topics(self):
         """Returns list of topic sentences"""
         print('Topic sentences')
-        print(_findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text))
+        print(_re.findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text))
 
     def find_wrongcaps(self):
         """Displays unexpected capitals"""
         print('Wrong caps')
-        print(_findall('.{5}\. [a-z0-9].{5}', self.text))
+        print(_re.findall('.{5}\. [a-z0-9].{5}', self.text))
 
     def fix_spaces(self):
         """Fixes bad spaces"""
@@ -111,7 +120,7 @@ class Essay(object):
     def get_paren_citation(self, page_num=True, http_only=False):
         """Returns citations extracted from essay.
            Found using MLA parenthetical standards"""
-        parens = _findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
+        parens = _re.findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
         parens = _rmdup(parens)
         if http_only:
             parens = [x for x in parens if 'http' in x]
@@ -125,15 +134,11 @@ class Essay(object):
 
     def get_sentence_count(self):
         """Returns # of sentences"""
-        return len(_findall('\.\s', self.text))
+        return len(_re.findall('\.\s', self.text))
 
     def get_word_count(self):
         """Returns # of words"""
         return len(self.text.split())
-
-    def is_paren_bal(self):
-        """Finds if parentheses are balanced, returns boolean"""
-        return self.text.count('(') == self.text.count(')')
 
     def print_summary(self):
         """Displays basic stats"""
@@ -151,16 +156,16 @@ class Essay(object):
 class Citation(object):
     """A class for citating content in MLA/Chicago styles
 
-    CATEGORIES:
-    # editor/author
-    # title
-    # container
-    # date
-    # url
-
-    # follows MLA 8 standards
-
-    Data is stored as a dictionary in the object's `data` attribute
+       CATEGORIES:
+       # editor/author
+       # title
+       # container
+       # date
+       # url
+       
+       # follows MLA 8 standards
+       
+       Data is stored as a dictionary in the object's `data` attribute
 
     """
 
@@ -259,7 +264,7 @@ def sort_bib(filename):
         cont.write(content)
 
 class Title(object):
-    """A class for creating proper titles"""
+    """Class Title can be used to create proper titles"""
 
     def __init__(self, title):
         self.title = title
