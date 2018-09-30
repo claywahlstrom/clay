@@ -1,57 +1,17 @@
 
 """
-Graphing: basic graphing data structures
+Graphing: basic structures for visualizing data
 
-histogram: Make histograms to visualize data frequency
-tables: Make basic tables and plots
 
 """
 
 from collections import OrderedDict as _OrderedDict
+import operator as _operator
 import sys as _sys
 
 from clay.util import SortableDict as _SortableDict
 
 SCREEN_WD = 80
-
-def tabulate(dictionary, name=''):
-    """Prints a basic table from the given dictionary called `name`"""
-    assert type(dictionary) != list
-    if len(name) > 0:
-        print(name.upper())
-        print('-' * 30)
-    largestlen = max(map(len, list(dictionary.keys())))
-    for i in dictionary:
-        print(str(i) + ' ' * (largestlen - len(i)), ':', dictionary[i])
-
-def tabulatef(func, start=-5, end=5, step=1, spacing=9,
-              precision=10, roundto=14, file=_sys.stdout):
-    """Prints a table of values from the given a function,
-       bounds, step, and output location"""
-    print(str(func), file=file)
-    print('-'*30, file=file)
-    mapstr = map(str, [start, end, step])
-    maxspace = max(map(len, mapstr))
-    i = start
-    while start <= i <= end:
-        numstring = str(round(i, precision))
-        print(numstring + ' ' * int(maxspace - len(numstring)), '|',
-              end=' ', file=file)
-        try:
-            print(round(func(i), roundto), file=file)
-        except TypeError as te:
-            print(func(i), file=file)
-        except KeyError as ke:
-            print('Error:', ke, file=file)
-        except ZeroDivisionError:
-            print('undefined', file=file)
-        except ValueError:
-            print('domain error', file=file)
-        i = round(i + step, 14)
-
-def test_function(x):
-    """Function for testing `table`"""
-    return x ** (4 / 3) / float(x)
 
 class Graph(object):
 
@@ -142,9 +102,10 @@ class Graph(object):
         self.longest_key_len = longest_key_len
         self.width = width
 
-    def sortbycount(self, reverse=False):
-        import operator
-        std = sorted(self.sd.items(), key=operator.itemgetter(1), reverse=reverse)
+    def sort_by(self, name, reverse=False):
+        if not(name in ('column', 'count')):
+            raise ValueError('name must be column or count')
+        std = sorted(self.sd.items(), key=_operator.itemgetter(('column', 'count').index(name)), reverse=reverse)
         self.sd.clear()
         for i,j in enumerate(std):
             self.sd[j[0]] = j[-1]
@@ -169,15 +130,55 @@ class Histogram(Graph):
         if type(data) == bytes:
             data = data.decode('utf8', errors='ignore')
         sd = _SortableDict()
-        if columns and not data:
-            for col in columns:
-                sd[col] = 0
-        else:
+        if columns and data is None:
+            data = [0] * len(columns)
+        elif columns is None and data:
             columns = data
-            for col in columns:
+
+        for col in columns:
+            if not(col in sd): # prevents overwrite for string data
                 sd[col] = data.count(col)
 
         super(Histogram, self).__init__(sd, title=title, max_width=max_width, sort=sort)
+
+def tabulate(dictionary, name=''):
+    """Prints a basic table from the given dictionary called `name`"""
+    assert type(dictionary) != list
+    if len(name) > 0:
+        print(name.upper())
+        print('-' * 30)
+    largestlen = max(map(len, list(dictionary.keys())))
+    for i in dictionary:
+        print(str(i) + ' ' * (largestlen - len(i)), ':', dictionary[i])
+
+def tabulatef(func, start=-5, end=5, step=1, spacing=9,
+              precision=10, roundto=14, file=_sys.stdout):
+    """Prints a table of values from the given a function,
+       bounds, step, and output location"""
+    print(str(func), file=file)
+    print('-'*30, file=file)
+    mapstr = map(str, [start, end, step])
+    maxspace = max(map(len, mapstr))
+    i = start
+    while start <= i <= end:
+        numstring = str(round(i, precision))
+        print(numstring + ' ' * int(maxspace - len(numstring)), '|',
+              end=' ', file=file)
+        try:
+            print(round(func(i), roundto), file=file)
+        except TypeError as te:
+            print(func(i), file=file)
+        except KeyError as ke:
+            print('Error:', ke, file=file)
+        except ZeroDivisionError:
+            print('undefined', file=file)
+        except ValueError:
+            print('domain error', file=file)
+        i = round(i + step, 14)
+
+def test_function(x):
+    """Function for testing `table`"""
+    return x ** (4 / 3) / float(x)
 
 if __name__ == '__main__':
     s = Histogram(columns=('bc', 'sac', 'aaa'), data='abbcssaaaaaaaaaaacccssacbbcaddsaacc')
