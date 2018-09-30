@@ -26,6 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# for "from clay import *" compatibility
 __all__ = ['align',
            'boxart',
            'files',
@@ -38,8 +39,10 @@ __all__ = ['align',
            'music',
            'networking',
            'physics',
+           'repos',
            'searchtools',
            'shell',
+           'tests',
            'time',
            'util',
            'web',
@@ -47,5 +50,5 @@ __all__ = ['align',
 
 import sys as _sys
 
-# create a temporary version of isUnix to allow for constant declarations
-_isUnix = lambda: any(_sys.platform.startswith(x) for x in ('linux', 'darwin'))
+# create a temporary version of is_unix to allow for constant declarations
+_is_unix = lambda: any(_sys.platform.startswith(x) for x in ('linux', 'darwin'))

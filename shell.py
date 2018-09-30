@@ -12,17 +12,17 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-from clay import _isUnix
+from clay import _is_unix
 
 FLASK_APP = 'app.py' # a common name for Flask web apps
 
-HOME_DIR = _os.environ['HOME'] if _isUnix() else _os.environ['USERPROFILE']
+HOME_DIR = _os.environ['HOME'] if _is_unix() else _os.environ['USERPROFILE']
 
 RUNTIME_ARGS = _sys.argv
 if len(RUNTIME_ARGS[0]) == 0:
     RUNTIME_ARGS[0] = 'python.exe'
 
-TIMEOUT_CMD = 'sleep ' if _isUnix() else 'timeout '
+TIMEOUT_CMD = 'sleep ' if _is_unix() else 'timeout '
 
 TRASH = _os.path.join(HOME_DIR, 'Desktop', 'TRASH')
 
@@ -30,9 +30,9 @@ cd = _os.chdir # alias
 
 def clear():
     """Clears the console window"""
-    if isIdle():
+    if is_idle():
         print('\n' * 40)
-    elif _isUnix():
+    elif _is_unix():
         _os.system('clear')
     else:
         _os.system('cls')
@@ -57,7 +57,7 @@ def copy(src, dst):
     except Exception as e:
         print(e)
         succeed = False
-    if isIdle():
+    if is_idle():
         if succeed:
             print('Complete')
         else:
@@ -69,10 +69,52 @@ cwd = _os.getcwd # alias
 # for linux users
 pwd = _os.getcwd # alias
 
+class FileSizeReport(object):
+    """A class for generating reports on file systems
+       An exmaple of output:
+       
+       .\align.py | 587
+       .\badquotes.txt | 308
+       .\boxes.py | 2027
+       .\collections.py | 3391
+       .\collections_test.txt | 1363
+       ...
+       
+       TODO: file IO
+    
+    """
+    def __init__(self, directory='.'):
+        """Initializes this report using the given directory and stores
+           the result in the string field"""
+        self.directory = directory
+        self.generate()
+        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
+
+    def __repr__(self):
+        """Prints the string representation of this report"""
+        return self.string
+
+    def generate(self):
+        """Generates a report in the format (filename, filesize)"""
+        report = []
+        Walk = _os.walk(self.directory)
+
+        for root, dirs, files in Walk:
+            for file in files:
+                filename = _os.path.join(root, file)
+                report.append((filename, _os.stat(filename).st_size))
+        self.report = report
+
+    def parse(self):
+        """Parses the string field and returns the original report"""
+        splt = [x.split(' | ') for x in self.string.strip().split('\n')]
+        lst = [(x, int(y.strip())) for x, y in splt]
+        return lst
+
 def file_manager(directory=_os.curdir):
     """Opens the system file manager to the specified directory"""
-    from clay.shell import isUnix
-    if isUnix():
+    from clay.shell import is_unix
+    if is_unix():
         fm_name = 'xdg-open' # This should work for most systems
     else:
         fm_name = 'explorer'
@@ -80,7 +122,7 @@ def file_manager(directory=_os.curdir):
 
 def get_disk_drives():
     """Returns a list of drive root paths that are available
-       on this machine. Ex. C:\\"""
+       on this machine. Ex. ['C:\\', 'D:\\', ...]"""
     drives = []
     for letter in _string.ascii_uppercase:
         if _os.path.exists(letter + ':\\'):
@@ -89,24 +131,24 @@ def get_disk_drives():
 
 def get_docs_folder():
     """Returns the location of the documents folder for this computer.
-       Assumes a similar filesystem naming convention to work."""
+       Assumes a Windows-style filesystem to work."""
     from clay.shell import get_disk_drives
     if 'E:\\' in get_disk_drives():
         return r'E:\Docs'
     else:
         return _os.path.join(_os.environ['HOME'], 'Documents')
 
-def isIdle():
+def is_idle():
     """Returns true if the script is running within IDLE,
        false otherwise"""
     return 'idlelib' in _sys.modules
 
-def isPowershell():
+def is_powershell():
     """Returns true if the script is running within PowerShell,
        false otherwise"""
     return len(_sys.argv[0]) > 0 and (not((':' in _sys.argv[0])) or _sys.argv[0].startswith('.'))
 
-def isUnix():
+def is_unix():
     """Returns true if the script is running within a Unix machine,
        false otherwise"""
     return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
@@ -140,13 +182,14 @@ class Compiler(object):
            (debugging info included by default) and excludes any files
            containing the given string `exclude`"""
         from clay.shell import lsgrep
+        _os.chdir(self.directory)
         sources = self.sources
         if sources is None:
             sources = [_os.path.splitext(x)[0] for x in lsgrep(self.src_ext, self.directory, recurse=True)]
         if exclude is not None and len(exclude) > 0:
             sources = list(filter(lambda x: all(not(y in x) for y in exclude), sources))
         if len(self.flags) > 0:
-            opt_str = '-' + ' -'.join(self.flags)
+            opt_str = ' -' + ' -'.join(self.flags)
         else:
             opt_str = ''
         statechanged = False
@@ -167,7 +210,7 @@ class Compiler(object):
                 cmd = self.compiler_name
                 if self.compiler_name == 'csc': # C# specific handling
                     cmd += f' /out:{dst_name} '
-                cmd += f'{opt_str} {src_name}'
+                cmd += f'{opt_str} "{src_name}"'
                 _os.system(cmd)
                 statechanged = True
         if not(statechanged):
@@ -217,15 +260,15 @@ md = _os.mkdir # alias
 
 from shutil import move as mv # alias
 
-def notify(e, seconds=2.25):
-    print(e)
+def notify(message, seconds=2.25):
+    print(message)
     _time.sleep(seconds)
 
-def pause(consoleonly=False):
+def pause(shell_only=False):
     """Pauses the console execution"""
-    if (isIdle() or isUnix()) and not(consoleonly):
+    if (is_idle() or is_unix()) and not(shell_only):
         input('Press enter to continue . . . ')
-    elif not(isIdle()):
+    elif not(is_idle()):
         _subprocess.call('pause', shell=True)
 
 def ren(src, dst, directory=_os.curdir, recurse=False):
@@ -321,7 +364,7 @@ def rm_from_trash(target):
     else:
         i = 1
 
-    if isUnix():
+    if is_unix():
         key = 'linux'
     else:
         key = 'win32'
@@ -340,7 +383,7 @@ def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
     if len(add) > 0:
         title += ' - '  + add
     title = title.replace('<', '^<').replace('>', '^>')
-    if isIdle() or isUnix():
+    if is_idle() or is_unix():
         print('set title -> ' + title)
     else:
         _os.system('title ' + title)
@@ -349,7 +392,7 @@ def start(program):
     """Starts a given program"""
     try:
         command = ''
-        if not(isUnix()):
+        if not(is_unix()):
             command += 'start '
         _os.system(command + program)
     except Exception as e:
@@ -359,7 +402,7 @@ def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
     if seconds < 0 or type(seconds) != int:
         raise ValueError('seconds must be >= and type int')
-    if isIdle() or seconds > 99999:
+    if is_idle() or seconds > 99999:
         if not(hidden):
             print('Waiting for', seconds, 'seconds...')
         _time.sleep(seconds)
