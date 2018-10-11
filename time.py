@@ -5,6 +5,8 @@ time module
 """
 
 import datetime as _dt
+from statistics import mean as _mean
+import time as _time
 
 DEF_COUNTRY = 'usa'
 DEF_CITY    = 'vancouver'
@@ -25,6 +27,78 @@ def get_time_until(year, month, day):
     """Returns the timedelta object from today until the
        given year, month, day"""
     return _dt.datetime(year, month, day) - _dt.datetime.today()
+
+class ReadingTimer(object):
+
+    def __init__(self, pages=0, current_page=0, precision=2):
+        self.pages = pages
+        self.current_page = current_page
+        self.precision = precision
+        self.start_time = 0
+        self.times = []
+        self.__paused = True
+
+    def average_time(self):
+        if len(self.times) == 0:
+            return 0
+        return round(_mean(self.times), self.precision) # 2 for 0.
+
+    def divmod_string(self):
+        dm = divmod(self.average_time(), 60)
+        return ', '.join(map(str, map(lambda t: round(t, self.precision), dm)))
+
+    def elapsed(self):
+        return _time.time() - self.start_time
+
+    def human_report_projected(self):
+        sec_left = self.seconds_left()
+        if sec_left < 60:
+            projected = str(round(sec_left, 2)) + ' seconds'
+        else:
+            projected = str(round(sec_left / 60, 2)) + ' minutes'
+        return projected + ' left'
+
+    def human_report_total(self):
+        total_sec = self.seconds_left(total=True)
+        if total_sec < 60:
+            total = str(round(total_sec, 2)) + ' TOTAL seconds'
+        else:
+            total = str(round(total_sec / 60, 2)) + ' TOTAL minutes'
+        return total
+        
+    def is_paused(self):
+        return self.__paused
+
+    def pages_left(self):
+        return self.pages - self.current_page
+
+    def pause(self):
+        self.__paused_time = _time.time()
+        self.__paused = True
+
+    def resume(self):
+        self.start_time += _time.time() - self.__paused_time
+        self.__paused = False
+
+    def seconds_left(self, total=False):
+        average = self.average_time()
+        if total:
+            return average * self.pages
+        else:
+            return average * self.pages_left()
+
+    def start(self):
+        self.start_time = _time.time()
+        self.__paused = False
+
+    def turn_page(self, forward=True):
+        # complete time-sensitive operations first
+        self.times.append(round(self.elapsed(), self.precision))
+        self.start()
+        if forward:
+            self.current_page += 1
+        else:
+            self.current_page -= 1
 
 class SunTime(object):
     """A class for storing sun data collected from timeanddate.com (c)
