@@ -203,7 +203,7 @@ class CourseCatalogUW(object):
                     found = [anchor for anchor in self.pages[parts[0]].select('a[name^=""]') \
                         if anchor.has_attr('name') and len(anchor['name']) > 0 and \
                             anchor['name'].endswith(parts[1])]
-                    
+
                     if len(found) > 0:
                         found = found[0]
                         instructor = ''
@@ -232,70 +232,6 @@ class CourseCatalogUW(object):
         return {'message': message,
                 'results': {'course_list': course_list,
                             'header': header}}
-
-class Elements(object):
-    """Class Elements can be used to find and store elements
-       from a given web page or markup"""
-
-    def __init__(self, page=None, element=None, method='find_all', use_local=False):
-        """Initalizes this Elements object"""
-        if page is None and element is None:
-            page = TEST_LINK
-            element = 'link'
-        self.request = None
-        if type(page) == bytes:
-            self.src = page
-        elif _os.path.exists(page) and not(use_local):
-            with open(page, 'rb') as fp:
-                self.src = fp.read()
-        else:
-            betterheaders = WEB_HDRS.copy()
-            self.request = _requests.get(page, headers=betterheaders)
-            if not(self.request.content.startswith(b'<')):
-                betterheaders.pop('Accept-Encoding')
-                self.request = _requests.get(page, headers=betterheaders)
-            self.src = self.request.content
-        self.page = page
-        self.soup = _BS(self.src, 'html.parser')
-        self.element = element
-        self.method = method
-
-    def find(self):
-        self.__found = eval('self.soup.{}("{}")'.format(self.method, self.element))
-        if len(self.__found) == 0:
-            print('No elements found')
-
-    def get_found(self):
-        return self.__found
-
-    def set_element(self, element):
-        self.element = element
-
-    def show(self, attribute='text', file=_sys.stdout):
-        print('Elements:', file=file)
-        for i in self.get_found():
-            try:
-                if attribute == 'text':
-                    print(i.get_text(), file=file)
-                elif attribute == 'string':
-                    print(i.string, file=file)
-                else:
-                    print(i[attribute], file=file)
-            except KeyError as e:
-                print('Key', e, 'for', i, 'not found')
-
-    def store_elements(self, filename, inner='text'):
-        with open(filename, 'w') as fp:
-            self.show(inner=inner, file=fp)
-        if _os.path.exists(filename):
-            print('Elements stored successfully')
-        else:
-            print('Something went wrong')
-
-    def store_request(self, filename):
-        assert type(self.src) == bytes
-        with open(filename, 'wb') as fp:
-            fp.write(self.src)
 
 def find_anchors(location, query={}, internal=True, php=False):
     """Returns anchor references from a location (file name or uri)
@@ -348,7 +284,7 @@ def get_vid(vid, vid_type='mp4'):
 class HtmlBuilder(object):
 
     INDENT = '    ' # 4 spaces
-    
+
     def __init__(self):
         self.indent = 0
         self.builder = ''
@@ -369,7 +305,7 @@ class HtmlBuilder(object):
             self.builder += ' /'
         else:
             self.indent += 1
-  
+
         self.builder += '>'
         if len(text) > 0:
             self.builder += text
@@ -384,25 +320,27 @@ class HtmlBuilder(object):
         self.builder += '</' + tag + '>'
         if not(has_text):
             self.add_nl()
-           
+
         print('build', tag, 'now', self.indent)
-        
+
     def to_string(self):
         return self.builder
 
 class UrlBuilder(object):
 
     def __init__(self, base):
-        self.url = base
+        self.base_url = base
 
     def with_query_params(self, params):
+        if not(hasattr(self, 'url')):
+            self.url = self.base_url
         if '?' in self.url: # already exists
             self.url += '&'
         else: # does not exist
             self.url += '?'
         self.url += urllib.parse.urlencode(params)
         return self
-        
+
     def to_string(self):
         return self.url
 
@@ -410,12 +348,12 @@ class WeatherUrlBuilder(UrlBuilder):
 
     def __init__(self):
         super(WeatherUrlBuilder, self).__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
-        self.with_query_params({'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
+        self.base_url = self.with_query_params({'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
             'format': 'json',
-            'language': 'en-US'})
+            'language': 'en-US'}).to_string()
 
     def with_geocode(self, lat, lon):
-        self.url += '&' + urllib.parse.urlencode({'geocode': str(lat) + ',' + str(lon)})
+        self.url = self.base_url + '&' + urllib.parse.urlencode({'geocode': str(lat) + ',' + str(lon)})
         return self
 
 class WebDocument(object):
@@ -517,7 +455,7 @@ class WebDocument(object):
         query = url_split.query if len(url_split.query) > 0 else None
         title = _os.path.basename(url_split.path)
         add_ext = not(any(ext in title for ext in ('htm', 'aspx', 'php'))) and len(title) < 2
-        
+
         if len(title) < 2: # if title is '' or '/'
             title = 'index'
             add_ext = True
@@ -552,7 +490,7 @@ class WebDocument(object):
 
     def get_uri(self):
         return self.uri
-    
+
     def launch(self, browser='firefox'):
         """Opens this document's `uri` in your favorite browser"""
         if _is_unix():
@@ -563,16 +501,24 @@ class WebDocument(object):
     def set_uri(self, uri):
         self.uri = uri
 
+    def size(self):
+        response = _requests.head(self.uri, headers=_WEB_HDRS)
+        if 'Content-Length' in response.headers:
+            size = int(response.headers['Content-Length'])
+        else:
+            size = len(_requests.get(self.uri, headers=_WEB_HDRS).content)
+        return size
+
 class WundergroundUrlBuilder(UrlBuilder):
 
     def __init__(self):
         super(WundergroundUrlBuilder, self).__init__('https://www.wunderground.com/health/us/')
-        
+
     def with_location(self, state, city, station):
-        self.url += '/'.join((state, city, station))
+        self.url = self.base_url + '/'.join((state, city, station))
         self.with_query_params({'cm_ven': 'localwx_modpollen'})
         return self
-        
+
     def to_string(self):
         return self.url
 
@@ -581,7 +527,7 @@ class PollenUrlBuilderFactory(object):
     def __init__(self):
         self.weather = WeatherUrlBuilder()
         self.wunderground = WundergroundUrlBuilder()
-        
+
 class Pollen(object):
 
     """Class Pollen can be used to retrieve and store information about
@@ -597,6 +543,7 @@ class Pollen(object):
                            'wu poll': URL_FACTORY.wunderground.with_location('wa', 'camas', 'KWACAMAS42').to_string()}}
     for url in SOURCE_URLS:
         SOURCE_URLS[url]['weather text'] = 'https://weather.com/forecast/allergy/l/'
+    del url # remove from scope
     TYPES = ('grass', 'ragweed', 'tree')
     WEATHER_QUERY_PARAMS = ':4:US'
 
@@ -739,6 +686,63 @@ class Pollen(object):
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
 
+class TagFinder(object):
+    """Class TagFinder can be used to find and store elements
+       from a given web page or markup"""
+
+    def __init__(self, page):
+        """Initalizes this TagFinder object"""
+        self.request = None
+        if type(page) == bytes:
+            self.src = page
+        elif _os.path.exists(page):
+            with open(page, 'rb') as fp:
+                self.src = fp.read()
+        else:
+            betterheaders = WEB_HDRS.copy()
+            self.request = _requests.get(page, headers=betterheaders)
+            if not(self.request.content.startswith(b'<')):
+                betterheaders.pop('Accept-Encoding')
+                self.request = _requests.get(page, headers=betterheaders)
+            self.src = self.request.content
+        self.page = page
+        self.soup = _BS(self.src, 'html.parser')
+
+    def find(self, tag, method='find_all'):
+        self.__found = eval('self.soup.{}("{}")'.format(method, tag))
+        if len(self.__found) == 0:
+            print(f'No tags matchin "{tag}" found')
+        return self.__found
+
+    def show(self, attribute='text', file=_sys.stdout):
+        print('Tags:', file=file)
+        for i in self.__found:
+            try:
+                if attribute == 'text':
+                    print(i.get_text(), file=file)
+                elif attribute == 'string':
+                    print(i.string, file=file)
+                else:
+                    print(i[attribute], file=file)
+            except KeyError as e:
+                print('Key', e, 'for', i, 'not found')
+        if len(self.__found) == 0:
+            print('None', file=file)
+
+    def store_request(self, filename):
+        assert type(self.src) == bytes
+        with open(filename, 'wb') as fp:
+            fp.write(self.src)
+
+    def store_tags(self, filename, inner='text'):
+        try:
+            with open(filename, 'w') as fp:
+                self.show(inner=inner, file=fp)
+            if _os.path.exists(filename):
+                print('TagFinder store successful')
+        except Exception as e:
+            print(f'TagFinder store failed: {e}')
+
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
         super(ZipCodeNotFoundException, self).__init__(repr(self), *args, **kwargs)
@@ -775,11 +779,11 @@ if __name__ == '__main__':
     it('returns Official Minecraft site html title', get_title(TEST_LINK), 'Official site | Minecraft')
     it('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
-    we1 = Elements('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
+    we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
     we1.find()
     it('best music school list contains 21 elements', we1.get_found(), 21, len)
     we1.show()
-    we2 = Elements()
+    we2 = TagFinder(TEST_LINK)
     we2.find()
     we2.show(attribute='href')
     print()
