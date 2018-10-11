@@ -122,13 +122,6 @@ class Search(object):
                                                                                 self.ext))
             fp.write(self.raw_text)
 
-def executable_search(string, ext='exe'):
-    """Returns the tuple of results of from searching
-       program files directories with the given string"""
-    s = Search('name', folder=r'C:\Program Files', string=string, ext=ext)
-    t = Search('name', folder=r'C:\Program Files (x86)', string=string, ext=ext)
-    return dict({s.folder: s.get_results(), t.folder: t.get_results()})
-
 def print_containing_files(string, directories, ext=None):
     """Given a string, directory(ies), and optional extension,
        prints the search results for the files containing the
@@ -142,7 +135,14 @@ def print_containing_files(string, directories, ext=None):
         print(s) # print results
         print()
 
+def search_executables(string, ext='exe'):
+    """Returns the tuple of results of from searching
+       program files directories with the given string"""
+    s = Search('name', folder=r'C:\Program Files', string=string, ext=ext)
+    t = Search('name', folder=r'C:\Program Files (x86)', string=string, ext=ext)
+    return dict({s.folder: s.get_results(), t.folder: t.get_results()})
+
 if __name__ == '__main__':
     import pprint
     s = Search('cont', _os.path.join(_get_docs_folder(), r'Clay\Notes'), 'the')
-    pprint.pprint(executable_search('chrome'))
+    pprint.pprint(search_executables('chrome'))
