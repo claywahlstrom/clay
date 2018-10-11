@@ -177,7 +177,7 @@ def tabulatef(func, start=-5, end=5, step=1, spacing=9,
         i = round(i + step, 14)
 
 def test_function(x):
-    """Function for testing `table`"""
+    """Function used for testing"""
     return x ** (4 / 3) / float(x)
 
 if __name__ == '__main__':
