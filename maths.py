@@ -8,15 +8,26 @@ Collection of common and advanced math operations
 import math
 import statistics
 
-from clay.shell import isUnix as _isUnix
+from clay.shell import is_unix as _is_unix
 
-if _isUnix():
-    LIMPATH = r'/home/clayton/Desktop/get_liminf.log'
+if _is_unix():
+    LIMPATH = r'/home/clayton/Desktop/liminf.log'
 else:
-    LIMPATH = r'C:\Python37\Lib\site-packages\clay\get_liminf.log'
-### finally clear the file
-##with open(LIMPATH, 'w') as fp:
-##    pass
+    LIMPATH = r'C:\Python37\Lib\site-packages\clay\liminf.log'
+# finally clear the file
+#     with open(LIMPATH, 'w') as fp:
+#        pass
+
+TESTS = {
+    'limf': lambda x: x / (2 * x - 1),
+    'invtrig': lambda x: math.acos(x),
+    'harmonic': lambda n: 1 / n,
+    'alternating': lambda n: (-1) ** n * (1 / n ** 2),
+    'convergent': lambda n: 5 * (2 / 3) ** n,
+    'convergent2': lambda n: n ** 2 / math.factorial(2 * n - 1),
+    'quadratic': lambda n: 1 + 2 * n + n ** 2,
+    'quadratic2': lambda n: n ** 2 + 1
+}
 
 average = statistics.mean # alias
 
@@ -41,73 +52,22 @@ def cubrt(x):
     """Returns the cubed root of x"""
     return round(x ** (1/3), 12)
 
-def differentiate(f, x, deltax=1e-12):
+def differential(f, x, deltax=1e-12):
     """Returns the derivative of the given function at the point x.
        function at a point. File version in PyRepo dir
 
        deltax = 1e-12 or 1e-11 works best."""
     return (f(x + deltax) - f(x)) / (deltax)
-
-def get_factors(number):
+    
+def factors(number):
     """Returns a list of factors for the given int"""
-    assert type(number) == int, 'type int is required'
+    if type(number) != int:
+        raise ValueError('number must be an int')
     factors = {}
     for num in range(1, number + 1):
         if number % num == 0: # if no remainder
             factors[num] = int(number / num)
     return factors
-
-def get_limit(func, num=0, side=None, step=0.1, dist=1):
-    """Returns list of limit values "step" distance apart,
-       starting "dist" from num"""
-    from collections import OrderedDict
-    lims = OrderedDict()
-    if side == 'right':
-        x = num + dist
-        while x > num:
-            try:
-                lims[x] = func(x)
-            except Exception as e:
-                lims[x] = e
-            x -= step
-        return lims
-    else: # left
-        x = num - dist
-        while x < num:
-            try:
-                lims[x] = func(x)
-            except Exception as e:
-                lims[x] = e
-            x += step
-        return lims
-
-def get_M(func, interval):
-    """Returns the max M of the given function on the closed interval"""
-    assert type(interval) == list or type(interval) == tuple \
-           and len(interval) == 2
-    m = interval[0]
-    mval = abs(func(m))
-    for i in interval[1:]:
-        if abs(func(m)) > mval:
-            m = i
-            mval = func(m)
-    return m        
-
-def get_mult_of_pi(number):
-    """Returns the quotient with divisor as pi"""
-    return number / math.pi
-
-def get_roots(a=0, b=0, c=0):
-    """Returns a tuple of roots (intersections with the x-axis)
-       for conic equations"""
-    if not(a and b and c):
-        raise Exception('please enter some values')
-    discriminant = b ** 2 - 4 * a * c
-    if discriminant < 0:
-        import cmath as math
-    root1 = (-b - math.sqrt(discriminant)) / (2 * a)
-    root2 = (-b + math.sqrt(discriminant)) / (2 * a)
-    return root1, root2
 
 class FractionReducer(object):
     """Class FractionReducer can be used to reduce fractions to
@@ -129,7 +89,7 @@ class FractionReducer(object):
         print('-' * len(str(max(self.top, self.bottom))))
         print(self.bottom)
 
-def integrate(func, interval=None, rects=100000):
+def integral(func, interval=None, rects=100000):
     """Returns the integral from the inclusive tuple (a, b) using
        a Riemann sum approximation"""
     if interval is None:
@@ -149,16 +109,16 @@ def integrate(func, interval=None, rects=100000):
         x += (b - a) / rects
     return area
 
-def get_liminf(func, i=1, step_mag=False, log=True):
+def liminf(func, i=1, step_mag=False, log=True):
     """Returns the limit to +infinity. Handles division by zero
        and divergent funcs"""
     if log:
         file = open(LIMPATH, 'w')
-        print('get_liminf for', func)
+        print('liminf for', func)
     else:
         from sys import stdout as file
 
-    print('get_liminf for', func, file=file)
+    print('liminf for', func, file=file)
 
     while True:
         try:
@@ -203,51 +163,51 @@ def get_liminf(func, i=1, step_mag=False, log=True):
         file.close()
     return round(now, 10)
 
-def get_series_sum(f, a=1, b=None, log=True):
-    """Returns sum for the given series f starting at a.
-       Partial sum if b is supplied"""
-    if b == None:
-        b = 10 ** 4
-
-    print('series summation for', f)
-    try:
-        f(b)
-    except Exception as e:
-        print('Factorial in function AND', e)
-        b = 80
-    if f(b) == 0 or get_liminf(f, i=a, log=log) == 0:
-        tot = 0
-        for i in range(a, b + 1):
-            # print(i, f(i))
+def limit(func, num=0, side=None, step=0.1, dist=1):
+    """Returns list of limit values "step" distance apart,
+       starting "dist" from num"""
+    from collections import OrderedDict
+    lims = OrderedDict()
+    if side == 'right':
+        x = num + dist
+        while x > num:
             try:
-                tot += f(i)
+                lims[x] = func(x)
             except Exception as e:
-                print(e)
-                break
-            if f(i) == 0 or i > b: break
-        return tot
-    else:
-        print("Series doesn't converge")
-        return None
+                lims[x] = e
+            x -= step
+        return lims
+    else: # left
+        x = num - dist
+        while x < num:
+            try:
+                lims[x] = func(x)
+            except Exception as e:
+                lims[x] = e
+            x += step
+        return lims
 
 # natural log
 ln = math.log #def
 
+def max_M(func, interval):
+    """Returns the max M of the given function on the closed interval"""
+    if not(type(interval) in (list, tuple)) and len(interval) != 2:
+        raise ValueError('interval must be iterable and have two values')
+    step = 0.001
+    m = interval[0]
+    mval = abs(func(m))
+    for i in range(m, interval[1] + step, step):
+        if abs(func(m)) > mval:
+            m = i
+            mval = abs(func(m))
+    return m        
+
 median = statistics.median # alias
 
-def newtons_method(f, x):
-    """Given a function and float guess, returns the roots using
-       Newton's Method"""
-    return _newtons_method_helper(f, x, 0)
-
-def _newtons_method_helper(f, x, n):
-    """Given expected input and call n, returns expected and throws
-       an exception if not"""
-    if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
-        return round(x, 9)
-    elif n > 200: # max recursion depth
-        raise ValueError('no roots for function', f)
-    return _newtons_method_helper(f, x - f(x) / differentiate(f, x), n + 1)
+def pi_count(number):
+    """Returns the quotient with divisor as pi"""
+    return number / math.pi
 
 class Polar(object):
     """Class Polar can be used to convert from polar to cartesian"""
@@ -285,45 +245,74 @@ class Radical(object):
                         if (self.right / (i ** 2)).is_integer()])
         return div[-1] if len(div) > 0 else 1 # ternary operation
 
-def test_limf(x):
-    return x / (2 * x - 1)
+def roots(a=0, b=0, c=0):
+    """Returns a tuple of roots (intersections with the x-axis)
+       for conic equations"""
+    if not(a and b and c):
+        raise Exception('please enter some values')
+    discriminant = b ** 2 - 4 * a * c
+    if discriminant < 0:
+        import cmath as math
+    root1 = (-b - math.sqrt(discriminant)) / (2 * a)
+    root2 = (-b + math.sqrt(discriminant)) / (2 * a)
+    return root1, root2
+    
+def roots_newtons_method(f, x):
+    """Given a function and float guess, returns the roots using
+       Newton's Method"""
+    return _roots_newtons_method_helper(f, x, 0)
 
-def test_invtrig(x):
-    return math.acos(x)
+def _roots_newtons_method_helper(f, x, n):
+    """Given expected input and call n, returns expected and throws
+       an exception if not"""
+    if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
+        return round(x, 9)
+    elif n > 200: # max recursion depth
+        raise ValueError('no roots for function', f)
+    return _roots_newtons_method_helper(f, x - f(x) / differential(f, x), n + 1)
 
-def test_harmonic(x):
-    return 1 / x
+def series_sum(f, a=1, b=None, log=True):
+    """Returns sum for the given series f starting at a.
+       Partial sum if b is supplied"""
+    if b == None:
+        b = 10 ** 4
 
-def test_alternating(n):
-    return (-1) ** n * (1 / n ** 2)
-
-def test_convergent(n):
-    return 5 * (2 / 3) ** n
-
-def test_convergent2(n):
-    return n ** 2 / math.factorial(2 * n - 1)
-
-def test_quadratic(n):
-    return 1 + 2 * n + n ** 2
-
-def test_quadratic2(n):
-    return n ** 2 + 1
-
+    print('series summation for', f)
+    try:
+        f(b)
+    except Exception as e:
+        print('Factorial in function AND', e)
+        b = 80
+    if f(b) == 0 or liminf(f, i=a, log=log) == 0:
+        tot = 0
+        for i in range(a, b + 1):
+            # print(i, f(i))
+            try:
+                tot += f(i)
+            except Exception as e:
+                print(e)
+                break
+            if f(i) == 0 or i > b: break
+        return tot
+    else:
+        print("Series doesn't converge")
+        return None
+        
 if __name__ == '__main__':
     print('DEMO')
     print('------------') # 12
     print('FractionReducer(3, 39).print()')
     FractionReducer(3, 39).print()
-    print('INTEGRAL from 0 to 1', integrate(test_invtrig, (0, 1)))
+    print('INTEGRAL from 0 to 1', integral(TESTS['invtrig'], (0, 1)))
     print('LIMIT OF test_harmonic, expected 0.5')
-    lim = get_limit(test_harmonic, num=2, side='right', step=0.001, dist=2)
+    lim = limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2)
     print(list(lim.values())[-1])
 
     print('expecting', -1.0)
-    print('testing newtons_method: ', newtons_method(test_quadratic, 10))
+    print('testing newton\'s method: ', roots_newtons_method(TESTS['quadratic'], 10))
     try:
         print('expecting ValueError')
-        print('testing: ', newtons_method(test_quadratic2, 10))
+        print('testing: ', roots_newtons_method(TESTS['quadratic2'], 10))
     except Exception as e:
         print(e)
     print('RADICAL CLASS')
@@ -335,18 +324,18 @@ if __name__ == '__main__':
 
     print('LIMITS TO INFINITY')
     print('expecting 0.5')
-    print(get_liminf(test_limf, step_mag=True, log=False))
+    print(liminf(TESTS['limf'], step_mag=True, log=False))
     print('expecting 0.0')
-    print(get_liminf(test_harmonic, step_mag=True, log=True))
+    print(liminf(TESTS['harmonic'], step_mag=True, log=True))
 
     print('LIMITS FOR SERIES')
-    print(get_series_sum(test_alternating, log=True))
+    print(series_sum(TESTS['alternating'], log=True))
 
     import clay.graphing as g
-    g.tabulatef(test_alternating, 0, 30)
+    g.tabulatef(TESTS['alternating'], 0, 30)
 
     print('expecting 15')
-    print(get_series_sum(test_convergent, a=0))
+    print(series_sum(TESTS['convergent'], a=0))
     print('expecting 1.7449...')
-    print(get_series_sum(test_convergent2))
+    print(series_sum(TESTS['convergent2']))
 
