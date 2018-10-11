@@ -67,4 +67,4 @@ class WindowHandler(object):
                 _time.sleep(1.0)
 
 if __name__ == '__main__':
-    print(WindowHandler('.*Python.*', regex=True).getnames())
+    print('current windows:', WindowHandler('.*Python.*', regex=True).getnames())
