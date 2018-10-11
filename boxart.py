@@ -1,10 +1,8 @@
 
 """
-Box creation for text
+Box art to surround text.
 
 """
-
-import math as _math
 
 def fullbox(text, thickness=1, border=1):
     """Prints a formatted box based on "thickness" and "border" around text"""
@@ -32,9 +30,7 @@ def __printline(text, thickness):
 def box(text, width=0, height=3, module=False):
     """Prints a formatted box based on size of text w/ thickness of 1.
 
-    Option for module headers to customize titles
-
-    """
+       Option for module headers to customize titles"""
     if width < len(text) + 4: # if width is zero
         for line in text.split('\n'):
             if len(line) + 4 > width:
