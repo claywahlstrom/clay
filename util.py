@@ -160,8 +160,6 @@ class SortableDict(_collections.OrderedDict):
         for key in part:
             self[key] = copy[key]
 
-ViewModel = Model # alias
-
 class Watch(object):
     """Holds a list of objects to display. Mainly used for tracking variables
        in the debugging phase of a project."""
