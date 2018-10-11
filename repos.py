@@ -4,6 +4,7 @@ Custom repositories
 
 """
 
+import datetime as _dt
 import json as _json
 import os as _os
 
@@ -63,8 +64,6 @@ class CRUDRepository(object):
 
         print('pk', pk, 'updated')
 
-        self.write()
-
     def update_prop(self, pk, prop, value):
         self.__ensure_connected()
         self.__ensure_exists(pk)
@@ -74,11 +73,25 @@ class CRUDRepository(object):
         self.__ensure_connected()
         with open(self.file, 'w') as fp:
             _json.dump(self.db, fp)
-        print('database written')
+        print(f'database "{self.file}" written')
 
 class UserRepository(CRUDRepository):
     def __init__(self, primary_key, file='users'):
         super(UserRepository, self).__init__(file, primary_key)
+        
+    def prune(self, date_prop, date_format, days=30):
+        """Prunes users based on the database date if the date is days old"""
+        modified = False
+        temp = self.db.copy() # prevents concurrent modification errors
+        for pk in self.db:
+            days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
+            if _dt.datetime.strptime(temp[pk][date_prop], date_format) <= days_ago:
+                modified = True
+                print(f'pruning {pk}...')
+                temp.pop(pk)
+        self.db = temp
+        if modified:
+            self.write()
 
 class UserWhitelist(object):
     
