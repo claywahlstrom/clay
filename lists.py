@@ -8,15 +8,15 @@ Basic operations for lines, lists, and files
 
 TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
-def get_lines_joined(file, join_sep=', '):
+def join_lines(file, join_sep=', '):
     """Returns the lines of text from the given file (object or str)
-       joined by ', '"""
-    if type(arg) == list:
-        return join_sep.join(arg)
-    elif arg.__class__.__module__ == '_io':
-        fp = arg
-    elif type(arg) == str:
-        fp = open(arg, 'r')
+       joined by the separator"""
+    if type(file) == list:
+        return join_sep.join(file)
+    elif file.__class__.__module__ == '_io':
+        fp = file
+    elif type(file) == str:
+        fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
 
 def printall(items):
