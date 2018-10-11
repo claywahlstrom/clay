@@ -99,6 +99,10 @@ class File(object):
         """Prints the binary contents of this file"""
         with open(self.name, 'rb') as fp:
             print(fp.read())
+            
+    def size(self):
+        """Returns the size of this file"""
+        return _os.path.getsize(name)
 
     def switch_lf(self):
         """Switches the linefeed type from a unix-based machine to
@@ -135,23 +139,6 @@ def fix_quotes(filename):
         print('Error:', e)
     finally:
         fp.close()
-
-def get_size(name, local=True):
-    """Returns the size of the given file or uri.
-       Returns 0 if no size was found."""
-    size = 0 # default if no size is found
-    if _os.path.exists(name) and not(local):
-        size = _os.path.getsize(name)
-    else:
-        if _os.path.basename(name) or not(local):
-            response = _requests.head(name, headers=_WEB_HDRS)
-            if 'Content-Length' in response.headers:
-                size = int(response.headers['Content-Length'])
-            else:
-                size = len(_requests.get(name, headers=_WEB_HDRS).content)
-        else:
-            raise Exception('Basename not found. Need an absolute url path')
-    return size
 
 def save(text, name='saved_text.txt', append_epoch=True):
     """Saves the given text to the file with sequential numbering"""
