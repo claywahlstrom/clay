@@ -4,6 +4,8 @@ google: open common Google(TM) apps using Python
 
 """
 
+from urllib.parse import urlencode as _urlencode
+
 DEF_BROWSER = 'firefox'
 
 def launch_gs_app(name, browser, url):
@@ -35,8 +37,7 @@ class GoogleSuite(object):
         launch_gs_app('translate', self.browser, 'https://translate.google.com/')
 
     def search(self, query):
-        from urllib.parse import urlencode
-        launch_gs_app('search', self.browser, GoogleSuite.SEARCH_URL.format(urlencode([('q', query)])))
+        launch_gs_app('search', self.browser, GoogleSuite.SEARCH_URL.format(_urlencode([('q', query)])))
 
 if __name__ == '__main__':
     gs = GoogleSuite('chrome')
