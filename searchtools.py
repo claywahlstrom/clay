@@ -114,6 +114,14 @@ class Search(object):
                   '\x08' * self.last_len + arg, end='', flush=True)
             self.last_len = len(arg)
 
+    def results_to_list(self):
+        """Returns a list of full path names found in this search"""
+        files = []
+        for result in self.results:
+            for file in self.results[result]:
+                files.append(_os.path.join(result, file))
+        return files
+
     def write_output(self, filename):
         """Writes the search query to the given output file"""
         with open(filename, 'w') as fp:
