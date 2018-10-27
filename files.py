@@ -142,23 +142,23 @@ def fix_quotes(filename):
 
 def save(text, name='saved_text.txt', append_epoch=True):
     """Saves the given text to the file with sequential numbering"""
-    SP = _os.path.splitext(name)
+    split_ext = _os.path.splitext(name)
     if append_epoch:
-        name = '{}-{}{}'.format(SP[0], int(time.time()), SP[-1])
+        name = '{}-{}{}'.format(split_ext[0], int(time.time()), split_ext[-1])
     else:
         x = 0
-        name = _save_helper(SP, x)
+        name = _save_helper(split_ext, x)
         while _os.path.exists(name):
             x += 1
-            name = _save_helper(SP, x)
+            name = _save_helper(split_ext, x)
     with open(name, 'w') as fp:
         fp.write(str(text))
     return name
 
-def _save_helper(SP, x):
+def _save_helper(split_ext, x):
     """Returns a possible filename. Helps `save` with finding a
        valid name for a file"""
-    return '{}-{:03d}{}'.format(SP[0], x, SP[-1])
+    return '{}-{:03d}{}'.format(split_ext[0], x, split_ext[-1])
 
 def replace_text(name, old, new, recurse=False, ext=''):
     """Replaces `name` with binary string params `old` and `new`"""
