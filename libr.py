@@ -18,11 +18,11 @@ from clay.web import get_title as _get_title, WEB_HDRS as _WEB_HDRS
 
 COM_SP = ', '
 # ! fix topics method for 'e.g.', 'et al. author' and other abbreviations, list in PER_EXCEPTIONS
-PER_EXCEPTIONS = ['e.g.', 'et al.', 'i.e.'] # work in progress, may not be needed if not many in essay
+PER_EXCEPTIONS = ['e.g.', 'et al.', 'i.e.',
+                  'Mrs.', 'Ms.', 'Mr.', 'Dr.'] # work in progress, may not be needed if not many in essay
 PER_SP = '. '
-SHORT_WORDS = ['a','am','an','and',
-             'for','in','of',
-             'on','the','to']
+SHORT_WORDS = ['a', 'am', 'an', 'and', 'for',
+               'in', 'of', 'on', 'the', 'to']
 TEST_LINKS = [
     'https://www.youtube.com/watch?v=r9cnHO15YgU',
     'http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html'
@@ -57,10 +57,18 @@ class Essay(object):
         try:
             self.text = self.text[:(self.text).index(end)] # remove extra fat
         except:
-            print('Couldn\'t remove extra fat from text')
+            print('Could not remove extra fat from the text')
+
+        try:
+            for exc in PER_EXCEPTIONS:
+                self.text = self.text.replace(exc, exc.replace('.', ''))
+        except Exception as e:
+            print(e)
+            print('Could not remove the period exceptions from the text')
 
     def __repr__(self):
-        return f'Essay(source={{{self.source[:20]}...}}, line_start={self.line_start})'
+        preview = self.source[:20].replace('\n', '\\n')
+        return f'Essay(source={{{preview}...}}, line_start={self.line_start})'
         
     def are_paren_bal(self):
         """Finds if parentheses are balanced, returns boolean"""
@@ -74,16 +82,18 @@ class Essay(object):
     def find_firstnlast(self, pdelim='\n'):
         """Simplifies long texts"""
         spl = self.text.split(pdelim)
-        if '' in spl: # if parsed incorrectly
+        if spl.count('') > len(spl) / 2: # if half parsed incorrectly
             print('Please check your pdelim arg')
             return
         for p in spl:
-            f = _re.findall('[A-Z][^\.!?]*[\.!?]', p)
+            f = _re.findall('([A-Z][^\.!?]*[\.!?]) [A-Z]', p)
             try:
                 first, last = '[0] ' + f[0], '[-1] ' + f[-1]
-                print(first, last)
+                print(first)
+                print(last)
             except: # if heading of section
                 print(p)
+            print()
 
     def find_midcaps(self):
         """Finds unexpected capitals"""
@@ -104,11 +114,17 @@ class Essay(object):
 
     def find_wrongcaps(self):
         """Displays unexpected capitals"""
-        print('Wrong caps')
+        print('Possibly wrong caps')
         print(_re.findall('.{5}\. [a-z0-9].{5}', self.text))
 
+    def fix_quotes(self):
+        """Replaces curly quotes with straight ones"""
+        for double in ('\x9c', '\x9d'):
+            self.text = self.text.replace('\xe2\x80' + double, '"')
+        self.text = self.text.replace('\xe2\x80\x99', "'")
+
     def fix_spaces(self):
-        """Fixes bad spaces"""
+        """Replaces improper spacing"""
         self.text = self.text.replace('  ', ' ') # extra space
         self.text = self.text.replace(' .', '.') # period before
         self.text = self.text.replace('.  ', '. ') # space after
@@ -136,17 +152,24 @@ class Essay(object):
         """Returns # of sentences"""
         return len(_re.findall('\.\s', self.text))
 
-    def get_word_count(self):
+    def get_word_count(self, ignore_headings=True):
         """Returns # of words"""
-        return len(self.text.split())
+        lines = self.text.split('\n')
+        count = 0
+        for line in lines:
+            if len(line) > 0:
+                # assumes a paragraph has at least one period
+                if not(ignore_headings and line.count('.') == 0):
+                    count += len(line.split())
+        return count
 
     def print_summary(self):
         """Displays basic stats"""
         print(self)
-        print('para', self.paragraphs())
-        print('per', self.periods())
-        print('sents', self.sents())
-        print('words', self.words())
+        print('para', self.get_paragraph_count())
+        print('per', self.get_period_count())
+        print('sents', self.get_sentence_count())
+        print('words', self.get_word_count())
 
     def save_topics(self, filename='savedtopics.txt'):
         with open(filename, 'w') as f:
@@ -294,7 +317,7 @@ if __name__ == '__main__':
     e.print_summary()
     e.find_wrongcaps()
     e.find_midcaps()
-    e.find_extraspaces()
+    e.find_extraspace()
     e.find_topics()
     e.fix_spaces()
 
