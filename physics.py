@@ -7,28 +7,8 @@ physics: goodies ranging from constants to mechanics to electromagnetism
 import collections as _collections
 import math as _math
 
-# defined first for scope solutions
-mu0 = 4e-7 * _math.pi # T * m / A : magnetic constant
+from clay.constants import *
 
-AVOGADRO = 6.022140857e23 # number of atoms in 12g of Carbon-12
-C = 6.24150975e18     # A * s : charge by electrons, Coulomb
-G = 6.67408e-11       # m^3 / (kg * s^2) : gravitational constant
-R = 0.082057          # L * atm * K^-1 * mol^-1, gas constant
-R_energy = 8.314472   # J * K^-1 * mol^-1, gas constant
-R_h = 1.09737316e7    # m^-1 : Rydberg's constant
-R_y = 2.17987e-18     # J : Rydberg energy
-a_g = 9.81            # m/s^2 : acceleration due to gravity
-e = 1 / C             # C : charge of an electron
-c0 = 299792458        # m/s : speed of light in a vacuum
-eps0 = 1 / (mu0 * c0 ** 2) # s^4 * A^2 / (kg * m^3), F / m : electric constant
-h = 6.626e-34         # J * s : Plank's constant
-k = 9.0e9             # N * m^2 / C^2 : Coulomb's constant
-# k = 1 / (4 * _math.pi * e_0) # also Coulomb's constant
-mu0 = 4e-7 * _math.pi # T * m / A : magnetic constant
-
-c0 = 1 / _math.sqrt(mu0 * eps0) # m/s : speed of light in a vacuum
-
-KELVIN_OFFSET = 273.15 # degrees
 OHMS_TABLE = {'I': 'V/R',
               'V': 'I*R',
               'R': 'V/I'}
@@ -47,6 +27,11 @@ def apply_ohms_law(V=None, I=None, R=None):
                 print('missing keyword arguments, 2 required')
                 return
 
+def capacitor_energy(charge, distance, area):
+    """Given charge (C), distance (m) and area (m^2), returns the potential
+       energy of this capacitor"""
+    return charge ** 2 * distance / (2 * esp0 * area)
+
 class Charge(object):
 
     """Class Charge can be used to represent a point charge"""
@@ -57,6 +42,23 @@ class Charge(object):
 
     def forceon(self, c):
         return Force(self, c)
+
+def dipole_moment(charge, a, l):
+    """Returns the magnitude of the dipole moment vector
+           charge = charge of the particle in Coulombs
+           a      = distance to the perpendicular bisector in meters
+           l      = distance between charges in meters"""
+    return 1 / (4 * _math.pi * EPSILON_0) * charge / (a ** 2 + l ** 2) ** (3/2)
+
+def drop_time(displacement, v_i=0, a=ACCEL_GRAV):
+    """Returns free fall time in seconds starting at t = 0.
+       Assumes up as the positive direction for position"""
+    from clay.maths import roots
+    if v_i:
+        t1, t2 = roots(a, v_i, displacement)
+        return max(t1, t2)
+    else:
+        return _math.sqrt(displacement * 2 / ACCEL_GRAV)
 
 class Force(object):
 
@@ -80,33 +82,11 @@ class Force(object):
            val *= -1
         return val
 
-def get_capacitorenergy(charge, distance, area):
-    """Given charge (C), distance (m) and area (m^2), returns the potential
-       energy of this capacitor"""
-    return charge ** 2 * distance / (2 * esp0 * area)
-
-def get_dipolemoment(charge, a, l):
-    """Returns the magnitude of the dipole moment vector
-           charge = charge of the particle in Coulombs
-           a      = distance to the perpendicular bisector in meters
-           l      = distance between charges in meters"""
-    return 1 / (4 * _math.pi * e_0) * charge / (a ** 2 + l ** 2) ** (3/2)
-
-def get_drop_time(displacement, v_i=0, a=a_g):
-    """Returns free fall time in seconds starting at t = 0.
-       Assumes up as the positive direction for position"""
-    from clay.maths import roots
-    if v_i:
-        t1, t2 = roots(a, v_i, displacement)
-        return max(t1, t2)
-    else:
-        return _math.sqrt(displacement * 2 / a_g)
-
-def get_lorenz_factor(velocity):
+def lorenz_factor(velocity):
     """Returns the Lorenz factor for the given object moving at velocity v"""
-    return 1 / _math.sqrt(1 - velocity ** 2 / c ** 2)
+    return 1 / _math.sqrt(1 - velocity ** 2 / SPEED_OF_LIGHT ** 2)
 
-def get_prefix(scalar, units='m'):
+def prefix_unit(scalar, units='m'):
     """Adjusts the given scalar to a better prefix and prints it out"""
     negative = False
     amount = scalar
@@ -130,25 +110,11 @@ def get_prefix(scalar, units='m'):
         amount *= -1
     print(scalar, units, '=>', amount, pre, units)
 
-def get_urms(temp, molar_mass):
-    """"Returns the root mean square velocity using the given molar mass (g)
-        and temperature (*C)"""
-    return _math.sqrt(3 * R_energy * (temp + KELVIN_OFFSET) / (molar_mass / 1000))
-
-def requivalent(res, config):
-    """Given a list of resistor values and their configuration,
-       returns the equivalent resistance"""
-    if config == 'series':
-        return sum(res)
-    elif config == 'parallel':
-        return 1 / sum((1 / n for n in res))
-    else:
-        raise ValueError('That configuration is not supported')
-
 class Position(object):
 
     def __init__(self, position, time=None, step=None):
-        assert type(position) == list
+        if not(type(position) in (list, tuple)):
+            raise ValueError('position must be a list or tuple')
         if step is None:
             step = 1
         self.position = position
@@ -173,11 +139,23 @@ class Position(object):
         self.accel = _collections.OrderedDict({t: (self.dv[i])/(self.dt[i]) for (i,t) in enumerate(self.time[:-3])})
         return self.accel
 
+def requivalent(res, config):
+    """Given a list of resistor values and their configuration,
+       returns the equivalent resistance"""
+    if config == 'series':
+        return sum(res)
+    elif config == 'parallel':
+        return 1 / sum((1 / n for n in res))
+    else:
+        raise ValueError('The given configuration is not supported: ' + config)
+
+def urms(temp, molar_mass):
+    """"Returns the root mean square velocity using the given molar mass (g)
+        and temperature (*C)"""
+    return _math.sqrt(3 * RYDBERG_ENERGY * (temp + KELVIN_OFFSET) / (molar_mass / 1000))
+
 if __name__ == '__main__':
-    print('drop time', get_drop_time(displacement=abs(a_g / 2), v_i=0))
-    get_prefix(24582000)
-    get_prefix(0.0021040, units='m/s')
-    get_prefix(0.00021040)
+    print('drop time', drop_time(displacement=abs(ACCEL_GRAV / 2), v_i=0))
     pos = Position([0, 4.905, 19.62, 44.145, 78.48, 122.625])
     print('vel =', pos.vel())
     print('accel =', pos.accel())
@@ -185,6 +163,9 @@ if __name__ == '__main__':
     POS = Position([1, 4, 9, 16, 25, 36])
     print('velocities', POS.vel())
     print('accels', POS.accel())
+    prefix_unit(24582000)
+    prefix_unit(0.0021040, units='m/s')
+    prefix_unit(0.00021040)
     print('requivalent', requivalent([10, requivalent([100, 25, 100, 50, 12.5],
                                                       'parallel')],
                                      'series'))
