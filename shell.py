@@ -284,11 +284,11 @@ def ren(src, dst, directory=_os.curdir, recurse=False):
                 x += 1
             except:
                 print("Couldn't rename", src)
-        print('renamed {} item(s)'.format(x))
+        print('Renamed {} item(s)'.format(x))
     else:
         try:
             _os.rename(src, dst)
-            print('renamed "{}" to "{}"'.format(src, dst))
+            print('Renamed "{}" to "{}"'.format(src, dst))
         except Exception as e:
             print('Error:', e)
 
