@@ -8,7 +8,7 @@ import datetime as _dt
 import json as _json
 import os as _os
 
-class CRUDRepository(object):
+class CrudRepository(object):
 
     def __init__(self, file, pk):
         """Initializes this CRUD repository under the given file
@@ -75,7 +75,27 @@ class CRUDRepository(object):
             _json.dump(self.db, fp)
         print(f'database "{self.file}" written')
 
-class UserRepository(CRUDRepository):
+class JsonRepository(object):
+
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.db = {}
+
+    def __validate_property(self, prop):
+        if not(prop in self.db):
+            raise ValueError('property "' + str(prop) + '" is not in db')
+
+    def read_database(self):
+        """Reads the database from the disk"""
+        with open(self.db_name) as fp:
+            self.db = _json.load(fp)
+    
+    def write_database(self):
+        """Stores the database to the disk"""
+        with open(self.db_name, 'w') as fd:
+            _json.dump(self.db, fd)
+        
+class UserRepository(CrudRepository):
     def __init__(self, primary_key, file='users'):
         super(UserRepository, self).__init__(file, primary_key)
         
@@ -95,14 +115,14 @@ class UserRepository(CRUDRepository):
 
 class UserWhitelist(object):
     
-    def __init__(self, db_filename):
-        if not(_os.path.exists(db_filename)):
-            raise FileNotFoundError(db_filename)
-        self.filename = db_filename
+    def __init__(self, db_name):
+        if not(_os.path.exists(db_name)):
+            raise FileNotFoundError(db_name)
+        self.db_name = db_name
         self.users = self.read_users()
 
     def read_users(self):
-        with open(self.filename) as fp:
+        with open(self.db_name) as fp:
             users = [user for user in fp.read().strip().split('\n') \
                          if not(user.startswith('#'))]
         return users
