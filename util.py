@@ -56,12 +56,14 @@ class Linq(object):
     """Class Linq can be used to query and filter data like
        Microsoft's (c) LINQ feature used in C#"""
 
+    MAX_QUERYABLE_LENGTH = 10000
+
     __queryable_set = False
     __select_called = False
         
     def __check_queryable_exists():
         if not(Linq.__queryable_set):
-            raise RuntimeError('queryable must be set')
+            raise RuntimeError('Linq queryable must be set')
 
     def __end_query():
         Linq.__queryable_set = False # select is the last statement
@@ -79,12 +81,15 @@ class Linq(object):
 
     def query(queryable):
         """Sets the query source using the given queryable"""
+        if len(queryable) > Linq.MAX_QUERYABLE_LENGTH:
+            raise ValueError('Linq cannot process more than ' + \
+                             str(Linq.MAX_QUERYABLE_LENGTH) + ' elements')
         Linq.__queryable = queryable
         Linq.__queryable_set = True
         Linq.__select_called = False
         return Linq
 
-    def select(props):
+    def select(props, distinct=False):
         """Returns a list of properties selected from each member.
            If used, it must be the last step as it returns items
            and not a Linq object."""
@@ -99,6 +104,11 @@ class Linq(object):
             for prop in props:
                 if type(each) == dict and prop in each:
                     entity.append(each[prop])
+                elif type(prop) == int:
+                    if prop >= len(each):
+                        print('Could not select index', prop, 'for', each + '. Skipping...')
+                    else:
+                        entity.append(each[prop])
                 elif hasattr(each, prop):
                     entity.append(getattr(each, prop))
                 else:
@@ -106,7 +116,8 @@ class Linq(object):
                     entity.append(None)
             if len(props) == 1:
                 entity = entity[0]
-            filtered.append(entity)
+            if not(distinct and entity in filtered):
+                filtered.append(entity)
         Linq.__queryable = filtered
         Linq.__select_called = True
         return Linq.to_list()
@@ -219,7 +230,7 @@ if __name__ == '__main__':
     print('--------')
     myav = FixedSizeQueue([], 5)
     myav.append(0) # ensures while-loop entry
-    while myav.get_average() < 10:
+    while myav.get_average() < 8:
         myav.append(randint(0, 15))
         print('list', myav)
         print('  len', len(myav))
@@ -229,6 +240,7 @@ if __name__ == '__main__':
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
 
     print(Linq.query(objs).where(lambda x: x.a == 2).first_or_default())
+    print(Linq.query([['John', 'Smith', '1/1/2000']]).select([0, 6, 2]))
 
     test_queryable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
 
@@ -241,7 +253,7 @@ if __name__ == '__main__':
     except Exception as e:
         print('where is after select:', e)
     try:
-        print(Linq.query(test_queryable).where(lambda x: x == 2).select('num'))
+        print(Linq.query(test_queryable).where(lambda x: x['num'] == 2).select('num'))
     except Exception as e:
         print(e)
 
