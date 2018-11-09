@@ -159,16 +159,37 @@ class CourseCatalogUW(object):
         self.MAX_LENGTH = max(map(len, depts))
         self.pages = pages
 
+    def __print_columns(self, columns, width):
+        for i, j in enumerate(columns):
+            print(j, end=int(_math.ceil(_math.ceil(self.MAX_LENGTH / 8) - len(j) / 8)) * '\t')
+            if i % width == width - 1:
+                print()
+        print() # flush output
+
     def get_departments(self):
         return self.depts
 
-    def print_departments(self):
-        for i, j in enumerate(self.depts):
-            if i % 6 != 0:
-                print(j, end=int(_math.ceil(_math.ceil(self.MAX_LENGTH / 8) - len(j) / 8)) * '\t')
-            else:
-                print()
-        print() # flush output
+    def print_departments(self, legacy=False):
+        if legacy:
+            self.__print_columns(self.depts, 6)
+        else:
+            depts = self.depts[:]
+            while len(depts) % 6 != 0:
+                depts.append('')
+            length = int(len(depts) / 6)
+            one = depts[:length]
+            two = depts[length: length * 2]
+            three = depts[length * 2: length * 3]
+            four = depts[length * 3: length * 4]
+            five = depts[length * 4: length * 5]
+            six = depts[length * 5:]
+
+            zipped = []
+            for i,j,k,l,m,n in zip(one, two, three, four, five, six):
+                for item in (i,j,k,l,m,n):
+                    zipped.append(item)
+
+            self.__print_columns(zipped, 6)
 
     def query(self, text):
         message = None
@@ -218,7 +239,7 @@ class CourseCatalogUW(object):
                                             'description': description if len(description) > 0 else None,
                                             'instructor': instructor if len(instructor) > 0 else None})
                     else:
-                        message = 'course not found'
+                        message = 'course not found within ' + parts[0]
                     already_set = True
             else:
                 header = self.pages[parts[0]].select('h1')[0].get_text()
@@ -394,7 +415,7 @@ class WebDocument(object):
             if not('.' in title) or 'htm' in title or 'php' in title: # small file types (pages)
                 response = _requests.get(url, params=query, headers=WEB_HDRS)
                 if response.status_code != 200:
-                    raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
+                    raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
                 before = _time.time() # start timer
                 size = len(response.text)
                 print(size, 'bytes')
@@ -403,14 +424,14 @@ class WebDocument(object):
             else: # larger file types
                 response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
                 if response.status_code != 200:
-                    raise _requests.exceptions.InvalidURL(f'{response.reason}, status code {response.status_code}')
+                    raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
                 before = _time.time() # start timer
                 size = int(response.headers.get('content-length'))
                 chunk = size // 100
                 if chunk > CHUNK_CAP: # place chunk cap on files >1MB
                     chunk = CHUNK_CAP # 1MB
                 print(size, 'bytes')
-                print("Writing to file in chunks of {} bytes...".format(chunk))
+                print('Writing to file in chunks of {} bytes...'.format(chunk))
                 actual = 0
                 try:
                     for chunk in response.iter_content(chunk_size=chunk):
@@ -433,10 +454,10 @@ class WebDocument(object):
             flag = True
         else:
             taken = _time.time() - before
-            print(f'\nComplete. Took {round(taken, 5)}s')
+            print('\nComplete. Took {}s'.format(round(taken, 5)))
             if not(_is_idle() or _is_unix()):
-                set_title(f'Completed {title}')
-            log_string = f'[{url}] {title} of {size} bytes @ {_dt.datetime.today()}\n'
+                set_title('Completed {}'.format(title))
+            log_string = '[{}] {} of {} bytes @ {}\n'.format(url, title, size, _dt.datetime.today())
         finally:
             if not(fp.closed):
                 fp.close()
@@ -558,7 +579,8 @@ class Pollen(object):
 
     def __repr__(self):
         """Returns the string representation of this Pollen instance"""
-        return f'Pollen(source={{{self.source}}}, zipcode={self.zipcode}, print_sources={self.print_sources})'
+        return 'Pollen(source={{{}}}, zipcode={}, print_sources={})' \
+            .format(self.source, self.zipcode, self.print_sources)
 
     def __check_built(self):
         """Throws a RuntimeError if this Pollen instance has not been built"""
@@ -567,7 +589,7 @@ class Pollen(object):
 
     def __verify_source(self, source):
         if not(source in Pollen.SOURCE_SPAN.keys()):
-            raise ValueError(f'source must be one from [{", ".join(Pollen.SOURCE_SPAN.keys())}]')
+            raise ValueError('source must be one from [{}]'.format(", ".join(Pollen.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):
         if (self.source != 'weather text' and not(zipcode in Pollen.SOURCE_URLS.keys())) or \
@@ -647,7 +669,7 @@ class Pollen(object):
             else:
                 data = self.db[day]
         if data is not None and self.print_sources:
-            print('[{}] day={}'.format(self.source, day))
+            print('{{source={}, day={}}}'.format(self.source, day))
         return data
 
     def get_today(self):
@@ -711,7 +733,7 @@ class TagFinder(object):
     def find(self, tag, method='find_all'):
         self.__found = eval('self.soup.{}("{}")'.format(method, tag))
         if len(self.__found) == 0:
-            print(f'No tags matchin "{tag}" found')
+            print('No tags matching "{}" found'.format(tag))
         return self.__found
 
     def show(self, attribute='text', file=_sys.stdout):
@@ -741,7 +763,7 @@ class TagFinder(object):
             if _os.path.exists(filename):
                 print('TagFinder store successful')
         except Exception as e:
-            print(f'TagFinder store failed: {e}')
+            print('TagFinder store failed: {}'.format(e))
 
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
@@ -779,12 +801,11 @@ if __name__ == '__main__':
     it('returns Official Minecraft site html title', get_title(TEST_LINK), 'Official site | Minecraft')
     it('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
-    we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/', 'h3')
-    we1.find()
-    it('best music school list contains 21 elements', we1.get_found(), 21, len)
+    we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
+    it('best music school list contains 21 elements', we1.find('h3'), 21, len)
     we1.show()
     we2 = TagFinder(TEST_LINK)
-    we2.find()
+    we2.find('a')
     we2.show(attribute='href')
     print()
     print('ANCHORS')
