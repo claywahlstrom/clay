@@ -6,9 +6,10 @@ def it(expectation, test_input, test_output, transformer=lambda x: x):
        the `it` function provided in the Jasmine JS testing module."""
     result = transformer(test_input)
     if result == test_output:
-        print(f'Passed: {expectation}')
+        print('Passed: {}'.format(expectation))
     else:
-        print(f'Failed: {expectation}. Expected {test_output} but found {result}')
+        print('Failed: {}. Expected {} but found {}' \
+            .format(expectation, test_output, result))
 
 if __name__ == '__main__':
     it('returns true for given values', 0, 0)

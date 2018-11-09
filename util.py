@@ -106,7 +106,8 @@ class Linq(object):
                     entity.append(each[prop])
                 elif type(prop) == int:
                     if prop >= len(each):
-                        print('Could not select index', prop, 'for', each + '. Skipping...')
+                        print('Could not select index {} for {}. Skipping...' \
+                            .format(prop, each))
                     else:
                         entity.append(each[prop])
                 elif hasattr(each, prop):

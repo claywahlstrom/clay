@@ -46,7 +46,8 @@ class Search(object):
             return 'No results'
 
     def build_results(self):
-        self.raw_text = f'Search for "{self.string}" in "{self.folder}" took {round(self.duration, 5)} seconds\n'
+        self.raw_text = 'Search for "{}" in "{}" took {} seconds\n' \
+            .format(self.string, self.folder, round(self.duration, 5))
         self.raw_text += '\n'.join([res + '\n\t' + \
                                     '\n\t'.join([val for val in self.results[res]]) \
                                     for res in list(self.results.keys())])

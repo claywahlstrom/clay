@@ -10,7 +10,7 @@ DEF_BROWSER = 'firefox'
 
 def launch_gs_app(name, browser, url):
     from subprocess import call
-    print(f'Opening {name} in {browser}...', end=' ')
+    print('Opening {} in {}...'.format(name, browser), end=' ')
     call('start {} "{}"'.format(browser, url), shell=True)
     print('Done')
 

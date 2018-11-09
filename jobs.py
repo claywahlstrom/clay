@@ -41,7 +41,7 @@ class Attendance(object):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is for Monday."""
         import os
         if not(state in BREAK_SCHEDULES):
-            raise ValueError(f'state must be in [{", ".join(BREAK_SCHEDULES)}]')
+            raise ValueError('state must be in [{}]'.format(", ".join(BREAK_SCHEDULES)))
         if not(os.path.exists('attendance.csv')):
             raise FileNotFoundError('attendance.csv doesn\'t exist')
         with open('attendance.csv') as fp:

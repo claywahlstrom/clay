@@ -68,7 +68,7 @@ class Essay(object):
 
     def __repr__(self):
         preview = self.source[:20].replace('\n', '\\n')
-        return f'Essay(source={{{preview}...}}, line_start={self.line_start})'
+        return 'Essay(source={{{}...}}, line_start={})'.format(preview, self.line_start)
         
     def are_paren_bal(self):
         """Finds if parentheses are balanced, returns boolean"""

@@ -102,7 +102,7 @@ class File(object):
             
     def size(self):
         """Returns the size of this file"""
-        return _os.path.getsize(name)
+        return _os.path.getsize(self.name)
 
     def switch_lf(self):
         """Switches the linefeed type from a unix-based machine to
@@ -202,9 +202,9 @@ def _rt_helper(filename, old, new):
 if __name__ == '__main__':
     print('Expects basename not to exist')
     try:
-        print(get_size('http://www.google.com/'))
+        print(File('http://www.google.com/').size())
     except Exception as e:
         _traceback.print_exc()
     from clay.web import LINKS as _LINKS
     print('Expects basename to exist')
-    print(get_size(_LINKS['1MB']))
+    print(File(__file__).size())

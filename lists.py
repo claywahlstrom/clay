@@ -32,7 +32,7 @@ def printlines(content, lines=0, numbered=True):
     """Prints the given content (list of str or str), w/ or w/o line numbers"""
     if type(content) == str:
         with open(content,'r') as f:
-            chunks = [x.rstrip() for x in f.printlines()]
+            chunks = [x.rstrip() for x in f.readlines()]
     elif type(content) == list:
         chunks = [line.rstrip() for line in lines]
     assert type(chunks) == list
@@ -56,7 +56,7 @@ def rmdup(lizt):
     return new
 
 if __name__ == '__main__':
-    print(get_lines_joined(TEST_LIST))
+    print(join_lines(TEST_LIST))
     printall(TEST_LIST)
     printlines('essay.txt', 4)
     rmdup(TEST_LIST)

@@ -73,7 +73,7 @@ class CrudRepository(object):
         self.__ensure_connected()
         with open(self.file, 'w') as fp:
             _json.dump(self.db, fp)
-        print(f'database "{self.file}" written')
+        print('database "{}" written'.format(self.file))
 
 class JsonRepository(object):
 
@@ -107,7 +107,7 @@ class UserRepository(CrudRepository):
             days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
             if _dt.datetime.strptime(temp[pk][date_prop], date_format) <= days_ago:
                 modified = True
-                print(f'pruning {pk}...')
+                print('pruning {}...'.format(pk))
                 temp.pop(pk)
         self.db = temp
         if modified:

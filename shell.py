@@ -206,15 +206,15 @@ class Compiler(object):
                 dst_mtime = 0 # file doesn't exist
 
             if src_mtime - dst_mtime >= 5: # if edited more than five seconds ago
-                print(f'Compiling ({self.compiler_name}):', src)
+                print('Compiling ({}):'.format(self.compiler_name), src)
                 cmd = self.compiler_name
                 if self.compiler_name == 'csc': # C# specific handling
-                    cmd += f' /out:{dst_name} '
-                cmd += f'{opt_str} "{src_name}"'
+                    cmd += ' /out:{} '.format(dst_name)
+                cmd += '{} "{}"'.format(opt_str, src_name)
                 _os.system(cmd)
                 statechanged = True
         if not(statechanged):
-            print(f'Nothing new to compile in "{self.directory}" when recurse={recurse}')
+            print('Nothing new to compile in "{}" when recurse={}'.format(self.directory, recurse))
 
 class CSharpCompiler(Compiler):
 
