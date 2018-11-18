@@ -85,9 +85,9 @@ class Force(object):
 def lorenz_factor(velocity):
     """Returns the Lorenz factor for the given object moving at velocity v"""
     return 1 / _math.sqrt(1 - velocity ** 2 / SPEED_OF_LIGHT ** 2)
-
+    
 def prefix_unit(scalar, units='m'):
-    """Adjusts the given scalar to a better prefix and prints it out"""
+    """Returns the conversion of the given to the appropriate prefix"""
     negative = False
     amount = scalar
     if amount < 0:
@@ -108,7 +108,8 @@ def prefix_unit(scalar, units='m'):
         
     if negative:
         amount *= -1
-    print(scalar, units, '=>', amount, pre, units)
+    
+    return '{} {} => {} {} {}'.format(scalar, units, amount, pre, units)
 
 class Position(object):
 
@@ -163,9 +164,9 @@ if __name__ == '__main__':
     POS = Position([1, 4, 9, 16, 25, 36])
     print('velocities', POS.vel())
     print('accels', POS.accel())
-    prefix_unit(24582000)
-    prefix_unit(0.0021040, units='m/s')
-    prefix_unit(0.00021040)
+    print(prefix_unit(24582000))
+    print(prefix_unit(0.0021040, units='m/s'))
+    print(prefix_unit(0.00021040))
     print('requivalent', requivalent([10, requivalent([100, 25, 100, 50, 12.5],
                                                       'parallel')],
                                      'series'))
