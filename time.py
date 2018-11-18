@@ -18,6 +18,25 @@ MONTHS = ['january', 'february', 'march',
 
 TAD_BASE = 'https://www.timeanddate.com/astronomy' # astronomy or sun url base
 
+class datetime(_dt.datetime):
+    """Provides extension methods to the datetime datetime object"""
+
+    def round(self, minutes=0, seconds=0):
+        """Returns the datetime rounded the given number of minutes or seconds"""
+        if seconds != 0:
+            if self.second % seconds >= seconds / 2:
+                self += _dt.timedelta(seconds=seconds - self.second % seconds)
+            else:
+                self -= _dt.timedelta(seconds=self.second)
+
+        if minutes != 0:
+            if self.minute % minutes >= minutes / 2:
+                self += _dt.timedelta(seconds=(minutes - self.minute % minutes) * 60)
+            else:
+                self -= _dt.timedelta(seconds=self.minute % minutes * 60)
+        
+        return self    
+
 def get_time_struct():
     """Returns the local time as struct object"""
     from time import localtime, time
@@ -212,9 +231,37 @@ class SunTime(object):
         self.build()
 
 if __name__ == '__main__':
+
+    from clay.tests import it
+    
+    it('rounds datetime seconds down',
+       datetime(2000, 1, 1, 0, 0, 2).round(seconds=5),
+       _dt.datetime(2000, 1, 1, 0, 0, 0))
+
+    it('rounds datetime seconds up',
+        datetime(2000, 1, 1, 0, 0, 4).round(seconds=5),
+       _dt.datetime(2000, 1, 1, 0, 0, 5))
+
+    it('rounds datetime minutes down',
+        datetime(2000, 1, 1, 0, 9).round(minutes=20),
+       _dt.datetime(2000, 1, 1, 0, 0))
+
+    it('rounds datetime minutes up',
+        datetime(2000, 1, 1, 0, 10).round(minutes=20),
+       _dt.datetime(2000, 1, 1, 0, 20))
+
+    it('rounds datetime minutes down near hour',
+        datetime(2000, 1, 1, 0, 45).round(minutes=20),
+       _dt.datetime(2000, 1, 1, 0, 40))
+
+    it('rounds datetime minutes up near hour',
+        datetime(2000, 1, 1, 0, 50).round(minutes=20),
+       _dt.datetime(2000, 1, 1, 1, 0))
+
+    print('birthday', get_time_until(2019, 11, 6))
+    print('exams over', get_time_until(2018, 12, 13))
+    
     print(get_time_struct())
     sun = SunTime()
-    print('sunset tonight', sun.get_sunset())
+    print('sunset tonight is', sun.get_sunset())
 
-    print('birthday', get_time_until(2018, 11, 6))
-    print('exams over', get_time_until(2018, 6, 8))
