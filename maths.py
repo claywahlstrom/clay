@@ -19,12 +19,12 @@ else:
 #        pass
 
 TESTS = {
-    'limf': lambda x: x / (2 * x - 1),
-    'invtrig': lambda x: math.acos(x),
-    'harmonic': lambda n: 1 / n,
     'alternating': lambda n: (-1) ** n * (1 / n ** 2),
     'convergent': lambda n: 5 * (2 / 3) ** n,
+    'convergent1': lambda x: x / (2 * x - 1),
     'convergent2': lambda n: n ** 2 / math.factorial(2 * n - 1),
+    'harmonic': lambda n: 1 / n,
+    'invtrig': lambda x: math.acos(x),
     'quadratic': lambda n: 1 + 2 * n + n ** 2,
     'quadratic2': lambda n: n ** 2 + 1
 }
@@ -109,10 +109,10 @@ def integral(func, interval=None, rects=100000):
         x += (b - a) / rects
     return area
 
-def liminf(func, i=1, step_mag=False, log=True):
+def liminf(func, i=1, step_mag=False, logging=True):
     """Returns the limit to +infinity. Handles division by zero
        and divergent funcs"""
-    if log:
+    if logging:
         file = open(LIMPATH, 'w')
         print('liminf for', func)
     else:
@@ -159,7 +159,7 @@ def liminf(func, i=1, step_mag=False, log=True):
             print(e, file=file)
             break
 
-    if log:
+    if logging:
         file.close()
     return round(now, 10)
 
@@ -187,9 +187,6 @@ def limit(func, num=0, side=None, step=0.1, dist=1):
             x += step
         return lims
 
-# natural log
-ln = math.log #def
-
 def max_M(func, interval):
     """Returns the max M of the given function on the closed interval"""
     if not(type(interval) in (list, tuple)) and len(interval) != 2:
@@ -203,12 +200,17 @@ def max_M(func, interval):
             mval = abs(func(m))
     return m        
 
-median = statistics.median # alias
+def multiplicity(q, N):
+    """Returns the multiplicity Omega given the number of objects
+       distribute q and the number of objects to distribute to N"""
+    return int(math.factorial(q + N - 1) / (math.factorial(q) * math.factorial(N - 1)))
 
-def pi_count(number):
-    """Returns the quotient with divisor as pi"""
-    return number / math.pi
-
+def nchoosek(n, k):
+    """Returns the number of combinations of n items taken k at a time"""
+    if n < k:
+        return 0
+    return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))
+    
 class Polar(object):
     """Class Polar can be used to convert from polar to cartesian"""
     def __init__(self, radius, angle):
@@ -268,10 +270,10 @@ def _roots_newtons_method_helper(f, x, n):
     if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
         return round(x, 9)
     elif n > 200: # max recursion depth
-        raise ValueError('no roots for function', f)
+        raise ValueError('no roots for function: {}'.format(f))
     return _roots_newtons_method_helper(f, x - f(x) / differential(f, x), n + 1)
 
-def series_sum(f, a=1, b=None, log=True):
+def series_sum(f, a=1, b=None, logging=True):
     """Returns sum for the given series f starting at a.
        Partial sum if b is supplied"""
     if b == None:
@@ -283,7 +285,7 @@ def series_sum(f, a=1, b=None, log=True):
     except Exception as e:
         print('Factorial in function AND', e)
         b = 80
-    if f(b) == 0 or liminf(f, i=a, log=log) == 0:
+    if f(b) == 0 or liminf(f, i=a, logging=logging) == 0:
         tot = 0
         for i in range(a, b + 1):
             # print(i, f(i))
@@ -299,20 +301,35 @@ def series_sum(f, a=1, b=None, log=True):
         return None
         
 if __name__ == '__main__':
+
+    from clay.tests import it
+
     print('DEMO')
     print('------------') # 12
     print('FractionReducer(3, 39).print()')
     FractionReducer(3, 39).print()
-    print('INTEGRAL from 0 to 1', integral(TESTS['invtrig'], (0, 1)))
-    print('LIMIT OF test_harmonic, expected 0.5')
-    lim = limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2)
-    print(list(lim.values())[-1])
+    it('returns correct integral for inverse trig from 0 to 1',
+        integral(TESTS['invtrig'], (0, 1)), 1.0,
+        transformer=lambda x: round(x, 4))
+    it('limit of harmonic function returns double close to 0.5',
+        limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2), 0.5,
+        transformer=lambda x: round(list(x.values())[-1], 9)) # compare to math.isclose
 
-    print('expecting', -1.0)
-    print('testing newton\'s method: ', roots_newtons_method(TESTS['quadratic'], 10))
+    print('LIMITS TO INFINITY')
+    it('limit to infinity for converging function is 1/2',
+        liminf(TESTS['convergent1'], step_mag=True, logging=False), 0.5)
+    it('limit to infinity for converging function is 0.0',
+        liminf(TESTS['harmonic'], step_mag=True, logging=True), 0.0)
+    
+    it('multiplicity returns correct quantity for (4, 3)',
+        multiplicity(4, 3), 15)
+
+    it('returns correct root using Newton\'s method',
+        roots_newtons_method(TESTS['quadratic'], 10), -1.0,
+        transformer=lambda x: round(x, 4))
     try:
-        print('expecting ValueError')
-        print('testing: ', roots_newtons_method(TESTS['quadratic2'], 10))
+        print('Newton\'s method for quadratic should throw ValueError')
+        roots_newtons_method(TESTS['quadratic2'], 10)
     except Exception as e:
         print(e)
     print('RADICAL CLASS')
@@ -322,20 +339,15 @@ if __name__ == '__main__':
     rad = Radical(left, right)
     print(rad)
 
-    print('LIMITS TO INFINITY')
-    print('expecting 0.5')
-    print(liminf(TESTS['limf'], step_mag=True, log=False))
-    print('expecting 0.0')
-    print(liminf(TESTS['harmonic'], step_mag=True, log=True))
-
     print('LIMITS FOR SERIES')
-    print(series_sum(TESTS['alternating'], log=True))
+    print(series_sum(TESTS['alternating'], logging=True))
 
     import clay.graphing as g
     g.tabulatef(TESTS['alternating'], 0, 30)
 
-    print('expecting 15')
-    print(series_sum(TESTS['convergent'], a=0))
-    print('expecting 1.7449...')
-    print(series_sum(TESTS['convergent2']))
+    it('returns correct series sum for convergent function',
+        series_sum(TESTS['convergent'], a=0), 15)
+    it('returns correct series sum for convergent2 function',
+        series_sum(TESTS['convergent2']), 1.7449,
+        transformer=lambda x: round(x, 4))
 
