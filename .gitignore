@@ -2,4 +2,4 @@
 __pycache__
 *.pyc
 dl_log.txt
-get_liminf.log
+liminf*.log

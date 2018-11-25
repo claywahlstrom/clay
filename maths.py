@@ -11,9 +11,9 @@ import statistics
 from clay.shell import is_unix as _is_unix
 
 if _is_unix():
-    LIMPATH = r'/home/clayton/Desktop/liminf.log'
+    LIMPATH_FMT = r'/home/clayton/Desktop/liminf-{}.log'
 else:
-    LIMPATH = r'C:\Python37\Lib\site-packages\clay\liminf.log'
+    LIMPATH_FMT = r'C:\Python37\Lib\site-packages\clay\liminf-{}.log'
 # finally clear the file
 #     with open(LIMPATH, 'w') as fp:
 #        pass
@@ -69,25 +69,14 @@ def factors(number):
             factors[num] = int(number / num)
     return factors
 
-class FractionReducer(object):
-    """Class FractionReducer can be used to reduce fractions to
-       simplest form"""
-    
-    def __init__(self, *args):
-        """Initializes the reducer to the given `any`, type str preferred"""
-        from fractions import Fraction
-        f = Fraction(*args)
-        self.top, self.bottom = f.numerator, f.denominator
-        
-    def get_reduced(self):
-        """Returns a tuple of the given fraction in its simplest form"""
-        return self.top, self.bottom
-
-    def print(self):
-        """Prints this fraction in visual representation"""
-        print(self.top)
-        print('-' * len(str(max(self.top, self.bottom))))
-        print(self.bottom)
+def print_fraction(fraction):
+    if type(fraction).__name__ != 'Fraction':
+        raise ValueError('fraction must be of type Fraction, found %s' % type(fraction).__name__)
+    num = fraction.numerator
+    den = fraction.denominator
+    print(num)
+    print('-' * len(str(max(num, den))))
+    print(den)
 
 def integral(func, interval=None, rects=100000):
     """Returns the integral from the inclusive tuple (a, b) using
@@ -109,16 +98,15 @@ def integral(func, interval=None, rects=100000):
         x += (b - a) / rects
     return area
 
-def liminf(func, i=1, step_mag=False, logging=True):
+def liminf(func, i=1, step_mag=False, logging=None):
     """Returns the limit to +infinity. Handles division by zero
        and divergent funcs"""
-    if logging:
-        file = open(LIMPATH, 'w')
-        print('liminf for', func)
-    else:
-        from sys import stdout as file
+       
+    if logging is not None:
+        if type(logging) == str:
+            file = open(logging, 'w')
 
-    print('liminf for', func, file=file)
+        print('liminf for', func, file=file)
 
     while True:
         try:
@@ -127,20 +115,21 @@ def liminf(func, i=1, step_mag=False, logging=True):
             if i % 1000 == 0 and not(step_mag) or i % 10000 == 0 \
                and step_mag: # mags div by 10**4
                 pr = True
-                print(i, end=', ', file=file)
-                print('now', now, end=', ', file=file)
+                if logging is not None:
+                    print(i, end=', ', file=file)
+                    print('now', now, end=', ', file=file)
 
             if step_mag:
                 NEXT = func(i*10)
             else:
                 NEXT = func(i+1)
 
-            if pr:
+            if pr and logging is not None:
                 print('NEXT', NEXT, file=file)
 
             if now == NEXT:
                 break
-            elif i > 10**64 and step_mag or not(step_mag) and i > 10**6:
+            elif i > 10**32 and step_mag or not(step_mag) and i > 10**6:
                 # if function/sequence is decreasing...
                 if 0 < NEXT / now < 1:
                     print('Series converges')
@@ -156,10 +145,11 @@ def liminf(func, i=1, step_mag=False, logging=True):
             else:
                 i += 1
         except Exception as e:
-            print(e, file=file)
+            if logging is not None:
+                print(e, file=file)
             break
 
-    if logging:
+    if logging is not None:
         file.close()
     return round(now, 10)
 
@@ -225,9 +215,9 @@ class Polar(object):
         
 class Radical(object):
     """Class Radical can be used to simplify radicals"""
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+    def __init__(self, outside, inside):
+        self.left = outside
+        self.right = inside
         self.parent = (self.left, self.right)
         self.__out = self.__least_div()
         self.left *= self.__out
@@ -270,7 +260,7 @@ def _roots_newtons_method_helper(f, x, n):
     if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
         return round(x, 9)
     elif n > 200: # max recursion depth
-        raise ValueError('no roots for function: {}'.format(f))
+        raise ValueError('no roots for {}'.format(f))
     return _roots_newtons_method_helper(f, x - f(x) / differential(f, x), n + 1)
 
 def series_sum(f, a=1, b=None, logging=True):
@@ -302,12 +292,14 @@ def series_sum(f, a=1, b=None, logging=True):
         
 if __name__ == '__main__':
 
+    from fractions import Fraction
+
     from clay.tests import it
 
     print('DEMO')
-    print('------------') # 12
-    print('FractionReducer(3, 39).print()')
-    FractionReducer(3, 39).print()
+    print('------------') # 12 count
+    print('Printing fraction 3/39...')
+    print_fraction(Fraction(3, 39))
     it('returns correct integral for inverse trig from 0 to 1',
         integral(TESTS['invtrig'], (0, 1)), 1.0,
         transformer=lambda x: round(x, 4))
@@ -317,9 +309,11 @@ if __name__ == '__main__':
 
     print('LIMITS TO INFINITY')
     it('limit to infinity for converging function is 1/2',
-        liminf(TESTS['convergent1'], step_mag=True, logging=False), 0.5)
+        liminf(TESTS['convergent1'], step_mag=True,
+            logging=LIMPATH_FMT.format('convergent1')), 0.5)
     it('limit to infinity for converging function is 0.0',
-        liminf(TESTS['harmonic'], step_mag=True, logging=True), 0.0)
+        liminf(TESTS['harmonic'], step_mag=True,
+            logging=LIMPATH_FMT.format('harmonic')), 0.0)
     
     it('multiplicity returns correct quantity for (4, 3)',
         multiplicity(4, 3), 15)
@@ -331,19 +325,20 @@ if __name__ == '__main__':
         print('Newton\'s method for quadratic should throw ValueError')
         roots_newtons_method(TESTS['quadratic2'], 10)
     except Exception as e:
-        print(e)
+        print('Exception: %s' % e)
+    print()
     print('RADICAL CLASS')
     left = 2
     right = 20
     print('left = {}, right = {}'.format(left, right))
     rad = Radical(left, right)
     print(rad)
-
+    print()
     print('LIMITS FOR SERIES')
-    print(series_sum(TESTS['alternating'], logging=True))
+    print(series_sum(TESTS['alternating'], logging=LIMPATH_FMT.format('alternating')))
 
     import clay.graphing as g
-    g.tabulatef(TESTS['alternating'], 0, 30)
+    g.tabulatef(TESTS['alternating'], 0, 10)
 
     it('returns correct series sum for convergent function',
         series_sum(TESTS['convergent'], a=0), 15)
