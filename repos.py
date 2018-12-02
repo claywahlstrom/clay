@@ -8,43 +8,105 @@ import datetime as _dt
 import json as _json
 import os as _os
 
-class CrudRepository(object):
+class JsonRepository(object):
 
-    def __init__(self, file, pk):
-        """Initializes this CRUD repository under the given file
-           using the given primary key"""
-        self.file = file
-        self.pk = pk
-        self.db = None
-        self.default_model = None
-        self.__has_read = False
+    def __init__(self, name):
+        """Intializes this JSON repository with the given name"""
+        self._name = name
+        self._has_read = False
+        self.clear()
 
-    def __ensure_connected(self):
-        if not(self.__has_read):
+    def _ensure_connected(self):
+        if not(self._has_read):
             raise RuntimeError('database has not been read')
 
-    def __ensure_exists(self, pk):
-        if not(self.db is None or pk in self.db):
-            self.db[pk] = self.get_default_model().to_dict()
+    def clear(self):
+        """Clears this database"""
+        self._db = {}
 
-    def create_if_not_exists(self, pk):
-        self.__ensure_connected()
-        self.__ensure_exists(pk)
+    def create(self, force=False, write=True):
+        """Creates this database if it does not exist and returns
+           a boolean of whether the creation was success or not.
+           Use force=True if this database exists to clear
+           its contents."""
+        if force or not(_os.path.exists(self._name)):
+            self.clear()
+            if write:
+                self.write()
+            return True
+        else:
+            print('Cannot overwrite database "' + self._name + '" because it already exists')
+            return False
 
-    def get_default_model(self):
-        return self.default_model
+    def exists(self):
+        """Returns True if this database exists, False otherwise"""
+        return _os.path.exists(self._name)
+
+    def get_name(self):
+        """Returns the name of this database"""
+        return self._name
+
+    @property
+    def db(self):
+        """Returns this database"""
+        return self._db
+
+    @db.setter
+    def db(self, value):
+        """Sets this database to the given value"""
+        if type(value) != dict:
+            raise ValueError('db must be a JSON serializable of type dict')
+        self._db = value
+
+    @property
+    def has_read(self):
+        """Returns True if read has been called for this database,
+           False otherwise"""
+        return self._has_read
 
     def read(self):
-        if not(_os.path.exists(self.file)):
-            self.db = {} # dict
-            self.write()
-        with open(self.file) as fp:
-            self.db = _json.load(fp)
-        if self.db is not None:
-            self.__has_read = True
+        """Reads data from the disk into the database"""
+        with open(self._name) as fp:
+            self._db = _json.load(fp)
+        self._has_read = True
+
+    def write(self):
+        """Writes this database to the disk"""
+        with open(self._name, 'w') as fd:
+            _json.dump(self._db, fd)
+
+    name = property(get_name)
+
+class CrudRepository(JsonRepository):
+
+    def __init__(self, name, pk):
+        """Initializes this CRUD repository under the given file
+           using the given primary key"""
+        super(CrudRepository, self).__init__(name)
+        self._pk = pk
+        self._default_model = {}
+
+    def _ensure_exists(self, pk):
+        if not(self.db is None or pk in self.db):
+            self.db[pk] = self.default_model.to_dict()
+
+    def create_if_not_exists(self, pk):
+        self._ensure_connected()
+        self._ensure_exists(pk)
+
+    @property
+    def default_model(self):
+        """Returns the default model for this repository"""
+        return self._default_model
+        
+    @default_model.setter
+    def default_model(self, model):
+        """Sets the default model for this repository"""
+        self._default_model = model
 
     def delete(self, pk):
-        self.__ensure_connected()
+        """Deletes the given primary key from this repository"""
+        self._ensure_connected()
         if pk in self.db:
             self.db.pop(pk)
             self.write()
@@ -52,12 +114,10 @@ class CrudRepository(object):
         else:
             print('user pk not found')
 
-    def set_default_model(self, model):
-        self.default_model = model
-
     def update(self, pk, model):
-        self.__ensure_connected()
-        self.__ensure_exists(pk)
+        """Updates the given primary key within this repository"""
+        self._ensure_connected()
+        self._ensure_exists(pk)
 
         for attr in model.get_attributes():
             self.db[pk][attr] = getattr(model, attr)
@@ -65,40 +125,22 @@ class CrudRepository(object):
         print('pk', pk, 'updated')
 
     def update_prop(self, pk, prop, value):
-        self.__ensure_connected()
-        self.__ensure_exists(pk)
+        """Updates the value of the property for the given primary
+           key within this repository"""
+        self._ensure_connected()
+        self._ensure_exists(pk)
         self.db[pk][prop] = value
 
     def write(self):
-        self.__ensure_connected()
-        with open(self.file, 'w') as fp:
-            _json.dump(self.db, fp)
-        print('database "{}" written'.format(self.file))
+        self._ensure_connected()
+        super(CrudRepository, self).write()
+        print('database "{}" written'.format(self.name))
 
-class JsonRepository(object):
-
-    def __init__(self, db_name):
-        self.db_name = db_name
-        self.db = {}
-
-    def __validate_property(self, prop):
-        if not(prop in self.db):
-            raise ValueError('property "' + str(prop) + '" is not in db')
-
-    def read_database(self):
-        """Reads the database from the disk"""
-        with open(self.db_name) as fp:
-            self.db = _json.load(fp)
-    
-    def write_database(self):
-        """Stores the database to the disk"""
-        with open(self.db_name, 'w') as fd:
-            _json.dump(self.db, fd)
-        
 class UserRepository(CrudRepository):
+
     def __init__(self, primary_key, file='users'):
         super(UserRepository, self).__init__(file, primary_key)
-        
+
     def prune(self, date_prop, date_format, days=30):
         """Prunes users based on the database date if the date is days old"""
         modified = False
@@ -114,18 +156,53 @@ class UserRepository(CrudRepository):
             self.write()
 
 class UserWhitelist(object):
-    
-    def __init__(self, db_name):
-        if not(_os.path.exists(db_name)):
-            raise FileNotFoundError(db_name)
-        self.db_name = db_name
-        self.users = self.read_users()
 
-    def read_users(self):
-        with open(self.db_name) as fp:
-            users = [user for user in fp.read().strip().split('\n') \
-                         if not(user.startswith('#'))]
-        return users
+    def __init__(self, file):
+        """Initializes this user whitelist"""
+        self._file = file
+        self._users = []
+
+    def get_file(self):
+        """Returns the file for this whitelist"""
+        return self._file
+
+    def get_users(self):
+        """Returns the users in this whitelist"""
+        return self._users
 
     def is_authorized(self, user):
-        return user in self.users
+        """Returns True if the given user is authorized
+           by this whitelist, False otherwise"""
+        return user in self._users
+
+    def read(self):
+        """Reads data from the disk into the database"""
+        users = []
+        for line in self._file:
+            if not(line.startswith('#')):
+                users.append(line.strip())
+        self._users = users
+
+    file = property(get_file)
+    users = property(get_users)
+
+if __name__ == '__main__':
+
+    from clay.tests import it
+
+    js1 = JsonRepository('README.md')
+    js2 = JsonRepository('README.mda')
+
+    it('fails to overwrite when already exists and not forced', js1.create(force=False, write=False), False)
+    it('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
+    it('creates new json repo if not exists and not forced', js2.create(write=False), True)
+    it('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
+
+    whitelist = UserWhitelist(['abe', 'bob', 'caty', '# becky'])
+    whitelist.read()
+
+    it('whitelist reads correct users', whitelist.users, ['abe', 'bob', 'caty'])
+    it('whitelist authorizes caty', whitelist.is_authorized('caty'), True)
+    it('whitelist rejects becky', whitelist.is_authorized('becky'), False)
+
+
