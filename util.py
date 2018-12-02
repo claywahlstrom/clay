@@ -42,15 +42,6 @@ class Anonymous(object):
             result[attr] = getattr(self, attr)
         return result
 
-class FixedSizeQueue(_collections.deque):
-    """Object that maintains length when items are added to it."""
-
-    def get_average(self):
-        """Returns the average for this queue if the elements are summable"""
-        if len(self) == 0:
-            raise Exception('length must be >= 1')
-        return sum(self) / len(self)
-
 class Linq(object):
 
     """Class Linq can be used to query and filter data like
@@ -227,16 +218,6 @@ if __name__ == '__main__':
 
     import pprint
     from random import randint
-
-    print('--------')
-    myav = FixedSizeQueue([], 5)
-    myav.append(0) # ensures while-loop entry
-    while myav.get_average() < 8:
-        myav.append(randint(0, 15))
-        print('list', myav)
-        print('  len', len(myav))
-        print('  av ', myav.get_average())
-    print('--------')
 
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
 
