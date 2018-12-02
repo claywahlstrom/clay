@@ -29,8 +29,6 @@ TESTS = {
     'quadratic2': lambda n: n ** 2 + 1
 }
 
-average = statistics.mean # alias
-
 class Circle(object):
     """A class for managing basic circular functions"""
     def __init__(self, radius):

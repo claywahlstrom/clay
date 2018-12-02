@@ -10,9 +10,9 @@ from collections import OrderedDict
 import datetime as dt
 import math
 import pprint
+from statistics import median, mean as average
 
 from clay.graphing import Histogram
-from clay.maths import average, median
 from clay.util import SortableDict
 
 BREAK_SCHEDULES = {'WA': {'hours': 6, 'length': 0.5},
