@@ -8,6 +8,7 @@ import math as _math
 
 ACCEL_GRAV = 9.80665            # m/s^2 : acceleration due to gravity
 AVOGADRO = 6.022140857e23       # number of atoms in 12g of Carbon-12
+BOLTZMANN = 1.38065e-23         # m^2 * kg / (s^2 * K), also GAS_ENERGY / AVOGADRO
 COULOMB = 6.24150975e18         # A * s : charge of electrons, Coulomb
 COULOMB_LAW = 9.0e9             # N * m^2 / C^2 : Coulomb's constant
 # k = 1 / (4 * _math.pi * e_0)  # also Coulomb's constant
@@ -38,5 +39,6 @@ symbolic = {
     'eps0': EPSILON_0,
     'h': PLANCK,
     'k': COULOMB_LAW,
-    'mu0': MAGNETIC
+    'mu0': MAGNETIC,
+    'k_b': BOLTZMANN
 }
