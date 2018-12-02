@@ -72,16 +72,16 @@ pwd = _os.getcwd # alias
 class FileSizeReport(object):
     """A class for generating reports on file systems
        An exmaple of output:
-       
+
        .\align.py | 587
        .\badquotes.txt | 308
        .\boxes.py | 2027
        .\collections.py | 3391
        .\collections_test.txt | 1363
        ...
-       
+
        TODO: file IO
-    
+
     """
     def __init__(self, directory='.'):
         """Initializes this report using the given directory and stores
@@ -177,10 +177,17 @@ class Compiler(object):
     def clear_flags(self):
         self.flags.clear()
 
-    def compile(self, exclude=None, recurse=True):
-        """Compiles the source files in this directory with the given flags
-           (debugging info included by default) and excludes any files
-           containing the given string `exclude`"""
+    def compile(self, exclude=None, recurse=True, references=None, verbose=False):
+        """Compiles the source files in this directory with this compiler's
+           flags. Keyword parameters are as follows:
+               exclude = None or list of strings to exclude
+               recurse = boolean to indicate whether all files in this
+                         compiler's path should be compiled
+               references = None or list of refernces for C# sources
+               verbose = boolean to indicate whether the system command
+                         should be printed for each file
+
+        """
         from clay.shell import lsgrep
         _os.chdir(self.directory)
         sources = self.sources
@@ -189,7 +196,7 @@ class Compiler(object):
         if exclude is not None and len(exclude) > 0:
             sources = list(filter(lambda x: all(not(y in x) for y in exclude), sources))
         if len(self.flags) > 0:
-            opt_str = ' -' + ' -'.join(self.flags)
+            opt_str = '-' + ' -'.join(self.flags)
         else:
             opt_str = ''
         statechanged = False
@@ -209,8 +216,12 @@ class Compiler(object):
                 print('Compiling ({}):'.format(self.compiler_name), src)
                 cmd = self.compiler_name
                 if self.compiler_name == 'csc': # C# specific handling
+                    if references is not None:
+                        cmd += ' /r:' + ','.join(references)
                     cmd += ' /out:{} '.format(dst_name)
                 cmd += '{} "{}"'.format(opt_str, src_name)
+                if verbose:
+                    print('cmd:', cmd)
                 _os.system(cmd)
                 statechanged = True
         if not(statechanged):
