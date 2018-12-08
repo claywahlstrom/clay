@@ -64,6 +64,23 @@ class JsonRepository(object):
            False otherwise"""
         return self._has_read
 
+    def prune(self, predicate):
+        """Prunes entities from the database based on the given predicate
+           function"""
+        modified = False
+        temp = self._db.copy() # prevents concurrent modification errors
+        for entity in self._db:
+            if predicate(entity):
+                print('pruning {} from db "{}"...'.format(entity, self._name))
+                if type(temp) == dict:
+                    temp.pop(entity)
+                else: # type(temp) == list
+                    temp.remove(entity)
+                modified = True
+        self._db = temp
+        if modified:
+            self.write()
+
     def read(self):
         """Reads data from the disk into the database"""
         with open(self._name) as fp:
