@@ -10,9 +10,14 @@ import os as _os
 
 class JsonRepository(object):
 
-    def __init__(self, name):
-        """Intializes this JSON repository with the given name"""
+    LIST = []
+    DICT = {}
+
+    def __init__(self, name, empty):
+        """Intializes this JSON repository with the given name
+           and empty database structure"""
         self._name = name
+        self._empty = empty
         self._has_read = False
         self.clear()
 
@@ -22,7 +27,7 @@ class JsonRepository(object):
 
     def clear(self):
         """Clears this database"""
-        self._db = {}
+        self._db = self._empty
 
     def create(self, force=False, write=True):
         """Creates this database if it does not exist and returns
@@ -45,6 +50,10 @@ class JsonRepository(object):
     def get_name(self):
         """Returns the name of this database"""
         return self._name
+        
+    def get_empty(self):
+        """Returns the empty structure for this database"""
+        return self._empty
 
     @property
     def db(self):
@@ -54,8 +63,8 @@ class JsonRepository(object):
     @db.setter
     def db(self, value):
         """Sets this database to the given value"""
-        if type(value) != dict:
-            raise ValueError('db must be a JSON serializable of type dict')
+        if not(type(value) in (dict, list)):
+            raise ValueError('db must be a JSON serializable of type dict or list')
         self._db = value
 
     @property
@@ -93,13 +102,14 @@ class JsonRepository(object):
             _json.dump(self._db, fd)
 
     name = property(get_name)
+    empty = property(get_empty)
 
 class CrudRepository(JsonRepository):
 
     def __init__(self, name, pk):
         """Initializes this CRUD repository under the given file
            using the given primary key"""
-        super(CrudRepository, self).__init__(name)
+        super(CrudRepository, self).__init__(name, {})
         self._pk = pk
         self._default_model = {}
 
@@ -207,9 +217,10 @@ if __name__ == '__main__':
 
     from clay.tests import it
 
-    js1 = JsonRepository('README.md')
-    js2 = JsonRepository('README.mda')
-
+    js1 = JsonRepository('README.md', JsonRepository.DICT)
+    js2 = JsonRepository('README.mda', [])
+    
+    it('initializes new json repo with correct empty structure', js1.empty, {})
     it('fails to overwrite when already exists and not forced', js1.create(force=False, write=False), False)
     it('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
     it('creates new json repo if not exists and not forced', js2.create(write=False), True)
