@@ -2,6 +2,7 @@
 """
 Utilities for Python
 
+todo: fix Linq querable select max size by partitioning queryable into lists
 
 """
 
@@ -56,6 +57,11 @@ class Linq(object):
         if not(Linq.__queryable_set):
             raise RuntimeError('Linq queryable must be set')
 
+    def __check_distinct_projection(distinct):
+        if len(Linq.__queryable) > Linq.MAX_QUERYABLE_LENGTH and distinct:
+            raise ValueError('Linq cannot process more than ' + \
+                             str(Linq.MAX_QUERYABLE_LENGTH) + ' elements for distinct=True')
+
     def __end_query():
         Linq.__queryable_set = False # select is the last statement
 
@@ -72,47 +78,58 @@ class Linq(object):
 
     def query(queryable):
         """Sets the query source using the given queryable"""
-        if len(queryable) > Linq.MAX_QUERYABLE_LENGTH:
-            raise ValueError('Linq cannot process more than ' + \
-                             str(Linq.MAX_QUERYABLE_LENGTH) + ' elements')
         Linq.__queryable = queryable
         Linq.__queryable_set = True
         Linq.__select_called = False
         return Linq
 
-    def select(props, distinct=False):
+    def select(props, distinct=False, model=False):
         """Returns a list of properties selected from each member.
            If used, it must be the last step as it returns items
            and not a Linq object."""
         Linq.__check_queryable_exists()
+        Linq.__check_distinct_projection(distinct)
         if type(props) == str:
             props = [props]
         if not(type(props) in (list, tuple)):
             raise ValueError('properties must be a list or tuple')
-        filtered = []
+        projection = []
         for each in Linq.__queryable:
-            entity = []
+            if model:
+                entity = {}
+            else:
+                entity = []
             for prop in props:
                 if type(each) == dict and prop in each:
-                    entity.append(each[prop])
+                    if model:
+                        entity[prop] = each[prop]
+                    else:
+                        entity.append(each[prop])
                 elif type(prop) == int:
                     if prop >= len(each):
                         print('Could not select index {} for {}. Skipping...' \
                             .format(prop, each))
                     else:
+                        if model:
+                            raise RuntimeError('cannot include properties ' \
+                                               'for entity without properties')
                         entity.append(each[prop])
                 elif hasattr(each, prop):
-                    entity.append(getattr(each, prop))
+                    if model:
+                        entity[prop] = getattr(each, prop)
+                    else:
+                        entity.append(getattr(each, prop))
                 else:
                     print(each, 'does not have property', prop)
-                    entity.append(None)
-            if len(props) == 1:
+                    if not(model):
+                        entity.append(None)
+            if len(props) == 1 and not(model):
                 entity = entity[0]
             if not(distinct and entity in filtered):
-                filtered.append(entity)
-        Linq.__queryable = filtered
+                projection.append(entity)
+        Linq.__queryable = projection
         Linq.__select_called = True
-        return Linq.to_list()
+        return Linq
 
     def to_list():
         """Returns this query as a list"""
