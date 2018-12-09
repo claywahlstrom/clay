@@ -289,13 +289,12 @@ def get_uri(path):
     """Returns the web file URI for the given file path"""
     return 'file:///' + path.replace('\\', '/')
 
-def get_title(uri_or_soup):
-    """Returns the title from the markup"""
-    if type(uri_or_soup) == str:
-        soup = _BS(_requests.get(uri_or_soup).content, 'html.parser')
-    else:
-        soup = uri_or_soup
-    return soup.html.title.text
+def get_title(soup):
+    """Returns the title from the given soup markup"""
+    title = '[no title]'
+    if soup.html is not None and soup.html.title is not None:
+        title = soup.html.title.text
+    return title
 
 def get_vid(vid, vid_type='mp4'):
     """Downloads the given YouTube (tm) video id using yt-down.tk, no longer stable"""
@@ -495,7 +494,7 @@ class WebDocument(object):
             fread = _requests.get(self.uri, params=query, headers=WEB_HDRS)
         else:
             fread = _requests.get(self.uri, params=query)
-        return fread.text.encode('utf-8')
+        return fread.content
 
     def get_mp3(self, title=''):
         """Downloads the this document's `uri` from mp3juices.cc"""
@@ -508,6 +507,11 @@ class WebDocument(object):
         request = urllib.request.Request(self.url, headers=WEB_HDRS)
         response = urllib.request.urlopen(request)
         return response.read()
+
+    def get_title(self):
+        from clay.web import get_title
+        soup = _BS(self.get_html(), 'html.parser')
+        return get_title(soup)
 
     def get_uri(self):
         return self.uri
@@ -798,7 +802,7 @@ if __name__ == '__main__':
     it('returns full name and no query', \
         WebDocument(LINKS['1MB']).get_basename(full=True), \
         ('download.thinkbroadband.com.1MB.zip', None))
-    it('returns Official Minecraft site html title', get_title(TEST_LINK), 'Official site | Minecraft')
+    it('returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
     it('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
     we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
