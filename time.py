@@ -19,7 +19,7 @@ MONTHS = ['january', 'february', 'march',
 TAD_BASE = 'https://www.timeanddate.com/astronomy' # astronomy or sun url base
 
 class datetime(_dt.datetime):
-    """Provides extension methods to the datetime datetime object"""
+    """Provides extension methods to the datetime.datetime object"""
 
     def round(self, minutes=0, seconds=0):
         """Returns the datetime rounded the given number of minutes or seconds"""
@@ -159,20 +159,26 @@ class SunTime(object):
         from bs4 import BeautifulSoup as _BS
         import requests as _requests
         url = '/'.join([TAD_BASE, self.country, self.city])
-        req = _requests.get(url)
-        if req.status_code != 200:
-            raise Exception('request unsuccessful, used url: %s' % url)
-        cont = req.content
-        soup = _BS(cont, 'html.parser')
-        scraped = [td.text for td in soup.select('#as-monthsun > tbody > tr > td')]
-
         message = None
-        # check for notes about daylight savings
-        if scraped[0].startswith('Note'):
-            message = scraped[0]
-            print(message)
-            scraped = scraped[1:]
-
+        try:
+            req = _requests.get(url)
+            if req.status_code != 200:
+                raise Exception('request unsuccessful, used url: %s' % url)
+            cont = req.content
+            soup = _BS(cont, 'html.parser')
+            scraped = [td.text for td in soup.select('#as-monthsun > tbody > tr > td')]
+            # check for notes about daylight savings
+            if scraped[0].startswith('Note'):
+                message = scraped[0]
+                print(message)
+                scraped = scraped[1:]
+        except Exception as e:
+            print(e)
+            req = object()
+            cont = ''
+            soup = _BS(cont, 'html.parser')
+            scraped = ['offline'] * SunTime.COLS * 2
+            
         # parse the data into rows
         data = []
         for i in range(0, len(scraped), SunTime.COLS):
