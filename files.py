@@ -89,10 +89,14 @@ class File(object):
             fcount = len(fp.read().split())
         return fcount
 
-    def parse(self, delim='\n', mode='r'):
+    def parse(self, delim='\n', mode='r', strip=False):
         """Parses this by the given delimiter and returns the resulting list"""
         with open(self.name, mode) as fp:
-            spl = fp.read().split(delim)
+            content = fp.read()
+
+        if strip:
+            content = content.strip()
+        spl = content.split(delim)
         return spl
     
     def print(self):
