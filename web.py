@@ -438,7 +438,7 @@ class WebDocument(object):
                         fp.write(chunk)
                         actual += len(chunk)
                         percent = int(actual / size * 100)
-                        if _is_idle() or _is_unix():
+                        if _is_idle():
                             if percent % 5 == 0: # if multiple of 5 reached...
                                 print('{}%'.format(percent), end=' ', flush=True)
                         else:
