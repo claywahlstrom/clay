@@ -393,10 +393,14 @@ def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
             name += ' ' + ' '.join(RUNTIME_ARGS[1:])
     if len(add) > 0:
         title += ' - '  + add
-    title = title.replace('<', '^<').replace('>', '^>')
-    if is_idle() or is_unix():
-        print('set title -> ' + title)
-    else:
+    if not(is_unix()):
+        title = title.replace('<', '^<').replace('>', '^>')
+    if is_idle():
+        print('title -> ' + title)
+    elif is_unix():
+        _sys.stdout.write('\x1b]2;' + title + '\x07')
+        _sys.stdout.flush()
+    else: # is windows
         _os.system('title ' + title)
 
 def start(program):
@@ -415,14 +419,19 @@ def timeout(seconds, hidden=False):
         raise ValueError('seconds must be >= and type int')
     if is_idle() or seconds > 99999:
         if not(hidden):
-            print('Waiting for', seconds, 'seconds...')
+            print('Waiting for', seconds, 'seconds...', end='')
         _time.sleep(seconds)
+        if not(hidden):
+            print()
     else:
         command = TIMEOUT_CMD + str(seconds)
         if hidden:
             command += ' >nul'
+        if is_unix():
+            print('Waiting for', seconds, 'seconds...', end='', flush=True)
         _os.system(command)
-
+        if is_unix():
+            print()
 
 if __name__ == '__main__':
     jc = JavaCompiler(directory=r'C:\Users\Clayton\Google Drive\UW Remote Work\Java Remote\gravity')
