@@ -83,10 +83,10 @@ class Attendance(object):
     def print_money(self, per):
         """Calculates and prints the take-home estimate for the given period `per`"""
         if per in Attendance.PT_TYPES and per in self.pt:
-            exec(f"for i, {per} in enumerate(self.filtered['{per}']): \n \
-                       key = list(self.pt['{per}'].keys())[i] \n \
-                       money = self.pt['{per}'][key] * self.perhour * self.take_home_ratio \n \
-                       print('{per}', str(i) + " + "': ${:,.2f}'.format(money))")
+            exec("for i, peri in enumerate(self.filtered[str(per)]): \n \
+                       key = list(self.pt[str(per)].keys())[i] \n \
+                       money = self.pt[str(per)][key] * self.perhour * self.take_home_ratio \n \
+                       print(per, str(i) + ': ${:,.2f}'.format(money))")
         else:
             print(per, 'is not a supported type')
 
@@ -134,7 +134,7 @@ class Attendance(object):
         print(f"break length is {BREAK_SCHEDULES[self.state]['length']}hr")
         print('count', end='\t')
         print('date', end='\t\t')
-        print('hours (before deduction))')
+        print('hours (before deduction)')
 
         for i, row in enumerate(self.db):
             print(math.floor(self.db[i]['hours'] / BREAK_SCHEDULES[self.state]['hours']), end='\t')
