@@ -103,7 +103,19 @@ class File(object):
         """Prints the binary contents of this file"""
         with open(self.name, 'rb') as fp:
             print(fp.read())
-            
+
+    def remove_blank_lines(self):
+        """Removes blank lines from this file and writes the new
+           content to the disk"""
+        content = self.get_content(binary=True)
+        while b'\r\n\r\n' in content or b'\n\n' in content:
+            print('replacing')
+            content = content.replace(b'\r\n\r\n', b'\r\n')
+            content = content.replace(b'\n\n', b'\n')
+
+        with open(self.name, 'wb') as fp:
+            fp.write(content)
+
     def size(self):
         """Returns the size of this file"""
         return _os.path.getsize(self.name)
