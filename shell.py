@@ -80,21 +80,32 @@ def file_manager(directory=_os.curdir):
 
 def get_disk_drives():
     """Returns a list of drive root paths that are available
-       on this machine. Ex. ['C:\\', 'D:\\', ...]"""
+       on this machine.
+
+       Ex. ['CSSS-9928', 'sda', ...] or ['C:\\', 'D:\\', ...]
+
+    """
     drives = []
-    for letter in _string.ascii_uppercase:
-        if _os.path.exists(letter + ':\\'):
-            drives.append(letter + ':\\')
-    return drives
+    if is_unix():
+        for folder in _os.listdir('/dev'):
+            if folder.startswith('sd'):
+                drives.append(folder)
+        user_media = _os.path.join('/media/', _os.environ['USER'])
+        if _os.path.exists(user_media):
+            drives += _os.listdir(user_media)
+    else:
+        for letter in _string.ascii_uppercase:
+            if _os.path.exists(letter + ':\\'):
+                drives.append(letter + ':\\')
+    return sorted(drives)
 
 def get_docs_folder():
-    """Returns the location of the documents folder for this computer.
-       Assumes a Windows-style filesystem to work."""
+    """Returns the location of the documents folder for this computer."""
     from clay.shell import get_disk_drives
     if 'E:\\' in get_disk_drives():
         return r'E:\Docs'
     else:
-        return _os.path.join(_os.environ['HOME'], 'Documents')
+        return _os.path.join(HOME_DIR, 'Documents')
 
 def is_idle():
     """Returns true if the script is running within IDLE,
