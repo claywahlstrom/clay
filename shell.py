@@ -276,11 +276,11 @@ def notify(message, seconds=2.25):
     _time.sleep(seconds)
 
 def pause(shell_only=False):
-    """Pauses the console execution"""
-    if (is_idle() or is_unix()) and not(shell_only):
-        input('Press enter to continue . . . ')
-    elif not(is_idle()):
-        _subprocess.call('pause', shell=True)
+    """Pauses the console execution and prompts the user to continue"""
+    if shell_only and is_idle():
+        return
+    print()
+    input('Press enter to continue . . . ')
 
 def ren(src, dst, directory=_os.curdir, recurse=False):
     """Renames src to dst. Renames all items in the current
@@ -436,3 +436,9 @@ def timeout(seconds, hidden=False):
 if __name__ == '__main__':
     jc = JavaCompiler(directory=r'C:\Users\Clayton\Google Drive\UW Remote Work\Java Remote\gravity')
     jc.compile(exclude=['-', 'unused'])
+
+    # used to test if pause runs correctly
+    # is_unix = lambda: True
+    # is_idle = lambda: True
+    pause()
+    pause(shell_only=True)
