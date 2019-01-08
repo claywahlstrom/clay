@@ -206,7 +206,7 @@ class Server(AdvancedSocket):
 
 if __name__ == '__main__':
 
-    from clay.shell import FileSizeReport
+    from clay.files import FileSizeReport
 
     report = FileSizeReport(directory='.')
     print(report)

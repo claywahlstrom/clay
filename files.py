@@ -139,6 +139,49 @@ class File(object):
         else:
             print('Converted to crlf')
 
+
+class FileSizeReport(object):
+    """A class for generating reports on file systems
+       An exmaple of output:
+
+       .\align.py | 587
+       .\badquotes.txt | 308
+       .\boxes.py | 2027
+       .\collections.py | 3391
+       .\collections_test.txt | 1363
+       ...
+
+       TODO: file IO
+
+    """
+    def __init__(self, directory='.'):
+        """Initializes this report using the given directory and stores
+           the result in the string field"""
+        self.directory = directory
+        self.generate()
+        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
+
+    def __repr__(self):
+        """Prints the string representation of this report"""
+        return self.string
+
+    def generate(self):
+        """Generates a report in the format (filename, filesize)"""
+        report = []
+        Walk = _os.walk(self.directory)
+
+        for root, dirs, files in Walk:
+            for file in files:
+                filename = _os.path.join(root, file)
+                report.append((filename, _os.stat(filename).st_size))
+        self.report = report
+
+    def parse(self):
+        """Parses the string field and returns the original report"""
+        splt = [x.split(' | ') for x in self.string.strip().split('\n')]
+        lst = [(x, int(y.strip())) for x, y in splt]
+        return lst
+
 def fix_quotes(filename):
     """Replaces UTF-8 quotes with ANSI ones"""
     try:
