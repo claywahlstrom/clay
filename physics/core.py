@@ -1,13 +1,13 @@
 
 """
-physics: goodies ranging from constants to mechanics to electromagnetism
+physics: goodies ranging from mechanics to electromagnetism
 
 """
 
 import collections as _collections
 import math as _math
 
-from clay import constants as const
+from clay.physics import constants as const
 
 OHMS_TABLE = {'I': 'V/R',
               'V': 'I*R',
