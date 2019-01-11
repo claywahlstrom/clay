@@ -47,8 +47,3 @@ __all__ = ['align',
            'util',
            'web',
            'wintitles']
-
-import sys as _sys
-
-# create a temporary version of is_unix to allow for constant declarations
-_is_unix = lambda: any(_sys.platform.startswith(x) for x in ('linux', 'darwin'))

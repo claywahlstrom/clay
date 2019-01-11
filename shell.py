@@ -12,17 +12,30 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-from clay import _is_unix
+def is_idle():
+    """Returns true if the script is running within IDLE,
+       false otherwise"""
+    return 'idlelib' in _sys.modules
+
+def is_powershell():
+    """Returns true if the script is running within PowerShell,
+       false otherwise"""
+    return len(_sys.argv[0]) > 0 and (not((':' in _sys.argv[0])) or _sys.argv[0].startswith('.'))
+
+def is_unix():
+    """Returns true if the script is running within a Unix machine,
+       false otherwise"""
+    return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
 FLASK_APP = 'app.py' # a common name for Flask web apps
 
-HOME_DIR = _os.environ['HOME'] if _is_unix() else _os.environ['USERPROFILE']
+HOME_DIR = _os.environ['HOME'] if is_unix() else _os.environ['USERPROFILE']
 
 RUNTIME_ARGS = _sys.argv
 if len(RUNTIME_ARGS[0]) == 0:
     RUNTIME_ARGS[0] = 'python.exe'
 
-TIMEOUT_CMD = 'sleep ' if _is_unix() else 'timeout '
+TIMEOUT_CMD = 'sleep ' if is_unix() else 'timeout '
 
 TRASH = _os.path.join(HOME_DIR, 'Desktop', 'TRASH')
 
@@ -32,7 +45,7 @@ def clear():
     """Clears the console window"""
     if is_idle():
         print('\n' * 40)
-    elif _is_unix():
+    elif is_unix():
         _os.system('clear')
     else:
         _os.system('cls')
@@ -106,21 +119,6 @@ def get_docs_folder():
         return r'E:\Docs'
     else:
         return _os.path.join(HOME_DIR, 'Documents')
-
-def is_idle():
-    """Returns true if the script is running within IDLE,
-       false otherwise"""
-    return 'idlelib' in _sys.modules
-
-def is_powershell():
-    """Returns true if the script is running within PowerShell,
-       false otherwise"""
-    return len(_sys.argv[0]) > 0 and (not((':' in _sys.argv[0])) or _sys.argv[0].startswith('.'))
-
-def is_unix():
-    """Returns true if the script is running within a Unix machine,
-       false otherwise"""
-    return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
 
 class Compiler(object):
 
