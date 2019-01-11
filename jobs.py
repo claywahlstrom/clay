@@ -131,7 +131,7 @@ class Attendance(object):
     def remove_breaks(self, lunches=False):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
         print('Removing breaks using the rules for', self.state)
-        print(f"break length is {BREAK_SCHEDULES[self.state]['length']}hr")
+        print('break length is', BREAK_SCHEDULES[self.state]['length'], 'hr')
         print('count', end='\t')
         print('date', end='\t\t')
         print('hours (before deduction)')

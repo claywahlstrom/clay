@@ -398,7 +398,10 @@ class WebDocument(object):
         url = self.uri
         flag = False
         if log_name:
-            log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
+            if _is_unix():
+                log_path = _os.path.join(r'/home/clay/Desktop', log_name)
+            else:
+                log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
         current = _os.getcwd()
         _os.chdir(destination) # better file handling
         print('curdir', _os.getcwd())
