@@ -217,13 +217,13 @@ class Watch(object):
         elif type(var) == str:
             (self.objs).remove(var)
 
-    def show(self, useLocals=None):
+    def show(self, transformer=lambda x: x, useLocals=None):
         """Prints out the key, value pairs for this Watch"""
         groupdict = self.get_dict()
         if useLocals:
             groupdict.update(useLocals)
         for ob in self.objs:
-            print(ob, '->', groupdict[ob])
+            print(ob, '->', transformer(groupdict[ob]))
 
     def write_file(self, filename):
         """Writes this Watch to the given file"""
