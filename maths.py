@@ -242,9 +242,11 @@ def roots(a=0, b=0, c=0):
         raise Exception('please enter some values')
     discriminant = b ** 2 - 4 * a * c
     if discriminant < 0:
-        import cmath as math
-    root1 = (-b - math.sqrt(discriminant)) / (2 * a)
-    root2 = (-b + math.sqrt(discriminant)) / (2 * a)
+        import cmath as m
+    else:
+        m = math
+    root1 = (-b - m.sqrt(discriminant)) / (2 * a)
+    root2 = (-b + m.sqrt(discriminant)) / (2 * a)
     return root1, root2
     
 def roots_newtons_method(f, x):
