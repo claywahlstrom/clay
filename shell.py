@@ -211,10 +211,14 @@ class JavaCompiler(Compiler):
 
 def ls(directory=_os.curdir, shell=False):
     """Returns the listing of contents for the given `directory`.
-    If `shell` is true, then the MS-DOS style is printed and nothing is returned
-    """
+       If `shell` is true, then the long listing is printed and
+       nothing is returned."""
     if shell:
-        print(_subprocess.check_output(['dir', directory],
+        if is_unix():
+            command = 'ls -al'
+        else:
+            command = 'dir'
+        print(_subprocess.check_output([command, directory],
                                        shell=True).decode('utf8', errors='ignore'))
     else:
         return _os.listdir(directory)
