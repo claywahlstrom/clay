@@ -263,6 +263,7 @@ def ren(src, dst, directory=_os.curdir, recurse=False):
         for file in filter(lambda name: src in name, _os.listdir(directory)):
             try:
                 _os.rename(file, file.replace(src, dst))
+                print(' ' * 4 + 'Renamed "{}" to "{}"'.format(file, file.replace(src, dst)))
                 x += 1
             except:
                 print("Couldn't rename", src)
@@ -343,7 +344,7 @@ def rm_item(directory, name):
         if _os.path.exists(dst_path):
             if DEBUG:
                 print(name, 'exists in TRASH, deleting...')
-            print('removing', dst_path)
+            print('Removing', dst_path)
             rm_dir(dst_path)
         move(new_path, TRASH)
         print('"{}" deleted'.format(target))
