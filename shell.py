@@ -301,6 +301,22 @@ def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
         name = name_or_criteria
         rm_item(directory, name)
 
+def rm_dir(target):
+    """Removes the given target directory from the `shell` trash"""
+    rms = {'win32': ('del', 'rmdir /s'),
+           'linux': ('rm', 'rm -r')}
+
+    if _os.path.isfile(target):
+        i = 0
+    else:
+        i = 1
+
+    if is_unix():
+        key = 'linux'
+    else:
+        key = 'win32'
+    _os.system('{} "{}"'.format(rms[key][i], target))
+
 def rm_item(directory, name):
     """Moves an item from the given directory with its name including its
        path neutral version of its origin. Helps `rm` accomplish its task"""
@@ -308,7 +324,7 @@ def rm_item(directory, name):
     DEBUG = False
 
     from shutil import move
-    from clay.shell import rm_from_trash
+    from clay.shell import rm_dir
 
     try:
         target = _os.path.join(directory, name)
@@ -328,29 +344,13 @@ def rm_item(directory, name):
             if DEBUG:
                 print(name, 'exists in TRASH, deleting...')
             print('removing', dst_path)
-            rm_from_trash(dst_path)
+            rm_dir(dst_path)
         move(new_path, TRASH)
         print('"{}" deleted'.format(target))
     except Exception as e:
         print(e)
         # rollback removal if something went wrong
         move(new_path, name)
-
-def rm_from_trash(target):
-    """Removes the given target from the `shell` trash"""
-    rms = {'win32': ('del', 'rmdir /s'),
-           'linux': ('rm', 'rm -r')}
-
-    if _os.path.isfile(target):
-        i = 0
-    else:
-        i = 1
-
-    if is_unix():
-        key = 'linux'
-    else:
-        key = 'win32'
-    _os.system('{} "{}"'.format(rms[key][i], target))
 
 def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
               flask_default_name=True):
