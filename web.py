@@ -530,11 +530,11 @@ class WebDocument(object):
         self.uri = uri
 
     def size(self):
-        response = _requests.head(self.uri, headers=_WEB_HDRS)
+        response = _requests.head(self.uri, headers=WEB_HDRS)
         if 'Content-Length' in response.headers:
             size = int(response.headers['Content-Length'])
         else:
-            size = len(_requests.get(self.uri, headers=_WEB_HDRS).content)
+            size = len(_requests.get(self.uri, headers=WEB_HDRS).content)
         return size
 
 class WundergroundUrlBuilder(UrlBuilder):
