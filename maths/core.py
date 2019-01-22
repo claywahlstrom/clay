@@ -14,9 +14,6 @@ if _is_unix():
     LIMPATH_FMT = r'/home/clay/Desktop/liminf-{}.log'
 else:
     LIMPATH_FMT = r'C:\Python37\Lib\site-packages\clay\liminf-{}.log'
-# finally clear the file
-#     with open(LIMPATH, 'w') as fp:
-#        pass
 
 TESTS = {
     'alternating': lambda n: (-1) ** n * (1 / n ** 2),

@@ -54,7 +54,7 @@ def dipole_moment(charge, a, l):
 def drop_time(displacement, v_i=0, a=const.ACCEL_GRAV):
     """Returns free fall time in seconds starting at t = 0.
        Assumes up as the positive direction for position"""
-    from clay.maths import roots
+    from clay.maths.core import roots
     if v_i:
         t1, t2 = roots(a, v_i, displacement)
         return max(t1, t2)
