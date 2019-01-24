@@ -21,9 +21,11 @@ TESTS = {
     'convergent1': lambda x: x / (2 * x - 1),
     'convergent2': lambda n: n ** 2 / math.factorial(2 * n - 1),
     'harmonic': lambda n: 1 / n,
+    'imaginary': lambda x: math.sqrt(-1),
     'invtrig': lambda x: math.acos(x),
     'quadratic': lambda n: 1 + 2 * n + n ** 2,
-    'quadratic2': lambda n: n ** 2 + 1
+    'quadratic2': lambda n: n ** 2 + 1,
+    'quadratic3': lambda x: math.sqrt(0.9 * (1.7 - x) ** 2)
 }
 
 class Circle(object):
@@ -245,6 +247,39 @@ def roots(a=0, b=0, c=0):
     root1 = (-b - m.sqrt(discriminant)) / (2 * a)
     root2 = (-b + m.sqrt(discriminant)) / (2 * a)
     return root1, root2
+
+def roots_approx(positive, initial_guess, dp, isclose_dp=9):
+    """Given a function that returns a positive value, the initial guess,
+       decimals to round roots to, and isclose comparison decimal points,
+       uses successive approximation to find the roots to the polynomial
+       function"""
+    def negative(x):
+        """Returns the complimenting negative value for the polynomial
+           function"""
+        return -positive(x)
+
+    # math.isclose is introduced in Python 3.5 and thus is not widely
+    # supported between versions of Python 3. isclose aims to bridge
+    # this gap by rounding the two given digits to the specified number
+    # of decimal places
+    def isclose(x, y, isclose_dp):
+        """Returns True if x and y are close up to isclose_dp decimal places,
+           False otherwise"""
+        return round(x, isclose_dp) == round(y, isclose_dp)
+
+    roots = []
+    x = initial_guess
+    for f in (negative, positive):
+        try:
+            result = f(x)
+        except ValueError as ve:
+            break
+        while not isclose(x, result, isclose_dp):
+            x = result
+            result = f(x)
+        roots.append(round(result, dp))
+
+    return roots
     
 def roots_newtons_method(f, x):
     """Given a function and float guess, returns the roots using
@@ -314,6 +349,13 @@ if __name__ == '__main__':
     
     it('multiplicity returns correct quantity for (4, 3)',
         multiplicity(4, 3), 15)
+
+    it('roots_approx returns empty list for polynomials without roots',
+       roots_approx(TESTS['imaginary'], 0, 3),
+       [])
+    it('roots_approx returns correct roots for polynomials with roots',
+       roots_approx(TESTS['quadratic3'], 0, 3, 9),
+       [-31.428, 0.828])
 
     it('returns correct root using Newton\'s method',
         roots_newtons_method(TESTS['quadratic'], 10), -1.0,
