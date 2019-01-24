@@ -52,7 +52,7 @@ class Linq(object):
 
     __queryable_set = False
     __select_called = False
-        
+
     def __check_queryable_exists():
         if not(Linq.__queryable_set):
             raise RuntimeError('Linq queryable must be set')
@@ -206,7 +206,7 @@ class Watch(object):
             raise ValueError()
 
     def get_dict(self):
-        """Returns this Watch's dict"""
+        """Returns the dict for this Watch"""
         return _sys.modules[self.module].__dict__
 
     def remove(self, var):
@@ -224,6 +224,17 @@ class Watch(object):
             groupdict.update(useLocals)
         for ob in self.objs:
             print(ob, '->', transformer(groupdict[ob]))
+
+    def start_recording(self, useLocals):
+        """Records new objects created after this point until end
+           recording is called"""
+        self._start_locals = useLocals.copy().keys()
+
+    def stop_recording(self, useLocals):
+        """Adds the new objects since the recording started to this Watch"""
+        unique = sorted(x for x in useLocals if x not in self._start_locals)
+        for var in unique:
+            self.add(var)
 
     def write_file(self, filename):
         """Writes this Watch to the given file"""
