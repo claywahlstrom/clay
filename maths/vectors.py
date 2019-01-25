@@ -11,9 +11,9 @@ import math
 
 GLOBAL_ROUNDING = 4
 
-def add(vector1, vector2):
-    """Returns the addition of of two vectors"""
-    return apply(sum, list(zip(vector1, vector2)))
+def add(vector1, vector2, *vectors):
+    """Returns the summation of the given vectors"""
+    return apply(sum, list(zip(vector1, vector2, *vectors)))
 
 def apply(function, vector):
     """Applies the function to the given vector and returns the result"""
@@ -64,6 +64,12 @@ if __name__ == '__main__':
 
     from clay.tests import it
 
+    it('add returns correct value (2 vectors)',
+       add([0, 1, 1], [1, 1, 0]),
+       [1, 2, 1])
+    it('add returns correct value (>2 vectors)',
+       add([0, 1, 1], [1, 1, 0], [1, 1, 1]),
+       [2, 3, 2])
     it('cross returns correct value',
        cross([3, -3, 1], [4, 9, 2]),
        [-15, -2, 39])
