@@ -54,6 +54,8 @@ def r(obj):
     else:
         return round(obj, GLOBAL_ROUNDING)
 
+scale = mult
+
 def vect(magnitude, angle=0):
     """Returns a vector of the given magnitude and direction in component form"""
     return [magnitude * math.cos(angle), magnitude * math.sin(angle)]
