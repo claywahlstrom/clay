@@ -217,12 +217,17 @@ class Watch(object):
         elif type(var) == str:
             (self.objs).remove(var)
 
-    def show(self, transformer=lambda x: x, useLocals=None):
+    def show(self, transformer=lambda x: x, useLocals=None, sort=False):
         """Prints out the key, value pairs for this Watch"""
         groupdict = self.get_dict()
         if useLocals:
             groupdict.update(useLocals)
-        for ob in self.objs:
+
+        objs = self.objs
+        if sort:
+            objs = sorted(objs, key=lambda x: x.lower())
+        
+        for ob in objs:
             print(ob, '->', transformer(groupdict[ob]))
 
     def start_recording(self, useLocals):
@@ -232,7 +237,7 @@ class Watch(object):
 
     def stop_recording(self, useLocals):
         """Adds the new objects since the recording started to this Watch"""
-        unique = sorted(x for x in useLocals if x not in self._start_locals)
+        unique = (x for x in useLocals if x not in self._start_locals)
         for var in unique:
             self.add(var)
 
