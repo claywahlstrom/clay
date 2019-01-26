@@ -159,7 +159,7 @@ class Compiler(object):
         _os.chdir(self.directory)
         sources = self.sources
         if sources is None:
-            sources = [_os.path.splitext(x)[0] for x in lsgrep(self.src_ext, self.directory, recurse=True)]
+            sources = [_os.path.splitext(x)[0] for x in lsgrep(self.src_ext, self.directory, recurse=recurse)]
         if exclude is not None and len(exclude) > 0:
             sources = list(filter(lambda x: all(not(y in x) for y in exclude), sources))
         if len(self.flags) > 0:
@@ -253,54 +253,48 @@ def pause(shell_only=False):
     print()
     input('Press enter to continue . . . ')
 
-def ren(src, dst, directory=_os.curdir, recurse=False):
-    """Renames src to dst. Renames all items in the current
-       directory if recurse is True using str.replace(src, dst)"""
+def ren(src, dst):
+    """Renames src to dst and prints the status of the operation"""
+    try:
+        _os.rename(src, dst)
+        print('Renamed "{}" to "{}"'.format(src, dst))
+    except Exception as e:
+        print('Error:', e)
 
-    if recurse:
-        print('Replacing all "{}" with "{}"...'.format(src, dst))
-        x = 0
-        for file in filter(lambda name: src in name, _os.listdir(directory)):
-            try:
-                _os.rename(file, file.replace(src, dst))
-                print(' ' * 4 + 'Renamed "{}" to "{}"'.format(file, file.replace(src, dst)))
-                x += 1
-            except:
-                print("Couldn't rename", src)
-        print('Renamed {} item(s)'.format(x))
-    else:
+def ren_all(old, new, directory=_os.curdir):
+    """Renames all items containing old string with the new string"""
+    print('Renaming all files containing "{}" with "{}"...'.format(old, new))
+    x = 0
+    for file in filter(lambda name: old in name, _os.listdir(directory)):
         try:
-            _os.rename(src, dst)
-            print('Renamed "{}" to "{}"'.format(src, dst))
-        except Exception as e:
-            print('Error:', e)
+            print(' ' * 4, end='')
+            file = _os.path.join(directory, file)
+            ren(file, file.replace(old, new))
+            x += 1
+        except:
+            print("Couldn't rename", old)
+    print('Renamed {} item(s)'.format(x))
 
-def rm(name_or_criteria, directory=_os.curdir, recurse=False, prompt=True):
-    """Moves a file/folder to the TRASH. Recursive version rm if recurse
-       is True with optional prompting"""
-
-    from clay.shell import rm_item
-
-    if not(_os.path.exists(TRASH)):
-        _os.mkdir(TRASH)
-
-    if recurse:
-        sure = not(prompt)
-        if prompt:
-            sure = input('Are you sure you want to delete all ' + \
-                         'containing "{}" in "{}"? '.format(criteria, directory))
-        x = 0
-        if sure.lower() in ('1', 'yes'):
-            criteria = name_or_criteria
-            print('Deleting all w/ "{}"...'.format(criteria))
-            for name in filter(lambda name: criteria.lower() in name.lower(),
-                               _os.listdir(directory)):
-                rm_item(directory, name)
-                x += 1
-        print('{} item(s) deleted'.format(x))
+def rm(path):
+    """Moves the file with the given path to the trash"""
+    rm_item(*_os.path.split(_os.path.abspath(path)))
+    
+def rm_all(criteria, directory=_os.curdir, prompt=True):
+    """Moves all files of the given criteria to to the trash"""
+    if prompt:
+        sure = input('Are you sure you want to delete all files' + \
+                     'containing "{}" in "{}"? '.format(criteria, directory))
     else:
-        name = name_or_criteria
-        rm_item(directory, name)
+        sure = 'Yes'
+
+    x = 0
+    if sure.lower() in ('1', 'yes'):
+        print('Deleting all w/ "{}"...'.format(criteria))
+        for name in filter(lambda name: criteria.lower() in name.lower(),
+                           _os.listdir(directory)):
+            rm_item(directory, name)
+            x += 1
+    print('Deleted {} item(s)'.format(x))
 
 def rm_dir(target):
     """Removes the given target directory from the `shell` trash"""
@@ -320,12 +314,15 @@ def rm_dir(target):
 
 def rm_item(directory, name):
     """Moves an item from the given directory with its name including its
-       path neutral version of its origin. Helps `rm` accomplish its task"""
+       path neutral version of its origin to the trash"""
 
     DEBUG = False
 
     from shutil import move
     from clay.shell import rm_dir
+    
+    if not(_os.path.exists(TRASH)):
+        _os.mkdir(TRASH)
 
     try:
         target = _os.path.join(directory, name)
@@ -347,7 +344,7 @@ def rm_item(directory, name):
             print('Removing', dst_path)
             rm_dir(dst_path)
         move(new_path, TRASH)
-        print('"{}" deleted'.format(target))
+        print('Deleted "{}"'.format(target))
     except Exception as e:
         print(e)
         # rollback removal if something went wrong
