@@ -507,7 +507,7 @@ class WebDocument(object):
 
     def get_response(self):
         """Returns the response from this document's `uri`"""
-        request = urllib.request.Request(self.url, headers=WEB_HDRS)
+        request = urllib.request.Request(self.uri, headers=WEB_HDRS)
         response = urllib.request.urlopen(request)
         return response.read()
 
