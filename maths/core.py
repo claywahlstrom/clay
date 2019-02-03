@@ -276,7 +276,10 @@ def roots_approx(positive, initial_guess, dp, isclose_dp=9):
             break
         while not isclose(x, result, isclose_dp):
             x = result
-            result = f(x)
+            try:
+                result = f(x)
+            except ValueError as ve:
+                break
         roots.append(round(result, dp))
 
     return roots
