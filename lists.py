@@ -8,6 +8,18 @@ Basic operations for lines, lists, and files
 
 TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
+def frange(start, stop, step):
+    """Returns a generator that produces a stream of floats from
+       start (inclusive) to stop (exclusive) by the given step"""
+    if start > stop:
+        assert step < 0, 'step must agree with start and stop'
+    elif stop > start:
+        assert step > 0, 'step must agree with start and stop'
+    digits = len(str(step)) - 2 # - 2 to account for "0."
+    steps = abs(int(round((stop - start) / step, digits)))
+    for x in range(steps):
+        yield round(start + x * step, digits)
+
 def join_lines(file, join_sep=', '):
     """Returns the lines of text from the given file (object or str)
        joined by the separator"""
@@ -56,6 +68,27 @@ def rmdup(lizt):
     return new
 
 if __name__ == '__main__':
+
+    from clay.tests import it
+
+    it('frange returns correct values',
+       list(frange(0, 0.6, 0.1)),
+       [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    it('frange returns correct values',
+       list(frange(1, 0, -0.25)),
+       [1.0, 0.75, 0.5, 0.25])
+    it('frange returns correct values',
+       list(frange(0.9, 1.0, 0.1)),
+       [0.9])
+    try:
+        print(list(frange(1, 0, 0.25)))
+    except AssertionError as ae:
+        print('AssertionError successfully thrown (start > stop && step > 0)')
+    try:
+        print(list(frange(0, 1, -0.25)))
+    except AssertionError as ae:
+        print('AssertionError successfully thrown (stop > start && step < 0)')
+
     print(join_lines(TEST_LIST))
     printall(TEST_LIST)
     printlines('essay.txt', 4)
