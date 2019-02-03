@@ -89,7 +89,11 @@ if __name__ == '__main__':
     except AssertionError as ae:
         print('AssertionError successfully thrown (stop > start && step < 0)')
 
-    print(join_lines(TEST_LIST))
+    it('join_lines returns correct string',
+       join_lines(TEST_LIST),
+       'h, e, l, l, o')
     printall(TEST_LIST)
     printlines('essay.txt', 4)
-    rmdup(TEST_LIST)
+    it('rmdup removes duplicates correctly',
+       rmdup(TEST_LIST),
+       ['h', 'e', 'l', 'o'])
