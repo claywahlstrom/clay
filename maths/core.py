@@ -248,11 +248,18 @@ def roots(a=0, b=0, c=0):
     root2 = (-b + m.sqrt(discriminant)) / (2 * a)
     return root1, root2
 
-def roots_approx(positive, initial_guess, dp, isclose_dp=9):
-    """Given a function that returns a positive value, the initial guess,
-       decimals to round roots to, and isclose comparison decimal points,
-       uses successive approximation to find the roots to the polynomial
-       function"""
+def roots_approx(positive, initial_guess, dp=0, isclose_dp=9):
+    """Retuns roots for the given polynomial function positive
+       using successive approximation to find the roots to the
+       polynomial function.
+
+       Parameters:
+           initial_guess = initial guess for a root
+           dp            = decimals to round roots to (no rounding if 0)
+           isclose_dp    = isclose decimal points for comparison
+
+    """
+
     def negative(x):
         """Returns the complimenting negative value for the polynomial
            function"""
@@ -280,10 +287,9 @@ def roots_approx(positive, initial_guess, dp, isclose_dp=9):
                 result = f(x)
             except ValueError as ve:
                 break
-        roots.append(round(result, dp))
+        roots.append(result)
+    return [root if dp == 0 else round(root, dp) for root in roots]
 
-    return roots
-    
 def roots_newtons_method(f, x):
     """Given a function and float guess, returns the roots using
        Newton's Method"""
