@@ -62,30 +62,30 @@ def vect(magnitude, angle=0):
 
 if __name__ == '__main__':
 
-    from clay.tests import it
+    from clay.tests import testif
 
-    it('add returns correct value (2 vectors)',
+    testif('add returns correct value (2 vectors)',
        add([0, 1, 1], [1, 1, 0]),
        [1, 2, 1])
-    it('add returns correct value (>2 vectors)',
+    testif('add returns correct value (>2 vectors)',
        add([0, 1, 1], [1, 1, 0], [1, 1, 1]),
        [2, 3, 2])
-    it('cross returns correct value',
+    testif('cross returns correct value',
        cross([3, -3, 1], [4, 9, 2]),
        [-15, -2, 39])
-    it('cross returns correct value (parallel)',
+    testif('cross returns correct value (parallel)',
        cross([3, -3, 1], [-12, 12, -4]),
        [0, 0, 0])
-    it('dot returns correct value',
+    testif('dot returns correct value',
        dot([1, 0], [0, 1], math.pi / 2), 0,
        transformer=lambda x: r(x))
-    it('dot_comp returns correct value using vector components',
+    testif('dot_comp returns correct value using vector components',
        dot_comp([1, 2], [3, 4]), 11)
-    it('mag returns correct magnitude',
+    testif('mag returns correct magnitude',
        mag([1 / math.sqrt(3), 1 / math.sqrt(3), 1 / math.sqrt(3)]), 1)
-    it('mult returns correct vector when scaled',
+    testif('mult returns correct vector when scaled',
        mult([1, 2], 3), [3, 6])
-    it('r rounds scalar value correctly',
+    testif('r rounds scalar value correctly',
        r(0.00009), 0.0001)
-    it('r rounds vector values correctly',
+    testif('r rounds vector values correctly',
        r([0.00009, 0.02004, 1.0]), [0.0001, 0.02, 1.0])

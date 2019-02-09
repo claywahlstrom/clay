@@ -793,23 +793,23 @@ class ZipCodeNotFoundException(Exception):
 
 if __name__ == '__main__':
 
-    from clay.tests import it
+    from clay.tests import testif
 
     print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
                                              return_speed=True), 'bytes per second')
     print()
-    it('returns basename and query', \
+    testif('returns basename and query', \
         WebDocument('https://www.minecraft.net/change-language?next=/en/') \
             .get_basename(full=False), \
         ('change-language', 'next=/en/'))
-    it('returns full name and no query', \
+    testif('returns full name and no query', \
         WebDocument(LINKS['1MB']).get_basename(full=True), \
         ('download.thinkbroadband.com.1MB.zip', None))
-    it('returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
-    it('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
+    testif('returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
+    testif('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
     we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
-    it('best music school list contains 21 elements', we1.find('h3'), 21, len)
+    testif('best music school list contains 21 elements', we1.find('h3'), 21, len)
     we1.show()
     we2 = TagFinder(TEST_LINK)
     we2.find('a')

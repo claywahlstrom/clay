@@ -335,38 +335,38 @@ if __name__ == '__main__':
 
     from fractions import Fraction
 
-    from clay.tests import it
+    from clay.tests import testif
 
     print('DEMO')
     print('------------') # 12 count
     print('Printing fraction 3/39...')
     print_fraction(Fraction(3, 39))
-    it('returns correct integral for inverse trig from 0 to 1',
+    testif('returns correct integral for inverse trig from 0 to 1',
         integral(TESTS['invtrig'], (0, 1)), 1.0,
         transformer=lambda x: round(x, 4))
-    it('limit of harmonic function returns double close to 0.5',
+    testif('limit of harmonic function returns double close to 0.5',
         limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2), 0.5,
         transformer=lambda x: round(list(x.values())[-1], 9)) # compare to math.isclose
 
     print('LIMITS TO INFINITY')
-    it('limit to infinity for converging function is 1/2',
+    testif('limit to infinity for converging function is 1/2',
         liminf(TESTS['convergent1'], step_mag=True,
             logging=LIMPATH_FMT.format('convergent1')), 0.5)
-    it('limit to infinity for converging function is 0.0',
+    testif('limit to infinity for converging function is 0.0',
         liminf(TESTS['harmonic'], step_mag=True,
             logging=LIMPATH_FMT.format('harmonic')), 0.0)
     
-    it('multiplicity returns correct quantity for (4, 3)',
+    testif('multiplicity returns correct quantity for (4, 3)',
         multiplicity(4, 3), 15)
 
-    it('roots_approx returns empty list for polynomials without roots',
+    testif('roots_approx returns empty list for polynomials without roots',
        roots_approx(TESTS['imaginary'], 0, 3),
        [])
-    it('roots_approx returns correct roots for polynomials with roots',
+    testif('roots_approx returns correct roots for polynomials with roots',
        roots_approx(TESTS['quadratic3'], 0, 3, 9),
        [-31.428, 0.828])
 
-    it('returns correct root using Newton\'s method',
+    testif('returns correct root using Newton\'s method',
         roots_newtons_method(TESTS['quadratic'], 10), -1.0,
         transformer=lambda x: round(x, 4))
     try:
@@ -388,9 +388,9 @@ if __name__ == '__main__':
     import clay.graphing as g
     g.tabulatef(TESTS['alternating'], 0, 10)
 
-    it('returns correct series sum for convergent function',
+    testif('returns correct series sum for convergent function',
         series_sum(TESTS['convergent'], a=0), 15)
-    it('returns correct series sum for convergent2 function',
+    testif('returns correct series sum for convergent2 function',
         series_sum(TESTS['convergent2']), 1.7449,
         transformer=lambda x: round(x, 4))
 

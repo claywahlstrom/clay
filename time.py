@@ -238,29 +238,29 @@ class SunTime(object):
 
 if __name__ == '__main__':
 
-    from clay.tests import it
+    from clay.tests import testif
     
-    it('rounds datetime seconds down',
+    testif('rounds datetime seconds down',
        datetime(2000, 1, 1, 0, 0, 2).round(seconds=5),
        _dt.datetime(2000, 1, 1, 0, 0, 0))
 
-    it('rounds datetime seconds up',
+    testif('rounds datetime seconds up',
         datetime(2000, 1, 1, 0, 0, 4).round(seconds=5),
        _dt.datetime(2000, 1, 1, 0, 0, 5))
 
-    it('rounds datetime minutes down',
+    testif('rounds datetime minutes down',
         datetime(2000, 1, 1, 0, 9).round(minutes=20),
        _dt.datetime(2000, 1, 1, 0, 0))
 
-    it('rounds datetime minutes up',
+    testif('rounds datetime minutes up',
         datetime(2000, 1, 1, 0, 10).round(minutes=20),
        _dt.datetime(2000, 1, 1, 0, 20))
 
-    it('rounds datetime minutes down near hour',
+    testif('rounds datetime minutes down near hour',
         datetime(2000, 1, 1, 0, 45).round(minutes=20),
        _dt.datetime(2000, 1, 1, 0, 40))
 
-    it('rounds datetime minutes up near hour',
+    testif('rounds datetime minutes up near hour',
         datetime(2000, 1, 1, 0, 50).round(minutes=20),
        _dt.datetime(2000, 1, 1, 1, 0))
 

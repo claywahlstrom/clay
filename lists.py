@@ -69,15 +69,15 @@ def rmdup(lizt):
 
 if __name__ == '__main__':
 
-    from clay.tests import it
+    from clay.tests import testif
 
-    it('frange returns correct values',
+    testif('frange returns correct values',
        list(frange(0, 0.6, 0.1)),
        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
-    it('frange returns correct values',
+    testif('frange returns correct values',
        list(frange(1, 0, -0.25)),
        [1.0, 0.75, 0.5, 0.25])
-    it('frange returns correct values',
+    testif('frange returns correct values',
        list(frange(0.9, 1.0, 0.1)),
        [0.9])
     try:
@@ -89,11 +89,11 @@ if __name__ == '__main__':
     except AssertionError as ae:
         print('AssertionError successfully thrown (stop > start && step < 0)')
 
-    it('join_lines returns correct string',
+    testif('join_lines returns correct string',
        join_lines(TEST_LIST),
        'h, e, l, l, o')
     printall(TEST_LIST)
     printlines('essay.txt', 4)
-    it('rmdup removes duplicates correctly',
+    testif('rmdup removes duplicates correctly',
        rmdup(TEST_LIST),
        ['h', 'e', 'l', 'o'])

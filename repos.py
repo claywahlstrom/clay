@@ -215,22 +215,22 @@ class UserWhitelist(object):
 
 if __name__ == '__main__':
 
-    from clay.tests import it
+    from clay.tests import testif
 
     js1 = JsonRepository('README.md', JsonRepository.DICT)
     js2 = JsonRepository('README.mda', [])
     
-    it('initializes new json repo with correct empty structure', js1.empty, {})
-    it('fails to overwrite when already exists and not forced', js1.create(force=False, write=False), False)
-    it('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
-    it('creates new json repo if not exists and not forced', js2.create(write=False), True)
-    it('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
+    testif('initializes new json repo with correct empty structure', js1.empty, {})
+    testif('fails to overwrite when already exists and not forced', js1.create(force=False, write=False), False)
+    testif('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
+    testif('creates new json repo if not exists and not forced', js2.create(write=False), True)
+    testif('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
 
     whitelist = UserWhitelist(['abe', 'bob', 'caty', '# becky'])
     whitelist.read()
 
-    it('whitelist reads correct users', whitelist.users, ['abe', 'bob', 'caty'])
-    it('whitelist authorizes caty', whitelist.is_authorized('caty'), True)
-    it('whitelist rejects becky', whitelist.is_authorized('becky'), False)
+    testif('whitelist reads correct users', whitelist.users, ['abe', 'bob', 'caty'])
+    testif('whitelist authorizes caty', whitelist.is_authorized('caty'), True)
+    testif('whitelist rejects becky', whitelist.is_authorized('becky'), False)
 
 
