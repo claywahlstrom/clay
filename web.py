@@ -397,7 +397,7 @@ class WebDocument(object):
         from clay.shell import set_title
 
         url = self._raw_uri
-        flag = False
+        errors = False
         if log_name:
             if _is_unix():
                 log_path = _os.path.join(r'/home/clay/Desktop', log_name)
@@ -462,7 +462,7 @@ class WebDocument(object):
         except Exception as e:
             print('\n' + str(e))
             log_string = url + ' failed\n'
-            flag = True
+            errors = True
         else:
             taken = _time.time() - before
             print('\nComplete. Took {}s'.format(round(taken, 2)))
@@ -478,8 +478,8 @@ class WebDocument(object):
         else:
             print(log_string.strip())
         _os.chdir(current) # better file handling
-        if return_speed and not(flag):
-            return round(size / taken, 5)
+        if return_speed and not(errors):
+            return round(size / taken, 2)
 
     def get_basename(self, full=False):
         """Returns the basename and query of this document's `uri`"""
