@@ -389,8 +389,8 @@ class WebDocument(object):
 
     def download(self, title='', full_title=False, destination='.',
                  log_name='dl_log.txt', return_speed=False):
-        """Downloads data from the given url and logs the relevant information
-           in this package's directory"""
+        """Downloads data from the document uri and logs revelant
+           information in this directory"""
 
         # http://stackoverflow.com/a/16696317/5645103
 
@@ -405,7 +405,7 @@ class WebDocument(object):
                 log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
         current = _os.getcwd()
         _os.chdir(destination) # better file handling
-        print('curdir', _os.getcwd())
+        print('CWD:', _os.getcwd())
 
         if len(title) > 0: # if title already set
             query = None
@@ -417,12 +417,12 @@ class WebDocument(object):
             if query is None:
                 query = self._query
             else:
-                query.update(self._query)
+                query += '&' + '&'.join((key + '=' + val for key, val in self._query.items()))
 
         fp = open(title, 'wb')
-        print('Retrieving "{}"...\ntitle {}\nquery {}...'.format(url, title, query))
+        print('Retrieving "{}"...\n    Title: {}\n    Query: {}...'.format(url, title, query))
         try:
-            print('size', end=' ')
+            print('    Size :', end=' ')
             if not('.' in title) or 'htm' in title or 'php' in title: # small file types (pages)
                 response = _requests.get(url, params=query, headers=WEB_HDRS)
                 if response.status_code != 200:
@@ -454,7 +454,7 @@ class WebDocument(object):
                             if percent % 5 == 0: # print percent every multiple of 5
                                 print('{}%'.format(percent), end=' ', flush=True)
                         else:
-                            set_title('{}% {}/{}'.format(percent, actual, size))
+                            set_title('{}% ({}/{})'.format(percent, actual, size))
                 except Exception as e:
                     print(e)
                 finally:
@@ -465,8 +465,8 @@ class WebDocument(object):
             flag = True
         else:
             taken = _time.time() - before
-            print('\nComplete. Took {}s'.format(round(taken, 5)))
-            if not(_is_idle() or _is_unix()):
+            print('\nComplete. Took {}s'.format(round(taken, 2)))
+            if not _is_idle():
                 set_title('Completed {}'.format(title))
             log_string = '[{}] {} of {} bytes @ {}\n'.format(url, title, size, _dt.datetime.today())
         finally:
