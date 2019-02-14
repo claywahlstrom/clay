@@ -382,6 +382,7 @@ class WebDocument(object):
 
     def __init__(self, uri):
         self.set_uri(uri)
+        self.set_query(None)
 
     def __repr__(self):
         return 'WebDocument(uri=%s)' % self._raw_uri
@@ -410,6 +411,14 @@ class WebDocument(object):
             query = None
         else:
             title, query = self.get_basename(full=full_title)
+
+        # append internal query to query if not empty
+        if self._query is not None:
+            if query is None:
+                query = self._query
+            else:
+                query.update(self._query)
+
         fp = open(title, 'wb')
         print('Retrieving "{}"...\ntitle {}\nquery {}...'.format(url, title, query))
         try:
@@ -442,7 +451,7 @@ class WebDocument(object):
                         actual += len(chunk)
                         percent = int(actual / size * 100)
                         if _is_idle():
-                            if percent % 5 == 0: # if multiple of 5 reached...
+                            if percent % 5 == 0: # print percent every multiple of 5
                                 print('{}%'.format(percent), end=' ', flush=True)
                         else:
                             set_title('{}% {}/{}'.format(percent, actual, size))
@@ -452,7 +461,7 @@ class WebDocument(object):
                     fp.close()
         except Exception as e:
             print('\n' + str(e))
-            log_string = url+' failed\n'
+            log_string = url + ' failed\n'
             flag = True
         else:
             taken = _time.time() - before
@@ -474,7 +483,7 @@ class WebDocument(object):
 
     def get_basename(self, full=False):
         """Returns the basename and query of this document's `uri`"""
-        query = self._uri.query if len(self._uri.query) > 0 else None
+        url_query = self._uri.query if len(self._uri.query) > 0 else None
         title = _os.path.basename(self._uri.path)
         add_ext = not(any(ext in title for ext in ('htm', 'aspx', 'php'))) and len(title) < 2
 
@@ -486,16 +495,14 @@ class WebDocument(object):
         if add_ext:
             title += '.html'
         title = urllib.parse.unquote_plus(title)
-        return title, query
+        return title, url_query
 
-    def get_html(self, query=None, headers=True):
+    def get_html(self, headers=True):
         """Returns the binary response from this document's `uri`"""
-        if query is not None:
-            assert type(query) == dict
         if headers:
-            fread = _requests.get(self._raw_uri, params=query, headers=WEB_HDRS)
+            fread = _requests.get(self._raw_uri, params=self._query, headers=WEB_HDRS)
         else:
-            fread = _requests.get(self._raw_uri, params=query)
+            fread = _requests.get(self._raw_uri, params=self._query)
         return fread.content
 
     def get_mp3(self, title=''):
@@ -516,6 +523,10 @@ class WebDocument(object):
         return get_title(soup)
 
     @property
+    def query(self):
+        return self._query
+
+    @property
     def uri(self):
         return self._uri
 
@@ -526,11 +537,18 @@ class WebDocument(object):
     def launch(self, browser='firefox'):
         """Opens this document's `uri` in your favorite browser"""
         if _is_unix():
-            _call(['google-chrome', self._raw_uri], shell=True)
+            _call(['google-chrome', self.uri], shell=True)
         else:
             _call(['start', browser, self._raw_uri.replace('&', '^&')], shell=True)
 
+    def set_query(self, query):
+        """Sets the internal query to the given dictionary"""
+        if type(query) != dict and query is not None:
+            raise ValueError('query must be of type dict or none')
+        self._query = query
+
     def set_uri(self, uri):
+        """Sets the uri to the given string"""
         self._raw_uri = uri
         self._uri = urllib.parse.urlsplit(uri)
 
