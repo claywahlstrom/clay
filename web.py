@@ -491,7 +491,7 @@ class WebDocument(object):
             title = 'index'
             add_ext = True
         if full:
-            title = '.'.join((self._uri.netloc, title))
+            title = ''.join((self._uri.netloc, self._uri.path.replace('/', '_'), title))
         if add_ext:
             title += '.html'
         title = urllib.parse.unquote_plus(title)
