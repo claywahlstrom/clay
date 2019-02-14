@@ -505,12 +505,6 @@ class WebDocument(object):
             fread = _requests.get(self._raw_uri, params=self._query)
         return fread.content
 
-    def get_mp3(self, title=''):
-        """Downloads the this document's `uri` from mp3juices.cc"""
-        if len(title) == 0:
-            title = _os.path.basename(self._raw_uri) + '.mp3'
-        self.download(link, title=title)
-
     def get_response(self):
         """Returns the response from this document's `uri`"""
         request = urllib.request.Request(self._raw_uri, headers=WEB_HDRS)
