@@ -384,7 +384,7 @@ class WebDocument(object):
         self.set_uri(uri)
 
     def __repr__(self):
-        return 'WebDocument(uri=%s)' % self.uri
+        return 'WebDocument(uri=%s)' % self._raw_uri
 
     def download(self, title='', full_title=False, destination='.',
                  log_name='dl_log.txt', return_speed=False):
@@ -395,7 +395,7 @@ class WebDocument(object):
 
         from clay.shell import set_title
 
-        url = self.uri
+        url = self._raw_uri
         flag = False
         if log_name:
             if _is_unix():
@@ -474,16 +474,15 @@ class WebDocument(object):
 
     def get_basename(self, full=False):
         """Returns the basename and query of this document's `uri`"""
-        url_split = urllib.parse.urlsplit(self.uri)
-        query = url_split.query if len(url_split.query) > 0 else None
-        title = _os.path.basename(url_split.path)
+        query = self._uri.query if len(self._uri.query) > 0 else None
+        title = _os.path.basename(self._uri.path)
         add_ext = not(any(ext in title for ext in ('htm', 'aspx', 'php'))) and len(title) < 2
 
         if len(title) < 2: # if title is '' or '/'
             title = 'index'
             add_ext = True
         if full:
-            title = '.'.join((url_split.netloc, title))
+            title = '.'.join((self._uri.netloc, title))
         if add_ext:
             title += '.html'
         title = urllib.parse.unquote_plus(title)
@@ -494,20 +493,20 @@ class WebDocument(object):
         if query is not None:
             assert type(query) == dict
         if headers:
-            fread = _requests.get(self.uri, params=query, headers=WEB_HDRS)
+            fread = _requests.get(self._raw_uri, params=query, headers=WEB_HDRS)
         else:
-            fread = _requests.get(self.uri, params=query)
+            fread = _requests.get(self._raw_uri, params=query)
         return fread.content
 
     def get_mp3(self, title=''):
         """Downloads the this document's `uri` from mp3juices.cc"""
         if len(title) == 0:
-            title = _os.path.basename(self.uri) + '.mp3'
+            title = _os.path.basename(self._raw_uri) + '.mp3'
         self.download(link, title=title)
 
     def get_response(self):
         """Returns the response from this document's `uri`"""
-        request = urllib.request.Request(self.uri, headers=WEB_HDRS)
+        request = urllib.request.Request(self._raw_uri, headers=WEB_HDRS)
         response = urllib.request.urlopen(request)
         return response.read()
 
@@ -516,25 +515,31 @@ class WebDocument(object):
         soup = _BS(self.get_html(), 'html.parser')
         return get_title(soup)
 
-    def get_uri(self):
-        return self.uri
+    @property
+    def uri(self):
+        return self._uri
+
+    @property
+    def raw_uri(self):
+        return self._raw_uri
 
     def launch(self, browser='firefox'):
         """Opens this document's `uri` in your favorite browser"""
         if _is_unix():
-            _call(['google-chrome', self.uri], shell=True)
+            _call(['google-chrome', self._raw_uri], shell=True)
         else:
-            _call(['start', browser, self.uri.replace('&', '^&')], shell=True)
+            _call(['start', browser, self._raw_uri.replace('&', '^&')], shell=True)
 
     def set_uri(self, uri):
-        self.uri = uri
+        self._raw_uri = uri
+        self._uri = urllib.parse.urlsplit(uri)
 
     def size(self):
-        response = _requests.head(self.uri, headers=WEB_HDRS)
+        response = _requests.head(self._raw_uri, headers=WEB_HDRS)
         if 'Content-Length' in response.headers:
             size = int(response.headers['Content-Length'])
         else:
-            size = len(_requests.get(self.uri, headers=WEB_HDRS).content)
+            size = len(_requests.get(self._raw_uri, headers=WEB_HDRS).content)
         return size
 
 class WundergroundUrlBuilder(UrlBuilder):
