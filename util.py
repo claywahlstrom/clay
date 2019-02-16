@@ -200,13 +200,13 @@ class Watch(object):
 
     def add(self, var):
         """Adds the given object to this Watch"""
-        if type(var) == list:
-            for v in var:
-                (self.objs).append(v)
-        elif type(var) == str:
-            (self.objs).append(var)
-        else:
-            raise ValueError()
+        if type(var) != str:
+            raise TypeError('var must be the string name of the object')
+        if callable(self.get_dict()[var]):
+            print('callable types cannot be added to this watch')
+            return
+
+        self.objs.append(var)
 
     def get_dict(self):
         """Returns the dict for this Watch"""
@@ -255,8 +255,10 @@ class Watch(object):
 
 if __name__ == '__main__':
 
+    import traceback
     import pprint
     from random import randint
+    import sys
 
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
 
@@ -320,3 +322,12 @@ if __name__ == '__main__':
     print('after add')
     s.show()
     s.write_file('watch_test.txt')
+
+    def test_function(x):
+        return x
+    s.add('test_function')
+    print('The next Watch test should throw an exception')
+    try:
+        s.add(None)
+    except Exception:
+        traceback.print_exception(*sys.exc_info())
