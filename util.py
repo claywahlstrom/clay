@@ -1,8 +1,11 @@
 
 """
+
 Utilities for Python
 
-todo: fix Linq querable select max size by partitioning queryable into lists
+TODO:
+    - fix Linq querable select max size limit by partitioning
+      queryable into lists
 
 """
 
@@ -209,6 +212,9 @@ class Watch(object):
         """Returns the dict for this Watch"""
         return _sys.modules[self.module].__dict__
 
+    def is_watching(self, name):
+        return name in self.objs
+
     def remove(self, var):
         """Removes the given object from this Watch"""
         if type(var) == list:
@@ -305,10 +311,12 @@ if __name__ == '__main__':
     b = int(4)
     c = {}
     s = Watch(['a', 'b', 'c'])
+    print('is watching d should be False =>', s.is_watching('d'))
     print('before add')
     s.show()
     d = float(542.2)
     s.add('d')
+    print('is watching d should be True =>', s.is_watching('d'))
     print('after add')
     s.show()
     s.write_file('watch_test.txt')
