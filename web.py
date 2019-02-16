@@ -810,6 +810,8 @@ class ZipCodeNotFoundException(Exception):
 
 if __name__ == '__main__':
 
+    import traceback
+
     from clay.tests import testif
 
     print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
@@ -836,8 +838,6 @@ if __name__ == '__main__':
     print(find_anchors(TEST_LINK, internal=False))
     print()
 
-    import traceback
-
     p = Pollen('weather text')
     p.print_db()
     p.set_source('weather values')
@@ -849,12 +849,10 @@ if __name__ == '__main__':
     try:
         p.set_source('wrong source')
     except Exception:
-        exc_type, exc_value, exc_tb = _sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_tb)
+        traceback.print_exception(*_sys.exc_info())
     print()
     try:
         p.set_zipcode(97132)
     except Exception:
-        exc_type, exc_value, exc_tb = _sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_tb)
+        traceback.print_exception(*_sys.exc_info())
 
