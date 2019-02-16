@@ -99,12 +99,11 @@ class ReadingTimer(object):
         self.start_time += _time.time() - self.__paused_time
         self.__paused = False
 
-    def seconds_left(self, total=False):
-        average = self.average_time()
-        if total:
-            return average * self.pages
-        else:
-            return average * self.pages_left()
+    def seconds_left(self):
+        return self.average_time() * self.pages_left()
+
+    def seconds_total(self):
+        return self.average_time() * self.pages
 
     def start(self):
         self.start_time = _time.time()
