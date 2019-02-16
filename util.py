@@ -223,7 +223,18 @@ class Watch(object):
         elif type(var) == str:
             (self.objs).remove(var)
 
-    def show(self, transformer=lambda x: x, useLocals=None, sort=False):
+    def start_recording(self, useLocals):
+        """Records new objects created after this point until end
+           recording is called"""
+        self._start_locals = useLocals.copy().keys()
+
+    def stop_recording(self, useLocals):
+        """Adds the new objects since the recording started to this Watch"""
+        unique = (x for x in useLocals if x not in self._start_locals)
+        for var in unique:
+            self.add(var)
+
+    def view(self, transformer=lambda x: x, useLocals=None, sort=False):
         """Prints out the key, value pairs for this Watch"""
         groupdict = self.get_dict()
         if useLocals:
@@ -235,17 +246,6 @@ class Watch(object):
         
         for ob in objs:
             print(ob, '->', transformer(groupdict[ob]))
-
-    def start_recording(self, useLocals):
-        """Records new objects created after this point until end
-           recording is called"""
-        self._start_locals = useLocals.copy().keys()
-
-    def stop_recording(self, useLocals):
-        """Adds the new objects since the recording started to this Watch"""
-        unique = (x for x in useLocals if x not in self._start_locals)
-        for var in unique:
-            self.add(var)
 
     def write_file(self, filename):
         """Writes this Watch to the given file"""
@@ -315,12 +315,12 @@ if __name__ == '__main__':
     s = Watch(['a', 'b', 'c'])
     print('is watching d should be False =>', s.is_watching('d'))
     print('before add')
-    s.show()
+    s.view()
     d = float(542.2)
     s.add('d')
     print('is watching d should be True =>', s.is_watching('d'))
     print('after add')
-    s.show()
+    s.view()
     s.write_file('watch_test.txt')
 
     def test_function(x):
