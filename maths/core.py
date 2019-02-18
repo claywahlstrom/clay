@@ -211,28 +211,52 @@ class Polar(object):
         return self.radius * math.sin(self.angle)
         
 class Radical(object):
-    """Class Radical can be used to simplify radicals"""
+
+    """Class Radical can be used to simplify radicals
+
+       Properties:
+           outside = integer outside the radical
+           inside  = integer inside the radical
+           parent  = a copy of the radical before simplification
+
+    """
+
     def __init__(self, outside, inside):
-        self.left = outside
-        self.right = inside
-        self.parent = (self.left, self.right)
-        self.__out = self.__least_div()
-        self.left *= self.__out
-        self.right = int(self.right/(self.__out**2))
+        """Initializes this radical using the given inside and outside integers"""
+        if type(outside) != int or type(inside) != int:
+            raise ValueError('outside and inside must be of type int')
+        self.outside = outside
+        self.inside = inside
+        self.parent = None
 
     def __repr__(self):
-        if not self:
-            return '%s()' % (self.__class__.__name__,)
-        return '%s(%r)' % (self.__class__.__name__, (self.left, self.right))
+        """Returns the representation of this radical"""
+        return '%s(%d, %d)' % (self.__class__.__name__, self.outside, self.inside)
 
     def __str__(self):
-        return (len(str(self.left))+2) * ' ' + len(str(self.right)) * '_' \
-                + '\n' + '{}-/{}'.format(self.left, self.right)
+        """Returns the string representation of this radical"""
+        outside = self.outside if self.outside > 1 else ''
+        return (len(str(outside)) + 2) * ' ' + len(str(self.inside)) * '_' \
+                + '\n' + '{}-/{}'.format(outside, self.inside)
 
-    def __least_div(self):
-        div = list([i for i in range(2, self.right) \
-                        if (self.right / (i ** 2)).is_integer()])
-        return div[-1] if len(div) > 0 else 1 # ternary operation
+    def _greatest_square(self):
+        """Returns the greatest sqaure the inside can be divided by"""
+        squares = []
+        for i in range(1, self.inside):
+            if (self.inside / i ** 2).is_integer():
+                squares.append(i ** 2)
+        return squares[-1]
+
+    def _set_parent(self):
+        """Sets the parent of this radical"""
+        self.parent = Radical(self.outside, self.inside)
+
+    def simplify(self):
+        """Simplifies this radical"""
+        self._set_parent()
+        out = self._greatest_square()
+        self.outside *= int(math.sqrt(out))
+        self.inside = int(self.inside / out)
 
 def roots(a=0, b=0, c=0):
     """Returns a tuple of roots (intersections with the x-axis)
@@ -376,11 +400,16 @@ if __name__ == '__main__':
         print('Exception: %s' % e)
     print()
     print('RADICAL CLASS')
-    left = 2
-    right = 20
-    print('left = {}, right = {}'.format(left, right))
-    rad = Radical(left, right)
-    print(rad)
+    rad = Radical(2, 20)
+    testif('radical with outside prints correct string',
+        rad.__str__(), '   __\n2-/20')
+    rad.simplify()
+    testif('simplified radical with outside prints correct string',
+        rad.__str__(), '   _\n4-/5')
+    unreducible_radical = Radical(1, 5)
+    unreducible_radical.simplify()
+    testif('simplified radical with no outside prints correct string',
+        unreducible_radical.__str__(), '  _\n-/5')
     print()
     print('LIMITS FOR SERIES')
     print(series_sum(TESTS['alternating'], logging=LIMPATH_FMT.format('alternating')))
