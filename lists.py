@@ -8,6 +8,11 @@ Basic operations for lines, lists, and files
 
 TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
+def apply(function, vector):
+    """Applies the function to the given vector and returns the result
+       of the same type"""
+    return type(vector)(map(function, vector))
+
 def frange(start, stop, step):
     """Returns a generator that produces a stream of floats from
        start (inclusive) to stop (exclusive) by the given step"""
@@ -71,6 +76,15 @@ if __name__ == '__main__':
 
     from clay.tests import testif
 
+    testif('apply returns correct type (list)',
+        type(apply(lambda x: x, [0, 0])),
+        list)
+    testif('apply returns correct type (tuple)',
+        type(apply(lambda x: x, (0, 0))),
+        tuple)
+    testif('apply returns correct values (floats => ints)',
+        apply(int, [0.0, 9.9]),
+        [0, 9])
     testif('frange returns correct values',
        list(frange(0, 0.6, 0.1)),
        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
