@@ -395,11 +395,11 @@ if __name__ == '__main__':
         multiplicity(4, 3), 15)
 
     testif('roots_approx returns empty list for polynomials without roots',
-       roots_approx(TESTS['imaginary'], 0, 3),
-       [])
+        roots_approx(TESTS['imaginary'], 0, 3),
+        [])
     testif('roots_approx returns correct roots for polynomials with roots',
-       roots_approx(TESTS['quadratic3'], 0, 3, 9),
-       [-31.428, 0.828])
+        roots_approx(TESTS['quadratic3'], 0, 3, 9),
+        [-31.428, 0.828])
 
     testif('returns correct root using Newton\'s method',
         roots_newtons_method(TESTS['quadratic'], 10), -1.0,
@@ -411,9 +411,9 @@ if __name__ == '__main__':
         print('Exception: %s' % e)
 
     testif('round_qty rounds scalar value correctly',
-       round_qty(0.00009), 0.0001)
+        round_qty(0.00009), 0.0001)
     testif('round_qty rounds vector values correctly',
-       round_qty([0.00009, 0.02004, 1.0]), [0.0001, 0.02, 1.0])
+        round_qty([0.00009, 0.02004, 1.0]), [0.0001, 0.02, 1.0])
     print()
     print('RADICAL CLASS')
     rad = Radical(2, 20)

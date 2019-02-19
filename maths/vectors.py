@@ -44,7 +44,7 @@ def mult(vector, scalar):
     """Returns a scalar multiple of the given vector"""
     return _apply(lambda x: x * scalar, vector)
 
-scale = mult
+scale = mult # alias
 
 def vect(magnitude, angle=0):
     """Returns a vector of the given magnitude and direction in component form"""
@@ -55,23 +55,23 @@ if __name__ == '__main__':
     from clay.tests import testif
 
     testif('add returns correct value (2 vectors)',
-       add([0, 1, 1], [1, 1, 0]),
-       [1, 2, 1])
+        add([0, 1, 1], [1, 1, 0]),
+        [1, 2, 1])
     testif('add returns correct value (>2 vectors)',
-       add([0, 1, 1], [1, 1, 0], [1, 1, 1]),
-       [2, 3, 2])
+        add([0, 1, 1], [1, 1, 0], [1, 1, 1]),
+        [2, 3, 2])
     testif('cross returns correct value',
-       cross([3, -3, 1], [4, 9, 2]),
-       [-15, -2, 39])
+        cross([3, -3, 1], [4, 9, 2]),
+        [-15, -2, 39])
     testif('cross returns correct value (parallel)',
-       cross([3, -3, 1], [-12, 12, -4]),
-       [0, 0, 0])
+        cross([3, -3, 1], [-12, 12, -4]),
+        [0, 0, 0])
     testif('dot returns correct value',
-       dot([1, 0], [0, 1], math.pi / 2), 0,
-       transformer=lambda x: r(x))
+        dot([1, 0], [0, 1], math.pi / 2), 0,
+        transformer=r)
     testif('dot_comp returns correct value using vector components',
-       dot_comp([1, 2], [3, 4]), 11)
+        dot_comp([1, 2], [3, 4]), 11)
     testif('mag returns correct magnitude',
-       mag([1 / math.sqrt(3), 1 / math.sqrt(3), 1 / math.sqrt(3)]), 1)
+        mag([1 / math.sqrt(3), 1 / math.sqrt(3), 1 / math.sqrt(3)]), 1)
     testif('mult returns correct vector when scaled',
-       mult([1, 2], 3), [3, 6])
+        mult([1, 2], 3), [3, 6])

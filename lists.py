@@ -86,14 +86,14 @@ if __name__ == '__main__':
         apply(int, [0.0, 9.9]),
         [0, 9])
     testif('frange returns correct values',
-       list(frange(0, 0.6, 0.1)),
-       [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+        list(frange(0, 0.6, 0.1)),
+        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
     testif('frange returns correct values',
-       list(frange(1, 0, -0.25)),
-       [1.0, 0.75, 0.5, 0.25])
+        list(frange(1, 0, -0.25)),
+        [1.0, 0.75, 0.5, 0.25])
     testif('frange returns correct values',
-       list(frange(0.9, 1.0, 0.1)),
-       [0.9])
+        list(frange(0.9, 1.0, 0.1)),
+        [0.9])
     try:
         print(list(frange(1, 0, 0.25)))
     except AssertionError as ae:
@@ -104,10 +104,10 @@ if __name__ == '__main__':
         print('AssertionError successfully thrown (stop > start && step < 0)')
 
     testif('join_lines returns correct string',
-       join_lines(TEST_LIST),
-       'h, e, l, l, o')
+        join_lines(TEST_LIST),
+        'h, e, l, l, o')
     printall(TEST_LIST)
     printlines('essay.txt', 4)
     testif('rmdup removes duplicates correctly',
-       rmdup(TEST_LIST),
-       ['h', 'e', 'l', 'o'])
+        rmdup(TEST_LIST),
+        ['h', 'e', 'l', 'o'])
