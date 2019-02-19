@@ -8,6 +8,7 @@ Collection of common and advanced math operations
 import math
 import statistics
 
+from clay.lists import apply as _apply
 from clay.shell import is_unix as _is_unix
 
 if _is_unix():
@@ -50,11 +51,13 @@ def cubrt(x):
     return round(x ** (1/3), 12)
 
 def differential(f, x, deltax=1e-12):
-    """Returns the derivative of the given function at the point x.
-       function at a point. File version in PyRepo dir
+    """Returns the slope of the given function at the point x.
+       A deltax of 1e-12 or 1e-11 works best."""
 
-       deltax = 1e-12 or 1e-11 works best."""
-    return (f(x + deltax) - f(x)) / (deltax)
+    # the following formula is the average between the slopes using
+    # the right limit [(f(x + deltax) - f(x)) / deltax] and
+    # the left limit [(f(x) - f(x - deltax)) / deltax]
+    return (f(x + deltax) - f(x - deltax)) / (2 * deltax)
     
 def factors(number):
     """Returns a list of factors for the given int"""
@@ -328,6 +331,14 @@ def _roots_newtons_method_helper(f, x, n):
         raise ValueError('no roots for {}'.format(f))
     return _roots_newtons_method_helper(f, x - f(x) / differential(f, x), n + 1)
 
+def round_qty(obj, digits=4):
+    """Rounds the given quantity (iterable or other quantity that
+       round can be applied to) to the given number of digits"""
+    if type(obj) in (list, tuple):
+        return _apply(round_qty, obj)
+    else:
+        return round(obj, digits)
+
 def series_sum(f, a=1, b=None, logging=True):
     """Returns sum for the given series f starting at a.
        Partial sum if b is supplied"""
@@ -398,6 +409,11 @@ if __name__ == '__main__':
         roots_newtons_method(TESTS['quadratic2'], 10)
     except Exception as e:
         print('Exception: %s' % e)
+
+    testif('round_qty rounds scalar value correctly',
+       round_qty(0.00009), 0.0001)
+    testif('round_qty rounds vector values correctly',
+       round_qty([0.00009, 0.02004, 1.0]), [0.0001, 0.02, 1.0])
     print()
     print('RADICAL CLASS')
     rad = Radical(2, 20)
