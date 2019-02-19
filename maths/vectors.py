@@ -9,15 +9,12 @@ are in radians unless otherwise specified.
 
 import math
 
-GLOBAL_ROUNDING = 4
+from clay.lists import apply as _apply
+from clay.maths.core import round_qty as r
 
 def add(vector1, vector2, *vectors):
     """Returns the summation of the given vectors"""
-    return apply(sum, list(zip(vector1, vector2, *vectors)))
-
-def apply(function, vector):
-    """Applies the function to the given vector and returns the result"""
-    return type(vector)(map(function, vector))
+    return _apply(sum, list(zip(vector1, vector2, *vectors)))
 
 def cross(v1, v2):
     """Returns the cross product of the given two vectors
@@ -45,14 +42,7 @@ def mag_moment(distance, force, angle):
 
 def mult(vector, scalar):
     """Returns a scalar multiple of the given vector"""
-    return apply(lambda x: x * scalar, vector)
-
-def r(obj):
-    """Rounds the given vector or scalar to GLOBAL_ROUNDING digits"""
-    if type(obj) in (list, tuple):
-        return apply(r, obj)
-    else:
-        return round(obj, GLOBAL_ROUNDING)
+    return _apply(lambda x: x * scalar, vector)
 
 scale = mult
 
@@ -85,7 +75,3 @@ if __name__ == '__main__':
        mag([1 / math.sqrt(3), 1 / math.sqrt(3), 1 / math.sqrt(3)]), 1)
     testif('mult returns correct vector when scaled',
        mult([1, 2], 3), [3, 6])
-    testif('r rounds scalar value correctly',
-       r(0.00009), 0.0001)
-    testif('r rounds vector values correctly',
-       r([0.00009, 0.02004, 1.0]), [0.0001, 0.02, 1.0])
