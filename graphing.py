@@ -98,9 +98,11 @@ class Graph(object):
                 print(e)
             if limit != 0 and i >= limit:
                 break
-        self.max_val = max_val
         self.longest_key_len = longest_key_len
         self.width = width
+        self.max_val = max_val
+        self.using = using
+        self.with_count = with_count
 
     def sort_by(self, name, reverse=False):
         if not(name in ('column', 'count')):
