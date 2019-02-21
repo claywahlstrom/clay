@@ -39,7 +39,7 @@ class Essay(object):
 
     def __init__(self, source, line_start=1, line_sep='\n'):
         if line_start < 1:
-            raise ValueError('start line must be >= 1')
+            raise ValueError('line start must be >= 1')
         self.line_start = line_start
         self.line_sep = line_sep
         end = '\n\n' # default

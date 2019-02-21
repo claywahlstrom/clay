@@ -40,7 +40,7 @@ class Attendance(object):
     def __init__(self, take_home_ratio, perhour, state, offset=0):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is for Monday."""
         import os
-        if not(state in BREAK_SCHEDULES):
+        if state not in BREAK_SCHEDULES:
             raise ValueError('state must be in [{}]'.format(", ".join(BREAK_SCHEDULES)))
         if not(os.path.exists('attendance.csv')):
             raise FileNotFoundError('attendance.csv doesn\'t exist')
@@ -146,8 +146,8 @@ class Attendance(object):
                                    BREAK_SCHEDULES[self.state]['length']
 
     def select(self, attrib, until_date=None):
-        if not(attrib in self.headers):
-            raise ValueError('attrib must be a header. Headers are ' + ', '.join(self.headers))
+        if attrib not in self.headers:
+            raise ValueError('attrib must be a column header. Headers are ' + ', '.join(self.headers))
         selection = []
         for row in self.db:
             if row['date'] == until_date:

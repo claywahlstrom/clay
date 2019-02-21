@@ -105,8 +105,8 @@ class CacheableFile(object):
     def set(self, uri, title=None):
         """Sets the cache to point to the given uri with the optional title"""
 
-        if not('http' in uri):
-            raise ValueError('invalid uri')
+        if 'http' not in uri:
+            raise ValueError('uri must use the HTTP protocol')
 
         if title is None:
             title = WebDocument(uri).get_basename()[0]
@@ -537,8 +537,8 @@ class WebDocument(object):
 
     def set_query(self, query):
         """Sets the internal query to the given dictionary"""
-        if type(query) != dict and query is not None:
-            raise ValueError('query must be of type dict or none')
+        if query is not None and type(query) != dict:
+            raise TypeError('query must be of type dict or none')
         self._query = query
 
     def set_uri(self, uri):
@@ -612,7 +612,7 @@ class Pollen(object):
             raise RuntimeError('Pollen must be build after zipcode or source has been changed')
 
     def __verify_source(self, source):
-        if not(source in Pollen.SOURCE_SPAN.keys()):
+        if source not in Pollen.SOURCE_SPAN.keys():
             raise ValueError('source must be one from [{}]'.format(", ".join(Pollen.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):

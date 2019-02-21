@@ -118,8 +118,8 @@ def prefix_unit(scalar, units):
 class Position(object):
 
     def __init__(self, position, time=None, step=None):
-        if not(type(position) in (list, tuple)):
-            raise ValueError('position must be a list or tuple')
+        if type(position) not in (list, tuple):
+            raise TypeError('position must be of type list or tuple')
         if step is None:
             step = 1
         self.position = position

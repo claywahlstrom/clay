@@ -62,7 +62,7 @@ def differential(f, x, deltax=1e-12):
 def factors(number):
     """Returns a list of factors for the given int"""
     if type(number) != int:
-        raise ValueError('number must be an int')
+        raise TypeError('number must be an int')
     factors = {}
     for num in range(1, number + 1):
         if number % num == 0: # if no remainder
@@ -71,7 +71,7 @@ def factors(number):
 
 def print_fraction(fraction):
     if type(fraction).__name__ != 'Fraction':
-        raise ValueError('fraction must be of type Fraction, found %s' % type(fraction).__name__)
+        raise TypeError('fraction must be of type Fraction, found %s' % type(fraction).__name__)
     num = fraction.numerator
     den = fraction.denominator
     print(num)
@@ -179,8 +179,10 @@ def limit(func, num=0, side=None, step=0.1, dist=1):
 
 def max_M(func, interval):
     """Returns the max M of the given function on the closed interval"""
-    if not(type(interval) in (list, tuple)) and len(interval) != 2:
-        raise ValueError('interval must be iterable and have two values')
+    if type(interval) not in (list, tuple):
+        raise TypeError('interval must be an iterable')
+    if len(interval) != 2:
+        raise ValueError('interval must have two values')
     step = 0.001
     m = interval[0]
     mval = abs(func(m))
@@ -227,7 +229,7 @@ class Radical(object):
     def __init__(self, outside, inside):
         """Initializes this radical using the given inside and outside integers"""
         if type(outside) != int or type(inside) != int:
-            raise ValueError('outside and inside must be of type int')
+            raise TypeError('outside and inside must be of type int')
         self.outside = outside
         self.inside = inside
         self.parent = None
@@ -328,7 +330,7 @@ def _roots_newtons_method_helper(f, x, n):
     if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
         return round(x, 9)
     elif n > 200: # max recursion depth
-        raise ValueError('no roots for {}'.format(f))
+        raise RuntimeError('no roots for {}'.format(f))
     return _roots_newtons_method_helper(f, x - f(x) / differential(f, x), n + 1)
 
 def round_qty(obj, digits=4):
@@ -405,7 +407,7 @@ if __name__ == '__main__':
         roots_newtons_method(TESTS['quadratic'], 10), -1.0,
         transformer=lambda x: round(x, 4))
     try:
-        print('Newton\'s method for quadratic should throw ValueError')
+        print('Newton\'s method for quadratic should throw RuntimeError')
         roots_newtons_method(TESTS['quadratic2'], 10)
     except Exception as e:
         print('Exception: %s' % e)

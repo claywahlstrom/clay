@@ -125,8 +125,8 @@ class Compiler(object):
     def __init__(self, compiler_name, src_ext, dst_ext, sources=None, directory=_os.curdir):
         """Initializes the compiler. Default for classes is all in the given
            directory or expects a list or tuple, otherwise and ValueError is thrown"""
-        if sources is not None and not(type(sources) in (list, tuple)):
-            raise ValueError('`sources` must be an iterable')
+        if sources is not None and type(sources) not in (list, tuple):
+            raise TypeError('sources must be an iterable')
         self.compiler_name = compiler_name
         self.src_ext = src_ext
         self.dst_ext = dst_ext
@@ -384,8 +384,11 @@ def start(program):
 
 def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
-    if seconds < 0 or type(seconds) != int:
-        raise ValueError('seconds must be >= and type int')
+    if type(seconds) != int:
+        raise TypeError('seconds must be of type int')
+    if seconds < 0:
+        raise ValueError('seconds must be >= 0')
+
     if is_idle() or seconds > 99999:
         if not(hidden):
             print('Waiting for', seconds, 'seconds...', end='')

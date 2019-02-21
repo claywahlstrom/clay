@@ -62,7 +62,7 @@ class Linq(object):
 
     def __check_distinct_projection(distinct):
         if len(Linq.__queryable) > Linq.MAX_QUERYABLE_LENGTH and distinct:
-            raise ValueError('Linq cannot process more than ' + \
+            raise MemoryError('Linq cannot process more than ' + \
                              str(Linq.MAX_QUERYABLE_LENGTH) + ' elements for distinct=True')
 
     def __end_query():
@@ -94,8 +94,8 @@ class Linq(object):
         Linq.__check_distinct_projection(distinct)
         if type(props) == str:
             props = [props]
-        if not(type(props) in (list, tuple)):
-            raise ValueError('properties must be a list or tuple')
+        if type(props) not in (list, tuple):
+            raise TypeError('properties must be of type list or tuple')
         projection = []
         for each in Linq.__queryable:
             if model:

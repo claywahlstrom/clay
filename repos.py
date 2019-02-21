@@ -63,8 +63,8 @@ class JsonRepository(object):
     @db.setter
     def db(self, value):
         """Sets this database to the given value"""
-        if not(type(value) in (dict, list)):
-            raise ValueError('db must be a JSON serializable of type dict or list')
+        if type(value) not in (dict, list):
+            raise TypeError('db must be a JSON serializable of type dict or list')
         self._db = value
 
     @property

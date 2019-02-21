@@ -28,7 +28,7 @@ class Search(object):
     def __init__(self, method='name', folder='.', string='', ext=None):
         """Searches files by method, folder, regex string, ext"""
         if ext is not None and type(ext) != str:
-            raise ValueError('extension must be a string')
+            raise TypeError('extension must be of type string')
         # variable initializing
         self.method = method
         self.folder = folder

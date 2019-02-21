@@ -22,7 +22,7 @@ class Graph(object):
             sd = data
         else:
             if type(data) not in (_OrderedDict, dict):
-                raise ValueError('data needs to be in key-value pairs')
+                raise TypeError('data needs to be in key-value pairs')
 
             sd = _SortableDict()
             for indep in data:
@@ -105,7 +105,7 @@ class Graph(object):
         self.with_count = with_count
 
     def sort_by(self, name, reverse=False):
-        if not(name in ('column', 'count')):
+        if name not in ('column', 'count'):
             raise ValueError('name must be column or count')
         std = sorted(self.sd.items(), key=_operator.itemgetter(('column', 'count').index(name)), reverse=reverse)
         self.sd.clear()
@@ -127,7 +127,7 @@ class Histogram(Graph):
     def __init__(self, columns=None, data=None, title=None,
                  max_width=SCREEN_WD, sort=True):
         if columns is not None and type(columns) not in (tuple, list):
-            raise ValueError('columns needs to be tuple')
+            raise TypeError('columns must be of type tuple')
 
         if type(data) == bytes:
             data = data.decode('utf8', errors='ignore')
