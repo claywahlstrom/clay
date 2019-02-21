@@ -28,6 +28,6 @@ def testif(expectation, test_input, test_output, transformer=lambda x: x):
             .format(expectation, test_output, result))
 
 if __name__ == '__main__':
-    testif('returns true for given values', 0, 0)
-    testif('returns true for len function', [], 0, len)
-    testif('returns true for 0 == 0', 0, 1)
+    testif('testif passes test for equal values', 0, 0)
+    testif('testif passes test for unequal values', 0, 1)
+    testif('testif passes test after applying transformer', [], 0, len)

@@ -239,27 +239,27 @@ if __name__ == '__main__':
 
     from clay.tests import testif
     
-    testif('rounds datetime seconds down',
+    testif('datetime rounds seconds down',
        datetime(2000, 1, 1, 0, 0, 2).round(seconds=5),
        _dt.datetime(2000, 1, 1, 0, 0, 0))
 
-    testif('rounds datetime seconds up',
+    testif('datetime rounds seconds up',
         datetime(2000, 1, 1, 0, 0, 4).round(seconds=5),
        _dt.datetime(2000, 1, 1, 0, 0, 5))
 
-    testif('rounds datetime minutes down',
+    testif('datetime rounds minutes down',
         datetime(2000, 1, 1, 0, 9).round(minutes=20),
        _dt.datetime(2000, 1, 1, 0, 0))
 
-    testif('rounds datetime minutes up',
+    testif('datetime rounds minutes up',
         datetime(2000, 1, 1, 0, 10).round(minutes=20),
        _dt.datetime(2000, 1, 1, 0, 20))
 
-    testif('rounds datetime minutes down near hour',
+    testif('datetime rounds minutes down near hour',
         datetime(2000, 1, 1, 0, 45).round(minutes=20),
        _dt.datetime(2000, 1, 1, 0, 40))
 
-    testif('rounds datetime minutes up near hour',
+    testif('datetime rounds minutes up near hour',
         datetime(2000, 1, 1, 0, 50).round(minutes=20),
        _dt.datetime(2000, 1, 1, 1, 0))
 

@@ -378,10 +378,10 @@ if __name__ == '__main__':
     print('------------') # 12 count
     print('Printing fraction 3/39...')
     print_fraction(Fraction(3, 39))
-    testif('returns correct integral for inverse trig from 0 to 1',
+    testif('integral of inverse trig from 0 to 1 returns correct value',
         integral(TESTS['invtrig'], (0, 1)), 1.0,
         transformer=lambda x: round(x, 4))
-    testif('limit of harmonic function returns double close to 0.5',
+    testif('limit of harmonic function returns correct value close to 0.5',
         limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2), 0.5,
         transformer=lambda x: round(list(x.values())[-1], 9)) # compare to math.isclose
 
@@ -403,11 +403,11 @@ if __name__ == '__main__':
         roots_approx(TESTS['quadratic3'], 0, 3, 9),
         [-31.428, 0.828])
 
-    testif('returns correct root using Newton\'s method',
+    testif('Newton\'s method returns correct root',
         roots_newtons_method(TESTS['quadratic'], 10), -1.0,
         transformer=lambda x: round(x, 4))
     try:
-        print('Newton\'s method for quadratic should throw RuntimeError')
+        print('Newton\'s method throws RuntimeError when no roots founds')
         roots_newtons_method(TESTS['quadratic2'], 10)
     except Exception as e:
         print('Exception: %s' % e)
@@ -435,9 +435,9 @@ if __name__ == '__main__':
     import clay.graphing as g
     g.tabulatef(TESTS['alternating'], 0, 10)
 
-    testif('returns correct series sum for convergent function',
+    testif('series_sum returns correct value (convergent function)',
         series_sum(TESTS['convergent'], a=0), 15)
-    testif('returns correct series sum for convergent2 function',
+    testif('series_sum returns correct value (convergent2 function)',
         series_sum(TESTS['convergent2']), 1.7449,
         transformer=lambda x: round(x, 4))
 
