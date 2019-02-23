@@ -155,6 +155,7 @@ class SunTime(object):
                data = list of data scraped
 
         """
+        import textwrap as _textwrap
         from bs4 import BeautifulSoup as _BS
         import requests as _requests
         url = '/'.join([TAD_BASE, self.country, self.city])
@@ -172,7 +173,10 @@ class SunTime(object):
                 print(message)
                 scraped = scraped[1:]
         except Exception as e:
-            print(e)
+            print('A SunTime instance made a request to:')
+            print(' ' * 4 + url)
+            print('which caused the folloing error:')
+            print(_textwrap.indent(_textwrap.fill(str(e)), ' ' * 4))
             req = object()
             cont = ''
             soup = _BS(cont, 'html.parser')
