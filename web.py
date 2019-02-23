@@ -621,23 +621,30 @@ class Pollen(object):
             raise ZipCodeNotFoundException(zipcode)
 
     def __get_markup(self, uri):
-        """Retrieves the markup with up to 4 max tries"""
+        """Retrieves the markup with up to 4 max tries. Returns empty
+           markup if web requests fail"""
         if self.source == 'weather text':
             params = WEB_HDRS
         else:
             params = {}
-        req = _requests.get(uri, params=params)
-        retried = False
-        tries = 1
-        if req.status_code != 200:
-            print('Retrying Pollen request', end='')
-        while req.status_code != 200 and tries <= Pollen.MAX_REQUESTS:
-            print('.', end='')
+        unsuccessful = True
+        tries = 0
+        while unsuccessful and tries < Pollen.MAX_REQUESTS:
+            try:
+                req = _requests.get(uri, params=params)
+                unsuccessful = False
+            except Exception as e:
+                if tries == 0:
+                    print('Retrying Pollen request', end='', flush=True)
+                else:
+                    print('.', end='', flush=True)
             _time.sleep(1.0)
-            req = _requests.get(uri, params=params)
             tries += 1
+
         if tries > 1:
-            print()
+            print() # flush newline to stdout
+            return b''
+
         return req.content
 
     def build(self, add_weather_query=True):
@@ -648,30 +655,37 @@ class Pollen(object):
 
         markup = self.__get_markup(uri)
 
-        page = _BS(markup, 'html.parser')
+        if len(markup) > 0:
+            page = _BS(markup, 'html.parser')
 
-        if self.source == 'weather text':
-            found = page.select('button > div')
-            db = {}
-            if len(found) > 0:
-                for elm in found:
-                    divs = elm.select('div')
-                    db[divs[0].get_text()] = divs[-1].get_text()
-        elif self.source == 'weather values':
-            js = _json.loads(markup)
-            base = js['pollenForecast12hour']
-            stored = list(base[layer + 'PollenIndex'] for layer in Pollen.TYPES)
-            lzt = list(zip(*stored))
-            db = {i / 2: lzt[i] for i in range(len(lzt))}
-        else: # wu poll
-            j = page.select('.count') # or class .status
-            db = {i: j[i].get_text() for i in range(Pollen.SOURCE_SPAN[self.source])}
-        if len(db) == 0:
             if self.source == 'weather text':
-                self.build(add_weather_query=not(add_weather_query)) # retry using the alternate query
-            else:
-                db = {i: 'null' for i in range(Pollen.SOURCE_SPAN[self.source])['null']}
-        self.src = page
+                found = page.select('button > div')
+                db = {}
+                if len(found) > 0:
+                    for elm in found:
+                        divs = elm.select('div')
+                        db[divs[0].get_text()] = divs[-1].get_text()
+            elif self.source == 'weather values':
+                js = _json.loads(markup)
+                base = js['pollenForecast12hour']
+                stored = list(base[layer + 'PollenIndex'] for layer in Pollen.TYPES)
+                lzt = list(zip(*stored))
+                db = {i / 2: lzt[i] for i in range(len(lzt))}
+            else: # wu poll
+                j = page.select('.count') # or class .status
+                db = {i: j[i].get_text() for i in range(Pollen.SOURCE_SPAN[self.source])}
+            if len(db) == 0:
+                if self.source == 'weather text':
+                    self.build(add_weather_query=not(add_weather_query)) # retry using the alternate query
+                else:
+                    db = {i: 'null' for i in range(Pollen.SOURCE_SPAN[self.source])}
+            src = page
+        else:
+            # populate the database with the most general structure of data
+            # current generalization: weather values [0.0, 0.5, ...]
+            db = {i / 2: 'null' for i in range(2 * Pollen.SOURCE_SPAN[self.source])}
+            src = None
+        self.src = src
         self.db = db
         self.__has_built = True
 
