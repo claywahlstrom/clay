@@ -364,10 +364,10 @@ class UrlBuilder(object):
     def to_string(self):
         return self.url
 
-class WeatherUrlBuilder(UrlBuilder):
+class WeatherPollenApiUrlBuilder(UrlBuilder):
 
     def __init__(self):
-        super(WeatherUrlBuilder, self).__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
+        super(WeatherPollenApiUrlBuilder, self).__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
         self.base_url = self.with_query_params({'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
             'format': 'json',
             'language': 'en-US'}).to_string()
@@ -561,7 +561,6 @@ class WundergroundUrlBuilder(UrlBuilder):
 
     def with_location(self, state, city, station):
         self.url = self.base_url + '/'.join((state, city, station))
-        self.with_query_params({'cm_ven': 'localwx_modpollen'})
         return self
 
     def to_string(self):
@@ -570,7 +569,7 @@ class WundergroundUrlBuilder(UrlBuilder):
 class PollenUrlBuilderFactory(object):
 
     def __init__(self):
-        self.weather = WeatherUrlBuilder()
+        self.weather = WeatherPollenApiUrlBuilder()
         self.wunderground = WundergroundUrlBuilder()
 
 class PollenApiClient(object):
@@ -583,9 +582,16 @@ class PollenApiClient(object):
     MAX_REQUESTS = 4
     SOURCE_SPAN = {'weather text': 7, 'weather values': 7, 'wu poll': 4}
     SOURCE_URLS = {98105: {'weather values': URL_FACTORY.weather.with_geocode(47.654003, -122.309166).to_string(),
-                           'wu poll': URL_FACTORY.wunderground.with_location('wa', 'seattle', 'WASEATT446').to_string()},
+                           'wu poll': URL_FACTORY.wunderground \
+                                .with_location('wa', 'seattle', 'WASEATT446') \
+                                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
+                                .to_string()},
                    98684: {'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).to_string(),
-                           'wu poll': URL_FACTORY.wunderground.with_location('wa', 'camas', 'KWACAMAS42').to_string()}}
+                           'wu poll': URL_FACTORY.wunderground \
+                                .with_location('wa', 'camas', 'KWACAMAS42') \
+                                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
+                                .to_string()}}
+
     for url in SOURCE_URLS:
         SOURCE_URLS[url]['weather text'] = 'https://weather.com/forecast/allergy/l/'
     del url # remove from scope
