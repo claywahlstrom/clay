@@ -573,9 +573,9 @@ class PollenUrlBuilderFactory(object):
         self.weather = WeatherUrlBuilder()
         self.wunderground = WundergroundUrlBuilder()
 
-class Pollen(object):
+class PollenApiClient(object):
 
-    """Class Pollen can be used to retrieve and store information about
+    """Class PollenApiClient can be used to retrieve and store information about
        the pollen forecast from The Weather Channel (tm) and Wunderground (tm)"""
 
     URL_FACTORY = PollenUrlBuilderFactory()
@@ -593,7 +593,7 @@ class Pollen(object):
     WEATHER_QUERY_PARAMS = ':4:US'
 
     def __init__(self, source, zipcode=98105, print_sources=True):
-        """Constructs a new Pollen object using the given source and zipcode"""
+        """Constructs a new PollenApiClient object using the given source and zipcode"""
         self.zipcode = zipcode
         self.print_sources = print_sources
         self.source = source
@@ -602,22 +602,22 @@ class Pollen(object):
         self.build()
 
     def __repr__(self):
-        """Returns the string representation of this Pollen instance"""
-        return 'Pollen(source={{{}}}, zipcode={}, print_sources={})' \
+        """Returns the string representation of this PollenApiClient instance"""
+        return 'PollenApiClient(source={{{}}}, zipcode={}, print_sources={})' \
             .format(self.source, self.zipcode, self.print_sources)
 
     def __check_built(self):
-        """Throws a RuntimeError if this Pollen instance has not been built"""
+        """Throws a RuntimeError if this PollenApiClient instance has not been built"""
         if not(self.__has_built):
-            raise RuntimeError('Pollen must be build after zipcode or source has been changed')
+            raise RuntimeError('PollenApiClient must be built after zipcode or source has been changed')
 
     def __verify_source(self, source):
-        if source not in Pollen.SOURCE_SPAN.keys():
-            raise ValueError('source must be one from [{}]'.format(", ".join(Pollen.SOURCE_SPAN.keys())))
+        if source not in PollenApiClient.SOURCE_SPAN.keys():
+            raise ValueError('source must be one from [{}]'.format(", ".join(PollenApiClient.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):
-        if (self.source != 'weather text' and not(zipcode in Pollen.SOURCE_URLS.keys())) or \
-            not(zipcode in Pollen.SOURCE_URLS.keys()) or zipcode < 0 or zipcode > 99501:
+        if (self.source != 'weather text' and zipcode not in PollenApiClient.SOURCE_URLS.keys()) or \
+            not(zipcode in PollenApiClient.SOURCE_URLS.keys()) or zipcode < 0 or zipcode > 99501:
             raise ZipCodeNotFoundException(zipcode)
 
     def __get_markup(self, uri):
@@ -629,13 +629,13 @@ class Pollen(object):
             params = {}
         unsuccessful = True
         tries = 0
-        while unsuccessful and tries < Pollen.MAX_REQUESTS:
+        while unsuccessful and tries < PollenApiClient.MAX_REQUESTS:
             try:
                 req = _requests.get(uri, params=params)
                 unsuccessful = False
             except Exception as e:
                 if tries == 0:
-                    print('Retrying Pollen request', end='', flush=True)
+                    print('Retrying PollenApiClient request', end='', flush=True)
                 else:
                     print('.', end='', flush=True)
             _time.sleep(1.0)
@@ -648,7 +648,7 @@ class Pollen(object):
         return req.content
 
     def build(self, add_weather_query=True):
-        """Builds and populates the pollen record database"""
+        """Builds and populates the pollen client database"""
         uri = self.uri
         if self.source == 'weather text' and add_weather_query:
             uri += self.WEATHER_QUERY_PARAMS
@@ -668,29 +668,29 @@ class Pollen(object):
             elif self.source == 'weather values':
                 js = _json.loads(markup)
                 base = js['pollenForecast12hour']
-                stored = list(base[layer + 'PollenIndex'] for layer in Pollen.TYPES)
+                stored = list(base[layer + 'PollenIndex'] for layer in PollenApiClient.TYPES)
                 lzt = list(zip(*stored))
                 db = {i / 2: lzt[i] for i in range(len(lzt))}
             else: # wu poll
                 j = page.select('.count') # or class .status
-                db = {i: j[i].get_text() for i in range(Pollen.SOURCE_SPAN[self.source])}
+                db = {i: j[i].get_text() for i in range(PollenApiClient.SOURCE_SPAN[self.source])}
             if len(db) == 0:
                 if self.source == 'weather text':
                     self.build(add_weather_query=not(add_weather_query)) # retry using the alternate query
                 else:
-                    db = {i: 'null' for i in range(Pollen.SOURCE_SPAN[self.source])}
+                    db = {i: 'null' for i in range(PollenApiClient.SOURCE_SPAN[self.source])}
             src = page
         else:
             # populate the database with the most general structure of data
             # current generalization: weather values [0.0, 0.5, ...]
-            db = {i / 2: 'null' for i in range(2 * Pollen.SOURCE_SPAN[self.source])}
+            db = {i / 2: 'null' for i in range(2 * PollenApiClient.SOURCE_SPAN[self.source])}
             src = None
         self.src = src
         self.db = db
         self.__has_built = True
 
     def get_day(self, day):
-        """Returns the value in the db for the given day"""
+        """Returns the value in the database for the given day"""
         self.__check_built()
         data = None
         if self.source == 'weather text':
@@ -711,7 +711,7 @@ class Pollen(object):
         return data
 
     def get_today(self):
-        """Returns the type of pollen for today"""
+        """Returns the pollen data for today"""
         self.__check_built()
         if self.source == 'weather text':
             if 'Tonight' in self.db:
@@ -721,7 +721,7 @@ class Pollen(object):
         return self.get_day(0)
 
     def get_tomorrow(self):
-        """Returns the type of pollen forecasted for tomorrow"""
+        """Returns the pollen data forecasted for tomorrow"""
         return self.get_day(1) # checks for valid db in get_day
 
     def print_db(self):
@@ -732,16 +732,16 @@ class Pollen(object):
             print('{:>{}}: {}'.format(i, len('Tonight'), j))
 
     def set_source(self, source):
-        """Sets the source for this Pollen object. Requires `build` to be called to update data"""
+        """Sets the source for this PollenApiClient object. Requires `build` to be called to update data"""
         self.__verify_source(source)
-        self.uri = Pollen.SOURCE_URLS[self.zipcode][source]
+        self.uri = PollenApiClient.SOURCE_URLS[self.zipcode][source]
         if source == 'weather text':
             self.uri += str(self.zipcode)
         self.source = source
         self.__has_built = False
 
     def set_zipcode(self, zipcode):
-        """Sets the zipcode for this Pollen object. Requires `build` to be called to update data"""
+        """Sets the zipcode for this PollenApiClient object. Requires `build` to be called to update data"""
         self.__verify_zipcode(zipcode)
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
@@ -809,12 +809,12 @@ class ZipCodeNotFoundException(Exception):
         self.zipcode = zipcode
 
     def __repr__(self):
-        zipcodes = ', '.join(map(str, Pollen.SOURCE_URLS.keys()))
+        zipcodes = ', '.join(map(str, PollenApiClient.SOURCE_URLS.keys()))
         plural = zipcodes.count(',') > 0
         string = 'The only zipcode'
         if plural:
             string += 's'
-        string += ' currently supported for Pollen '
+        string += ' currently supported for PollenApiClient '
         if plural:
             string += 'are'
         else:
@@ -852,7 +852,7 @@ if __name__ == '__main__':
     print(find_anchors(TEST_LINK, internal=False))
     print()
 
-    p = Pollen('weather text')
+    p = PollenApiClient('weather text')
     p.print_db()
     p.set_source('weather values')
     p.set_zipcode(98105)
