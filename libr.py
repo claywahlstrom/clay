@@ -310,7 +310,7 @@ class Title(object):
 
 if __name__ == '__main__':
 
-    with open('essay.txt') as fp:
+    with open(r'tests\essay.txt') as fp:
         fread = fp.read()
 
     e = Essay(fread, line_start=3, line_sep='\n')
@@ -321,7 +321,7 @@ if __name__ == '__main__':
     e.find_topics()
     e.fix_spaces()
 
-    with open('essayfixper.txt','w') as fp:
+    with open(r'tests\essayfixper.txt','w') as fp:
         fp.write(e.text)
 
     link = 'http://www.datascribble.com/deep-learning/deep-learning-tensorflow-series-part-1-neural-network/'

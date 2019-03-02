@@ -321,7 +321,7 @@ if __name__ == '__main__':
     print('is watching d should be True =>', s.is_watching('d'))
     print('after add')
     s.view()
-    s.write_file('watch_test.txt')
+    s.write_file(r'tests\watch_test.txt')
 
     def test_function(x):
         return x

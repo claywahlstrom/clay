@@ -14,7 +14,7 @@ from clay.shell import is_unix as _is_unix
 if _is_unix():
     LIMPATH_FMT = r'/home/clay/Desktop/liminf-{}.log'
 else:
-    LIMPATH_FMT = r'C:\Python37\Lib\site-packages\clay\liminf-{}.log'
+    LIMPATH_FMT = r'C:\Python37\Lib\site-packages\clay\logs\liminf-{}.log'
 
 TESTS = {
     'alternating': lambda n: (-1) ** n * (1 / n ** 2),
