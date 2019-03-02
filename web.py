@@ -30,7 +30,7 @@ CHUNK_CAP = int(1e6) # 1MB
 
 # download links for testing
 LINKS = {}
-LINK_SIZES = list(map(lambda n: str(n) + 'MB', [1, 2, 5, 10, 20, 50, 100, 200, 512]))
+LINK_SIZES = list(str(n) + 'MB' for n in [1, 2, 5, 10, 20, 50, 100, 200, 512])
 for n in LINK_SIZES:
     LINKS[n] = 'http://download.thinkbroadband.com/' + str(n) + '.zip'
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
