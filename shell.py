@@ -209,19 +209,7 @@ class JavaCompiler(Compiler):
         self.add_flag('g')
         self.add_flag('Xlint:unchecked')
 
-def ls(directory=_os.curdir, shell=False):
-    """Returns the listing of contents for the given `directory`.
-       If `shell` is true, then the long listing is printed and
-       nothing is returned."""
-    if shell:
-        if is_unix():
-            command = 'ls -al'
-        else:
-            command = 'dir'
-        print(_subprocess.check_output([command, directory],
-                                       shell=True).decode('utf8', errors='ignore'))
-    else:
-        return _os.listdir(directory)
+ls = _os.listdir # alias
 
 def lsgrep(regex, directory=_os.curdir, recurse=False):
     """Finds and returns all files containing `regex` (string or list) using re.findall"""
@@ -236,6 +224,15 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
         if not(recurse):
             break
     return results
+
+def lsshell(directory=_os.curdir):
+    """Prints the long listing format of the given directory"""
+    if is_unix():
+        command = 'ls -al'
+    else:
+        command = 'dir'
+    print(_subprocess.check_output([command, directory],
+                                    shell=True).decode('utf8', errors='ignore'))
 
 from os import mkdir # def
 md = _os.mkdir # alias
