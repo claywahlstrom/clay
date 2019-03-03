@@ -2,4 +2,5 @@
 __pycache__
 *.pyc
 dl_log.txt
-liminf*.log
+logs/
+tests/
