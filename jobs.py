@@ -217,3 +217,14 @@ def get_day_offset(day, number):
     if day < 0:
         day += 7
     return day
+
+if __name__ == '__main__':
+
+    import os
+
+    os.chdir('tests')
+
+    att = Attendance(0.75, 11.0, 'OR', offset=3)
+    att.remove_breaks(lunches=True)
+    att.print_report()
+    
