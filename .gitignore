@@ -1,6 +1,5 @@
 .vscode
 __pycache__
 *.pyc
-dl_log.txt
 logs/
 tests/

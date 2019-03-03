@@ -388,7 +388,7 @@ class WebDocument(object):
         return 'WebDocument(uri=%s)' % self._raw_uri
 
     def download(self, title='', full_title=False, destination='.',
-                 log_name='dl_log.txt', return_speed=False):
+                 log_name='webdoc-dl.log', return_speed=False):
         """Downloads data from the document uri and logs revelant
            information in this directory"""
 
@@ -402,7 +402,7 @@ class WebDocument(object):
             if _is_unix():
                 log_path = _os.path.join(r'/home/clay/Desktop', log_name)
             else:
-                log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay', log_name)
+                log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay\logs', log_name)
         current = _os.getcwd()
         _os.chdir(destination) # better file handling
         print('CWD:', _os.getcwd())
