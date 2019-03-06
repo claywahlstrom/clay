@@ -18,6 +18,7 @@ GAS = 0.082057                 # L * atm * K^-1 * mol^-1, gas constant
 GAS_ENERGY = 8.314472          # J * K^-1 * mol^-1, gas constant
 GRAVITATION = 6.67408e-11      # m^3 / (kg * s^2) : gravitational constant
 KELVIN_OFFSET = 273.15         # degrees : Kelvin to degrees offset
+K_WATER = 1e-14                # ionic product constant of water
 MAGNETIC = 4e-7 * _math.pi     # T * m / A : magnetic constant
 PLANCK = 6.626e-34             # J * s : Planck's constant
 RYDBERG = 1.09737316e7         # m^-1 : Rydberg's constant
