@@ -27,8 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # for "from clay import *" compatibility
-__all__ = ['align',
-           'boxart',
+__all__ = ['boxart',
            'files',
            'google',
            'graphing',
@@ -43,6 +42,7 @@ __all__ = ['align',
            'searchtools',
            'shell',
            'tests',
+           'texteffects',
            'time',
            'util',
            'web',
