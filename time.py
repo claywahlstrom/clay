@@ -118,7 +118,7 @@ class ReadingTimer(object):
         else:
             self.current_page -= 1
 
-class SunTime(object):
+class SunTimes(object):
     """A class for storing sun data collected from timeanddate.com (c)
        in the following form:
 
@@ -173,7 +173,7 @@ class SunTime(object):
                 print(message)
                 scraped = scraped[1:]
         except Exception as e:
-            print('A SunTime instance made a request to:')
+            print('A SunTimes instance made a request to:')
             print(' ' * 4 + url)
             print('which caused the folloing error:')
             print(_textwrap.indent(_textwrap.fill(str(e)), ' ' * 4))
@@ -184,8 +184,8 @@ class SunTime(object):
             
         # parse the data into rows
         data = []
-        for i in range(0, len(scraped), SunTime.COLS):
-            data.append(scraped[i: i + SunTime.COLS])
+        for i in range(0, len(scraped), SunTimes.COLS):
+            data.append(scraped[i: i + SunTimes.COLS])
 
         # store relevant fields
         self.url     = url
@@ -207,7 +207,7 @@ class SunTime(object):
             raise ValueError('day must be from 0 to ' + str(len(self.data) - 1))
 
     def __validate(self, day):
-        """Verifies that the requested day is valid and this SunTime is up to date"""
+        """Verifies that the requested day is valid and the data is up to date"""
         self.__check_valid(day)
         self.__check_date()
 
@@ -271,6 +271,6 @@ if __name__ == '__main__':
     print('exams over', get_time_until(2018, 12, 13))
     
     print(get_time_struct())
-    sun = SunTime()
+    sun = SunTimes()
     print('sunset tonight is', sun.get_sunset())
 
