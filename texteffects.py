@@ -76,6 +76,10 @@ def right(text):
     """Justifies the given text to the right"""
     return text.rjust(WIDTH)
 
+def underline(text, char='-'):
+    """Returns the given text underlined with char"""
+    return text + '\n' + char * len(text)
+
 if __name__ == '__main__':
     print('Box Art Examples:')
     fullbox('Hello full', 2, 1)
@@ -85,3 +89,7 @@ if __name__ == '__main__':
     print(left('hello'))
     print(center('world'))
     print(right('My name is Clay. What\'s yours?'))
+    print('UNDERLINE TESTS')
+    print(underline('underlined text (-)'))
+    print(underline('underlined text (*)', '*'))
+    
