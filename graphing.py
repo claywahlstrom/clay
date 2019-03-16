@@ -157,7 +157,7 @@ def tabulatef(func, start=-5, end=5, step=1, spacing=9,
               precision=10, roundto=14, file=_sys.stdout):
     """Prints a table of values from the given a function,
        bounds, step, and output location"""
-    print(str(func), file=file)
+    print('Table for {} on [{}, {}]'.format(func.__name__, start, end),  file=file)
     print('-'*30, file=file)
     mapstr = map(str, [start, end, step])
     maxspace = max(map(len, mapstr))
