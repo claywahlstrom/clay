@@ -161,6 +161,8 @@ def tabulatef(func, start=-5, end=5, step=1, spacing=9,
     print('-'*30, file=file)
     mapstr = map(str, [start, end, step])
     maxspace = max(map(len, mapstr))
+    if start < 0:
+        maxspace += 1
     i = start
     while start <= i <= end:
         numstring = str(round(i, precision))
