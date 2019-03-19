@@ -7,6 +7,7 @@ TODO (web-header): fix the web header to fix google.com rendering JS problem usi
 
 """
 
+import collections as _collections
 import datetime as _dt
 import json as _json
 import math as _math
@@ -674,7 +675,7 @@ class PollenApiClient(object):
 
             if self.source == 'weather text':
                 found = page.select('button > div')
-                db = {}
+                db = _collections.OrderedDict()
                 if len(found) > 0:
                     for elm in found:
                         divs = elm.select('div')
@@ -683,16 +684,20 @@ class PollenApiClient(object):
                 js = _json.loads(markup.decode('latin-1'))
                 base = js['pollenForecast12hour']
                 stored = list(base[layer + 'PollenIndex'] for layer in PollenApiClient.TYPES)
-                lzt = list(zip(*stored))
-                db = {i / 2: lzt[i] for i in range(len(lzt))}
+                lzt = list(zip(*stored)) # zips each layer to their corresponding value
+                db = _collections.OrderedDict()
+                for i in range(len(lzt)):
+                    db[i / 2] = lzt[i]
             else: # wu poll
                 j = page.select('.count') # or class .status
-                db = {i: j[i].get_text() for i in range(PollenApiClient.SOURCE_SPAN[self.source])}
+                db = _collections.OrderedDict()
+                for i in range(PollenApiClient.SOURCE_SPAN[self.source]):
+                    db[i] = j[i].get_text()
             if len(db) == 0:
                 if self.source == 'weather text':
                     self.build(add_weather_query=not(add_weather_query)) # retry using the alternate query
                 else:
-                    db = {i: 'null' for i in range(PollenApiClient.SOURCE_SPAN[self.source])}
+                    db = _collections.OrderedDict({i: 'null' for i in range(PollenApiClient.SOURCE_SPAN[self.source])})
             src = page
         else:
             # populate the database with the most general structure of data
