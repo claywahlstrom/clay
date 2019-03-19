@@ -569,8 +569,16 @@ class WundergroundUrlBuilder(UrlBuilder):
 class PollenUrlBuilderFactory(object):
 
     def __init__(self):
-        self.weather = WeatherPollenApiUrlBuilder()
-        self.wunderground = WundergroundUrlBuilder()
+        self._weather = WeatherPollenApiUrlBuilder()
+        self._wunderground = WundergroundUrlBuilder()
+
+    @property
+    def weather(self):
+        return self._weather
+
+    @property
+    def wunderground(self):
+        return self._wunderground
 
 class PollenApiClient(object):
 
