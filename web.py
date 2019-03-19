@@ -680,7 +680,7 @@ class PollenApiClient(object):
                         divs = elm.select('div')
                         db[divs[0].get_text()] = divs[-1].get_text()
             elif self.source == 'weather values':
-                js = _json.loads(markup)
+                js = _json.loads(markup.decode('latin-1'))
                 base = js['pollenForecast12hour']
                 stored = list(base[layer + 'PollenIndex'] for layer in PollenApiClient.TYPES)
                 lzt = list(zip(*stored))
