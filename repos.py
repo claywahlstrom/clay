@@ -16,90 +16,90 @@ class JsonRepository(object):
     def __init__(self, name, empty):
         """Intializes this JSON repository with the given name
            and empty database structure"""
-        self._name = name
-        self._empty = empty
-        self._has_read = False
+        self.__name = name
+        self.__empty = empty
+        self.__has_read = False
         self.clear()
 
     def _ensure_connected(self):
-        if not(self._has_read):
+        if not(self.__has_read):
             raise RuntimeError('database has not been read')
 
     def clear(self):
         """Clears this database"""
-        self._db = self._empty
+        self.__db = self.__empty
 
     def create(self, force=False, write=True):
         """Creates this database if it does not exist and returns
            a boolean of whether the creation was success or not.
            Use force=True if this database exists to clear
            its contents."""
-        if force or not(_os.path.exists(self._name)):
+        if force or not(_os.path.exists(self.__name)):
             self.clear()
             if write:
                 self.write()
             return True
         else:
-            print('Cannot overwrite database "' + self._name + '" because it already exists')
+            print('Cannot overwrite database "' + self.__name + '" because it already exists')
             return False
 
     def exists(self):
         """Returns True if this database exists, False otherwise"""
-        return _os.path.exists(self._name)
+        return _os.path.exists(self.__name)
 
     def get_name(self):
         """Returns the name of this database"""
-        return self._name
+        return self.__name
         
     def get_empty(self):
         """Returns the empty structure for this database"""
-        return self._empty
+        return self.__empty
 
     @property
     def db(self):
         """Returns this database"""
-        return self._db
+        return self.__db
 
     @db.setter
     def db(self, value):
         """Sets this database to the given value"""
         if type(value) not in (dict, list):
             raise TypeError('db must be a JSON serializable of type dict or list')
-        self._db = value
+        self.__db = value
 
     @property
     def has_read(self):
         """Returns True if read has been called for this database,
            False otherwise"""
-        return self._has_read
+        return self.__has_read
 
     def prune(self, predicate):
         """Prunes entities from the database based on the given predicate
            function"""
         modified = False
-        temp = self._db.copy() # prevents concurrent modification errors
-        for entity in self._db:
+        temp = self.__db.copy() # prevents concurrent modification errors
+        for entity in self.__db:
             if predicate(entity):
-                print('pruning {} from db "{}"...'.format(entity, self._name))
+                print('pruning {} from db "{}"...'.format(entity, self.__name))
                 if type(temp) == dict:
                     temp.pop(entity)
                 else: # type(temp) == list
                     temp.remove(entity)
                 modified = True
-        self._db = temp
+        self.__db = temp
         if modified:
             self.write()
 
     def read(self):
         """Reads data from the disk into the database"""
-        with open(self._name) as fp:
-            self._db = _json.load(fp)
-        self._has_read = True
+        with open(self.__name) as fp:
+            self.__db = _json.load(fp)
+        self.__has_read = True
 
     def write(self):
         """Writes this database to the disk"""
-        with open(self._name, 'w') as fd:
-            _json.dump(self._db, fd)
+        with open(self.__name, 'w') as fd:
+            _json.dump(self.__db, fd)
 
     name = property(get_name)
     empty = property(get_empty)
@@ -110,8 +110,8 @@ class CrudRepository(JsonRepository):
         """Initializes this CRUD repository under the given file
            using the given primary key"""
         super(CrudRepository, self).__init__(name, {})
-        self._pk = pk
-        self._default_model = {}
+        self.__pk = pk
+        self.__default_model = {}
 
     def _ensure_exists(self, pk):
         if not(self.db is None or pk in self.db):
@@ -124,12 +124,12 @@ class CrudRepository(JsonRepository):
     @property
     def default_model(self):
         """Returns the default model for this repository"""
-        return self._default_model
+        return self.__default_model
         
     @default_model.setter
     def default_model(self, model):
         """Sets the default model for this repository"""
-        self._default_model = model
+        self.__default_model = model
 
     def delete(self, pk):
         """Deletes the given primary key from this repository"""
@@ -186,29 +186,29 @@ class UserWhitelist(object):
 
     def __init__(self, file):
         """Initializes this user whitelist"""
-        self._file = file
-        self._users = []
+        self.__file = file
+        self.__users = []
 
     def get_file(self):
         """Returns the file for this whitelist"""
-        return self._file
+        return self.__file
 
     def get_users(self):
         """Returns the users in this whitelist"""
-        return self._users
+        return self.__users
 
     def is_authorized(self, user):
         """Returns True if the given user is authorized
            by this whitelist, False otherwise"""
-        return user in self._users
+        return user in self.__users
 
     def read(self):
         """Reads data from the disk into the database"""
         users = []
-        for line in self._file:
+        for line in self.__file:
             if not(line.startswith('#')):
                 users.append(line.strip())
-        self._users = users
+        self.__users = users
 
     file = property(get_file)
     users = property(get_users)

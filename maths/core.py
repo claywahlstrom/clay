@@ -244,7 +244,7 @@ class Radical(object):
         return (len(str(outside)) + 2) * ' ' + len(str(self.inside)) * '_' \
                 + '\n' + '{}-/{}'.format(outside, self.inside)
 
-    def _greatest_square(self):
+    def __greatest_square(self):
         """Returns the greatest sqaure the inside can be divided by"""
         squares = []
         for i in range(1, self.inside):
@@ -252,14 +252,14 @@ class Radical(object):
                 squares.append(i ** 2)
         return squares[-1]
 
-    def _set_parent(self):
+    def __set_parent(self):
         """Sets the parent of this radical"""
         self.parent = Radical(self.outside, self.inside)
 
     def simplify(self):
         """Simplifies this radical"""
-        self._set_parent()
-        out = self._greatest_square()
+        self.__set_parent()
+        out = self.__greatest_square()
         self.outside *= int(math.sqrt(out))
         self.inside = int(self.inside / out)
 

@@ -226,11 +226,11 @@ class Watch(object):
     def start_recording(self, useLocals):
         """Records new objects created after this point until end
            recording is called"""
-        self._start_locals = useLocals.copy().keys()
+        self.__start_locals = useLocals.copy().keys()
 
     def stop_recording(self, useLocals):
         """Adds the new objects since the recording started to this Watch"""
-        unique = (x for x in useLocals if x not in self._start_locals)
+        unique = (x for x in useLocals if x not in self.__start_locals)
         for var in unique:
             self.add(var)
 

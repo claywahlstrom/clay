@@ -386,7 +386,7 @@ class WebDocument(object):
         self.set_query(None)
 
     def __repr__(self):
-        return 'WebDocument(uri=%s)' % self._raw_uri
+        return 'WebDocument(uri=%s)' % self.__raw_uri
 
     def download(self, title='', full_title=False, destination='.',
                  log_name='webdoc-dl.log', return_speed=False):
@@ -397,7 +397,7 @@ class WebDocument(object):
 
         from clay.shell import set_title
 
-        url = self._raw_uri
+        url = self.__raw_uri
         errors = False
         if log_name:
             if _is_unix():
@@ -414,11 +414,11 @@ class WebDocument(object):
             title, query = self.get_basename(full=full_title)
 
         # append internal query to query if not empty
-        if self._query is not None:
+        if self.__query is not None:
             if query is None:
-                query = self._query
+                query = self.__query
             else:
-                query += '&' + '&'.join((key + '=' + val for key, val in self._query.items()))
+                query += '&' + '&'.join((key + '=' + val for key, val in self.__query.items()))
 
         fp = open(title, 'wb')
         print('Retrieving "{}"...\n    Title: {}\n    Query: {}...'.format(url, title, query))
@@ -484,15 +484,15 @@ class WebDocument(object):
 
     def get_basename(self, full=False):
         """Returns the basename and query of this document's `uri`"""
-        url_query = self._uri.query if len(self._uri.query) > 0 else None
-        title = _os.path.basename(self._uri.path)
+        url_query = self.__uri.query if len(self.__uri.query) > 0 else None
+        title = _os.path.basename(self.__uri.path)
         add_ext = not(any(ext in title for ext in ('htm', 'aspx', 'php'))) and len(title) < 2
 
         if len(title) < 2: # if title is '' or '/'
             title = 'index'
             add_ext = True
         if full:
-            title = self._uri.netloc + self._uri.path.replace('/', '.')
+            title = self.__uri.netloc + self.__uri.path.replace('/', '.')
         if add_ext:
             title += '.html'
         title = urllib.parse.unquote_plus(title)
@@ -501,14 +501,14 @@ class WebDocument(object):
     def get_html(self, headers=True):
         """Returns the binary response from this document's `uri`"""
         if headers:
-            fread = _requests.get(self._raw_uri, params=self._query, headers=WEB_HDRS)
+            fread = _requests.get(self.__raw_uri, params=self.__query, headers=WEB_HDRS)
         else:
-            fread = _requests.get(self._raw_uri, params=self._query)
+            fread = _requests.get(self.__raw_uri, params=self.__query)
         return fread.content
 
     def get_response(self):
         """Returns the response from this document's `uri`"""
-        request = urllib.request.Request(self._raw_uri, headers=WEB_HDRS)
+        request = urllib.request.Request(self.__raw_uri, headers=WEB_HDRS)
         response = urllib.request.urlopen(request)
         return response.read()
 
@@ -519,40 +519,40 @@ class WebDocument(object):
 
     @property
     def query(self):
-        return self._query
+        return self.__query
 
     @property
     def uri(self):
-        return self._uri
+        return self.__uri
 
     @property
     def raw_uri(self):
-        return self._raw_uri
+        return self.__raw_uri
 
     def launch(self, browser='firefox'):
         """Opens this document's `uri` in your favorite browser"""
         if _is_unix():
             _call(['google-chrome', self.uri], shell=True)
         else:
-            _call(['start', browser, self._raw_uri.replace('&', '^&')], shell=True)
+            _call(['start', browser, self.__raw_uri.replace('&', '^&')], shell=True)
 
     def set_query(self, query):
         """Sets the internal query to the given dictionary"""
         if query is not None and type(query) != dict:
             raise TypeError('query must be of type dict or none')
-        self._query = query
+        self.__query = query
 
     def set_uri(self, uri):
         """Sets the uri to the given string"""
-        self._raw_uri = uri
-        self._uri = urllib.parse.urlsplit(uri)
+        self.__raw_uri = uri
+        self.__uri = urllib.parse.urlsplit(uri)
 
     def size(self):
-        response = _requests.head(self._raw_uri, headers=WEB_HDRS)
+        response = _requests.head(self.__raw_uri, headers=WEB_HDRS)
         if 'Content-Length' in response.headers:
             size = int(response.headers['Content-Length'])
         else:
-            size = len(_requests.get(self._raw_uri, headers=WEB_HDRS).content)
+            size = len(_requests.get(self.__raw_uri, headers=WEB_HDRS).content)
         return size
 
 class WundergroundUrlBuilder(UrlBuilder):
@@ -570,16 +570,16 @@ class WundergroundUrlBuilder(UrlBuilder):
 class PollenUrlBuilderFactory(object):
 
     def __init__(self):
-        self._weather = WeatherPollenApiUrlBuilder()
-        self._wunderground = WundergroundUrlBuilder()
+        self.__weather = WeatherPollenApiUrlBuilder()
+        self.__wunderground = WundergroundUrlBuilder()
 
     @property
     def weather(self):
-        return self._weather
+        return self.__weather
 
     @property
     def wunderground(self):
-        return self._wunderground
+        return self.__wunderground
 
 class PollenApiClient(object):
 
