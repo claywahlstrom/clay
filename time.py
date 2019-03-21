@@ -180,7 +180,7 @@ class SunTimes(object):
             req = object()
             cont = ''
             soup = _BS(cont, 'html.parser')
-            scraped = ['offline'] * SunTime.COLS * 2
+            scraped = ['offline'] * SunTimes.COLS * 2
             
         # parse the data into rows
         data = []
