@@ -255,6 +255,10 @@ class CourseCatalogUW(object):
                 'results': {'course_list': course_list,
                             'header': header}}
 
+def file2uri(path):
+    """Returns the web file URI for the given file path"""
+    return 'file:///' + path.replace('\\', '/')
+
 def find_anchors(location, query={}, internal=True, php=False):
     """Returns anchor references from a location (file name or uri)
            query    = query params sent in the request
@@ -285,10 +289,6 @@ def find_anchors(location, query={}, internal=True, php=False):
             except:
                 links.append(x)
     return list(set(links)) # remove duplicates
-
-def get_uri(path):
-    """Returns the web file URI for the given file path"""
-    return 'file:///' + path.replace('\\', '/')
 
 def get_title(soup):
     """Returns the title from the given soup markup"""
