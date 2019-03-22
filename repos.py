@@ -106,11 +106,9 @@ class JsonRepository(object):
 
 class CrudRepository(JsonRepository):
 
-    def __init__(self, name, pk):
-        """Initializes this CRUD repository under the given file
-           using the given primary key"""
+    def __init__(self, name):
+        """Initializes this CRUD repository under the given file name"""
         super(CrudRepository, self).__init__(name, {})
-        self.__pk = pk
         self.__default_model = {}
 
     def _ensure_exists(self, pk):
@@ -165,8 +163,8 @@ class CrudRepository(JsonRepository):
 
 class UserRepository(CrudRepository):
 
-    def __init__(self, primary_key, file='users.json'):
-        super(UserRepository, self).__init__(file, primary_key)
+    def __init__(self, file='users.json'):
+        super(UserRepository, self).__init__(file)
 
     def prune(self, date_prop, date_format, days=30):
         """Prunes users based on the database date if the date is days old"""
