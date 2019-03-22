@@ -80,7 +80,7 @@ class JsonRepository(object):
         temp = self.__db.copy() # prevents concurrent modification errors
         for entity in self.__db:
             if predicate(entity):
-                print('pruning {} from db "{}"...'.format(entity, self.__name))
+                print('Pruning {} from db "{}"...'.format(entity, self.__name))
                 if type(temp) == dict:
                     temp.pop(entity)
                 else: # type(temp) == list
@@ -165,7 +165,7 @@ class CrudRepository(JsonRepository):
 
 class UserRepository(CrudRepository):
 
-    def __init__(self, primary_key, file='users'):
+    def __init__(self, primary_key, file='users.json'):
         super(UserRepository, self).__init__(file, primary_key)
 
     def prune(self, date_prop, date_format, days=30):
@@ -176,7 +176,7 @@ class UserRepository(CrudRepository):
             days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
             if _dt.datetime.strptime(temp[pk][date_prop], date_format) <= days_ago:
                 modified = True
-                print('pruning {}...'.format(pk))
+                print('Pruning {}...'.format(pk))
                 temp.pop(pk)
         self.db = temp
         if modified:
