@@ -68,6 +68,11 @@ class File(object):
             except:
                 fp.write(string) # for binary strings
 
+    def clear(self):
+        """Clears the content of this file"""
+        with open(self.name, 'w') as fp:
+            pass
+
     def get_char_count(self, char):
         """Returns the count occurence of char in this file"""
         with open(self.name) as fp:
