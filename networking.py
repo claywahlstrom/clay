@@ -17,6 +17,7 @@ MAX_BUFFER = 10000
 MAX_CONN = 1
 
 FILESEP = b'eof' + b'eof'
+LOCALHOST = '127.0.0.1'
 UTF_SET = 'utf8'
 
 def get_ip_address():
