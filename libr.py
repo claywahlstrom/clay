@@ -103,14 +103,14 @@ class Essay(object):
         print(mids)
 
     def find_pronouns(self):
-        """Finds uncapitalized I's"""
+        """Finds uncapitalized I's and prints the result"""
         print('Pronouns (I\'s)')
         print(_re.findall('.{6} i .{6}', self.text))
 
     def find_topics(self):
-        """Returns list of topic sentences"""
+        """Finds topic sentences and prints the result"""
         print('Topic sentences')
-        print(_re.findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text))
+        print(self.get_topics())
 
     def find_wrongcaps(self):
         """Displays unexpected capitals"""
@@ -152,6 +152,10 @@ class Essay(object):
         """Returns # of sentences"""
         return len(_re.findall('\.\s', self.text))
 
+    def get_topics(self):
+        """Returns list of topic sentences"""
+        return _re.findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text)
+
     def get_word_count(self, ignore_headings=True):
         """Returns # of words"""
         lines = self.text.split('\n')
@@ -173,7 +177,7 @@ class Essay(object):
 
     def save_topics(self, filename='savedtopics.txt'):
         with open(filename, 'w') as f:
-            f.write('\n'.join(self.topics()))
+            f.write('\n'.join(self.get_topics()))
         print('Topics written to', filename)
 
 class Citation(object):
