@@ -592,7 +592,7 @@ class PollenApiClient(object):
     SOURCE_SPAN = {'weather text': 7, 'weather values': 7, 'wu poll': 4}
     SOURCE_URLS = {98105: {'weather values': URL_FACTORY.weather.with_geocode(47.654003, -122.309166).to_string(),
                            'wu poll': URL_FACTORY.wunderground \
-                                .with_location('wa', 'seattle', 'WASEATT446') \
+                                .with_location('wa', 'seattle', 'KWASEATT446') \
                                 .with_query_params({'cm_ven': 'localwx_modpollen'}) \
                                 .to_string()},
                    98684: {'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).to_string(),
