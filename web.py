@@ -246,7 +246,10 @@ class CourseCatalogUW(object):
                 header = self.pages[parts[0]].select('h1')[0].get_text()
             if not(already_set):
                 if len(found) > 0:
-                    course_list = [f.get_text() for f in found]
+                    for f in found:
+                        course_list.append({'title': f.get_text(),
+                                            'description': None,
+                                            'instructor': None})
                 else:
                     message = 'course(s) not found'
         else: # invalid department
@@ -846,6 +849,31 @@ if __name__ == '__main__':
     import traceback
 
     from clay.tests import testif
+
+    cc = CourseCatalogUW()
+    testif('UW course catalog queries general course correctly',
+        cc.query('cse 14'),
+        {'message': None,
+         'results': {'course_list':
+             [{'title': 'CSE 142 Computer Programming I (4) NW, QSR',
+               'description': None, 'instructor': None},
+              {'title': 'CSE 143 Computer Programming II (5) NW, QSR',
+               'description': None, 'instructor': None}],
+         'header': None}})
+    testif('UW course catalog queries specific course correctly',
+        cc.query('cse 142'),
+        {'message': None,
+         'results': {'course_list':
+            [{'title': 'CSE 142 Computer Programming I (4) NW, QSR',
+              'description': 'Basic programming-in-the-small abilities '
+                  'and concepts including procedural programming (methods, '
+                  'parameters, return, values), basic control structures '
+                  '(sequence, if/else, for loop, while loop), file processing, '
+                  'arrays, and an introduction to defining objects. Intended '
+                  'for students without prior programming experience. Offered: '
+                  'AWSpS.',
+              'instructor': None}],
+         'header': None}})
 
     print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
                                              return_speed=True), 'bytes per second')
