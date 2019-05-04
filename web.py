@@ -350,6 +350,63 @@ class HtmlBuilder(object):
     def to_string(self):
         return self.builder
 
+class TagFinder(object):
+    """Class TagFinder can be used to find and store elements
+       from a given web page or markup"""
+
+    def __init__(self, page):
+        """Initalizes this TagFinder object"""
+        self.request = None
+        if type(page) == bytes:
+            self.src = page
+        elif _os.path.exists(page):
+            with open(page, 'rb') as fp:
+                self.src = fp.read()
+        else:
+            betterheaders = WEB_HDRS.copy()
+            self.request = _requests.get(page, headers=betterheaders)
+            if not(self.request.content.startswith(b'<')):
+                betterheaders.pop('Accept-Encoding')
+                self.request = _requests.get(page, headers=betterheaders)
+            self.src = self.request.content
+        self.page = page
+        self.soup = _BS(self.src, 'html.parser')
+
+    def find(self, tag, method='find_all'):
+        self.__found = eval('self.soup.{}("{}")'.format(method, tag))
+        if len(self.__found) == 0:
+            print('No tags matching "{}" found'.format(tag))
+        return self.__found
+
+    def show(self, attribute='text', file=_sys.stdout):
+        print('Tags:', file=file)
+        for i in self.__found:
+            try:
+                if attribute == 'text':
+                    print(i.get_text(), file=file)
+                elif attribute == 'string':
+                    print(i.string, file=file)
+                else:
+                    print(i[attribute], file=file)
+            except KeyError as e:
+                print('Key', e, 'for', i, 'not found')
+        if len(self.__found) == 0:
+            print('None', file=file)
+
+    def store_request(self, filename):
+        assert type(self.src) == bytes
+        with open(filename, 'wb') as fp:
+            fp.write(self.src)
+
+    def store_tags(self, filename, inner='text'):
+        try:
+            with open(filename, 'w') as fp:
+                self.show(inner=inner, file=fp)
+            if _os.path.exists(filename):
+                print('TagFinder store successful')
+        except Exception as e:
+            print('TagFinder store failed: {}'.format(e))
+
 class UrlBuilder(object):
 
     def __init__(self, base):
@@ -768,63 +825,6 @@ class PollenApiClient(object):
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
 
-class TagFinder(object):
-    """Class TagFinder can be used to find and store elements
-       from a given web page or markup"""
-
-    def __init__(self, page):
-        """Initalizes this TagFinder object"""
-        self.request = None
-        if type(page) == bytes:
-            self.src = page
-        elif _os.path.exists(page):
-            with open(page, 'rb') as fp:
-                self.src = fp.read()
-        else:
-            betterheaders = WEB_HDRS.copy()
-            self.request = _requests.get(page, headers=betterheaders)
-            if not(self.request.content.startswith(b'<')):
-                betterheaders.pop('Accept-Encoding')
-                self.request = _requests.get(page, headers=betterheaders)
-            self.src = self.request.content
-        self.page = page
-        self.soup = _BS(self.src, 'html.parser')
-
-    def find(self, tag, method='find_all'):
-        self.__found = eval('self.soup.{}("{}")'.format(method, tag))
-        if len(self.__found) == 0:
-            print('No tags matching "{}" found'.format(tag))
-        return self.__found
-
-    def show(self, attribute='text', file=_sys.stdout):
-        print('Tags:', file=file)
-        for i in self.__found:
-            try:
-                if attribute == 'text':
-                    print(i.get_text(), file=file)
-                elif attribute == 'string':
-                    print(i.string, file=file)
-                else:
-                    print(i[attribute], file=file)
-            except KeyError as e:
-                print('Key', e, 'for', i, 'not found')
-        if len(self.__found) == 0:
-            print('None', file=file)
-
-    def store_request(self, filename):
-        assert type(self.src) == bytes
-        with open(filename, 'wb') as fp:
-            fp.write(self.src)
-
-    def store_tags(self, filename, inner='text'):
-        try:
-            with open(filename, 'w') as fp:
-                self.show(inner=inner, file=fp)
-            if _os.path.exists(filename):
-                print('TagFinder store successful')
-        except Exception as e:
-            print('TagFinder store failed: {}'.format(e))
-
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
         super(ZipCodeNotFoundException, self).__init__(repr(self), *args, **kwargs)
@@ -875,6 +875,20 @@ if __name__ == '__main__':
               'instructor': None}],
          'header': None}})
 
+    print()
+    print('ANCHORS')
+    print(find_anchors(TEST_LINK, internal=False))
+    print()
+
+    we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
+    testif('best music school list contains 21 elements', we1.find('h3'), 21, len)
+    we1.show()
+    print()
+    we2 = TagFinder(TEST_LINK)
+    we2.find('a')
+    we2.show(attribute='href')
+
+    print()
     print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
                                              return_speed=True), 'bytes per second')
     print()
@@ -888,17 +902,6 @@ if __name__ == '__main__':
     testif('returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
     testif('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
-    we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
-    testif('best music school list contains 21 elements', we1.find('h3'), 21, len)
-    we1.show()
-    we2 = TagFinder(TEST_LINK)
-    we2.find('a')
-    we2.show(attribute='href')
-    print()
-    print('ANCHORS')
-    print(find_anchors(TEST_LINK, internal=False))
-    print()
-
     p = PollenApiClient('weather text')
     p.print_db()
     p.set_source('weather values')
