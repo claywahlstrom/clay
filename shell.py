@@ -37,7 +37,7 @@ if len(RUNTIME_ARGS[0]) == 0:
 
 TIMEOUT_CMD = 'sleep ' if is_unix() else 'timeout '
 
-TRASH = _os.path.join(HOME_DIR, 'Desktop', 'TRASH')
+TRASH = _os.path.join(HOME_DIR, 'Desktop', 'clay-trash')
 
 cd = _os.chdir # alias
 
