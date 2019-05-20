@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
     import os
 
-    os.chdir('tests')
+    os.chdir('test_files')
 
     att = Attendance(0.75, 11.0, 'OR', offset=3)
     att.remove_breaks(lunches=True)

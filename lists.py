@@ -107,7 +107,7 @@ if __name__ == '__main__':
         join_lines(TEST_LIST),
         'h, e, l, l, o')
     printall(TEST_LIST)
-    printlines('essay.txt', 4)
+    printlines(r'test_files\essay.txt', 4)
     testif('rmdup removes duplicates correctly',
         rmdup(TEST_LIST),
         ['h', 'e', 'l', 'o'])
