@@ -881,9 +881,7 @@ if __name__ == '__main__':
     print()
 
     we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
-    testif('best music school list contains 21 elements', we1.find('h3'), 21, len)
-    we1.show()
-    print()
+    testif('best music school list contains 21 elements', len(we1.find('h3')), 21)
     we2 = TagFinder(TEST_LINK)
     we2.find('a')
     we2.show(attribute='href')
