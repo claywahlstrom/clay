@@ -10,9 +10,6 @@ import os as _os
 
 class JsonRepository(object):
 
-    LIST = []
-    DICT = {}
-
     def __init__(self, name, empty):
         """Intializes this JSON repository with the given name
            and empty database structure"""
@@ -22,7 +19,7 @@ class JsonRepository(object):
         self.clear()
 
     def _ensure_connected(self):
-        if not(self.__has_read):
+        if not self.__has_read:
             raise RuntimeError('database has not been read')
 
     def clear(self):
@@ -34,7 +31,7 @@ class JsonRepository(object):
            a boolean of whether the creation was success or not.
            Use force=True if this database exists to clear
            its contents."""
-        if force or not(_os.path.exists(self.__name)):
+        if force or not _os.path.exists(self.__name):
             self.clear()
             if write:
                 self.write()
@@ -80,7 +77,7 @@ class JsonRepository(object):
         temp = self.__db.copy() # prevents concurrent modification errors
         for entity in self.__db:
             if predicate(entity):
-                print('Pruning {} from db "{}"...'.format(entity, self.__name))
+                print('{}: pruning "{}"...'.format(self.__name, entity))
                 if type(temp) == dict:
                     temp.pop(entity)
                 else: # type(temp) == list
@@ -135,9 +132,9 @@ class CrudRepository(JsonRepository):
         if pk in self.db:
             self.db.pop(pk)
             self.write()
-            print('user entry for pk', pk, 'removed')
+            print('{}: pk "{}" deleted'.format(self.name, pk))
         else:
-            print('user pk not found')
+            print('{}: pk "{}" not found'.format(self.name, pk))
 
     def update(self, pk, model):
         """Updates the given primary key within this repository"""
@@ -147,7 +144,7 @@ class CrudRepository(JsonRepository):
         for attr in model.get_attributes():
             self.db[pk][attr] = getattr(model, attr)
 
-        print('pk', pk, 'updated')
+        print('{}: pk "{}" updated'.format(self.name, pk))
 
     def update_prop(self, pk, prop, value):
         """Updates the value of the property for the given primary
@@ -159,7 +156,7 @@ class CrudRepository(JsonRepository):
     def write(self):
         self._ensure_connected()
         super(CrudRepository, self).write()
-        print('database "{}" written'.format(self.name))
+        print('{}: database written'.format(self.name))
 
 class UserRepository(CrudRepository):
 
@@ -174,7 +171,7 @@ class UserRepository(CrudRepository):
             days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
             if _dt.datetime.strptime(temp[pk][date_prop], date_format) <= days_ago:
                 modified = True
-                print('Pruning {}...'.format(pk))
+                print('{}: pruning {}...'.format(self.name, pk))
                 temp.pop(pk)
         self.db = temp
         if modified:
@@ -215,7 +212,7 @@ if __name__ == '__main__':
 
     from clay.tests import testif
 
-    js1 = JsonRepository('README.md', JsonRepository.DICT)
+    js1 = JsonRepository('README.md', {})
     js2 = JsonRepository('README.mda', [])
     
     testif('initializes new json repo with correct empty structure', js1.empty, {})
