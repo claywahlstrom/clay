@@ -78,7 +78,7 @@ class ReadingTimer(object):
         return projected + ' left'
 
     def human_report_total(self):
-        total_sec = self.seconds_left(total=True)
+        total_sec = self.seconds_total()
         if total_sec < 60:
             total = str(round(total_sec, 2)) + ' TOTAL seconds'
         else:
