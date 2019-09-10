@@ -212,7 +212,8 @@ class JavaCompiler(Compiler):
 def locate_script():
     """Locates and changes to the current script\'s directory"""
     dir_name = _os.path.dirname(RUNTIME_ARGS[0])
-    _os.chdir(dir_name)
+    if dir_name:
+        _os.chdir(dir_name)
 
 ls = _os.listdir # alias
 
