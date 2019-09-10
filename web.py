@@ -34,6 +34,7 @@ LINKS = {}
 LINK_SIZES = list(str(n) + 'MB' for n in [1, 2, 5, 10, 20, 50, 100, 200, 512])
 for n in LINK_SIZES:
     LINKS[n] = 'http://download.thinkbroadband.com/' + str(n) + '.zip'
+del n
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 TEST_LINK = 'https://minecraft.net/en-us/'
@@ -449,7 +450,8 @@ class WebDocument(object):
         return 'WebDocument(uri=%s)' % self.__raw_uri
 
     def download(self, title='', full_title=False, destination='.',
-                 log_name='webdoc-dl.log', return_speed=False):
+                 log_name='webdoc-dl.log', return_speed=False,
+                 headers=WEB_HDRS):
         """Downloads data from the document uri and logs revelant
            information in this directory"""
 
@@ -481,7 +483,7 @@ class WebDocument(object):
                 query += '&' + '&'.join((key + '=' + val for key, val in self.__query.items()))
 
         fp = open(title, 'wb')
-        print('Retrieving "{}"...\n    Title: {}\n    Query: {}...'.format(url, title, query))
+        print('Retrieving "{}"...\n    Title: {}\n    Query: {}'.format(url, title, query))
         try:
             print('    Size :', end=' ')
             if not('.' in title) or 'htm' in title or 'php' in title: # small file types (pages)
@@ -494,7 +496,7 @@ class WebDocument(object):
                 fp.write(response.text.encode('utf-8'))
                 fp.close()
             else: # larger file types
-                response = _requests.get(url, params=query, headers=WEB_HDRS, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
+                response = _requests.get(url, params=query, headers=headers, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
                 if response.status_code != 200:
                     raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
                 before = _time.time() # start timer
@@ -528,7 +530,7 @@ class WebDocument(object):
             taken = _time.time() - before
             print('\nComplete. Took {}s'.format(round(taken, 2)))
             if not _is_idle():
-                set_title('Completed {}'.format(title))
+                set_title('Downloaded {}'.format(title))
             log_string = '[{}] {} of {} bytes @ {}\n'.format(url, title, size, _dt.datetime.today())
         finally:
             if not(fp.closed):
@@ -608,6 +610,7 @@ class WebDocument(object):
         self.__uri = urllib.parse.urlsplit(uri)
 
     def size(self):
+        """Returns the size of this document in bytes"""
         response = _requests.head(self.__raw_uri, headers=WEB_HDRS)
         if 'Content-Length' in response.headers:
             size = int(response.headers['Content-Length'])
