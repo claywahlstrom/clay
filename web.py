@@ -28,6 +28,7 @@ from clay.shell import \
     is_unix as _is_unix
 
 CHUNK_CAP = int(1e6) # 1MB
+DEFAULT_BROWSER = 'firefox'
 
 # download links for testing
 LINKS = {}
@@ -38,7 +39,7 @@ del n
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 TEST_LINK = 'https://minecraft.net/en-us/'
-
+VALID_SCHEMES = ('ftp', 'http', 'https')
 WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
            #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
            'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -442,7 +443,7 @@ class WebDocument(object):
 
     """Can be used to work with files and URIs hosted on the web"""
 
-    def __init__(self, uri):
+    def __init__(self, uri=None):
         self.set_uri(uri)
         self.set_query(None)
 
@@ -591,7 +592,7 @@ class WebDocument(object):
     def raw_uri(self):
         return self.__raw_uri
 
-    def launch(self, browser='firefox'):
+    def launch(self, browser=DEFAULT_BROWSER):
         """Opens this document's `uri` in your favorite browser"""
         if _is_unix():
             _call(['google-chrome', self.uri], shell=True)
@@ -605,7 +606,13 @@ class WebDocument(object):
         self.__query = query
 
     def set_uri(self, uri):
-        """Sets the uri to the given string"""
+        """Sets the uri to the given string. Raises ValueError
+           if the uri scheme is not supported"""
+        if uri is not None:
+            if type(uri) != str:
+                raise TypeError('uri must of type str')
+            elif not any(uri.startswith(scheme) for scheme in VALID_SCHEMES):
+                raise ValueError('uri must have a ftp or http[s] scheme')
         self.__raw_uri = uri
         self.__uri = urllib.parse.urlsplit(uri)
 
@@ -890,18 +897,25 @@ if __name__ == '__main__':
     we2.show(attribute='href')
 
     print()
+    testif('webdoc sets uri correctly for empty uri', \
+        WebDocument().raw_uri, None)
+    for scheme in VALID_SCHEMES:
+        testif('webdoc sets uri correctly for valid uri ({})'.format(scheme), \
+            WebDocument(scheme).raw_uri, scheme)
+    testif('webdoc raises exception for invalid uri scheme', \
+        lambda: WebDocument('test'), None, raises='ValueError')
     print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
                                              return_speed=True), 'bytes per second')
     print()
-    testif('returns basename and query', \
+    testif('webdoc returns basename and query', \
         WebDocument('https://www.minecraft.net/change-language?next=/en/') \
             .get_basename(full=False), \
         ('change-language', 'next=/en/'))
-    testif('returns full name and no query', \
+    testif('webdoc returns full name and no query', \
         WebDocument(LINKS['1MB']).get_basename(full=True), \
         ('download.thinkbroadband.com.1MB.zip', None))
-    testif('returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
-    testif('returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
+    testif('webdoc returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
+    testif('webdoc returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
     print()
     p = PollenApiClient('weather text')
     p.print_db()
@@ -910,14 +924,7 @@ if __name__ == '__main__':
     p.build()
     p.print_db()
 
-    print('The next two tests will throw exceptions.')
-    try:
-        p.set_source('wrong source')
-    except Exception:
-        traceback.print_exception(*_sys.exc_info())
-    print()
-    try:
-        p.set_zipcode(97132)
-    except Exception:
-        traceback.print_exception(*_sys.exc_info())
-
+    testif('pollen throws exception for invalid source', \
+        lambda: p.set_source('invalid source'), None, raises='ValueError')
+    testif('pollen throws exception for invalid zipcode', \
+        lambda: p.set_zipcode(97132), None, raises='ZipCodeNotFoundException')
