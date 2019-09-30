@@ -51,16 +51,19 @@ def cubrt(x):
     return round(x ** (1/3), 12)
 
 def differential(f, x, deltax=1e-12):
-    """Returns the slope of the given function at the point x.
-       A deltax of 1e-12 or 1e-11 works best."""
+    """Returns the slope of the given function at the point x
+       using the midpoint method. A deltax of 1e-12 or 1e-11
+       works best."""
 
     # the following formula is the average between the slopes using
     # the right limit [(f(x + deltax) - f(x)) / deltax] and
     # the left limit [(f(x) - f(x - deltax)) / deltax]
     return (f(x + deltax) - f(x - deltax)) / (2 * deltax)
+
+dfdx = differential # alias
     
 def factors(number):
-    """Returns a list of factors for the given int"""
+    """Returns a mapping of factors for the given int"""
     if type(number) != int:
         raise TypeError('number must be an int')
     factors = {}
@@ -70,6 +73,7 @@ def factors(number):
     return factors
 
 def print_fraction(fraction):
+    """Prints the the given Fraction in a pretty manner"""
     if type(fraction).__name__ != 'Fraction':
         raise TypeError('fraction must be of type Fraction, found %s' % type(fraction).__name__)
     num = fraction.numerator
@@ -78,11 +82,11 @@ def print_fraction(fraction):
     print('-' * len(str(max(num, den))))
     print(den)
 
-def integral(func, interval=None, rects=100000):
-    """Returns the integral from the inclusive tuple (a, b) using
-       a Riemann sum approximation"""
-    if interval is None:
-        interval = eval(input("Interval (a, b): "))
+def integrate(func, interval=None, rects=100000):
+    """Returns the result of the integral from the inclusive
+       interval (a, b) using a Riemann sum approximation"""
+    if interval is None or type(interval) != tuple:
+        interval = eval(input('Interval (a, b): '))
     a, b = interval
     if a > b:
         print('note: the calculated area will be negative')
@@ -90,12 +94,13 @@ def integral(func, interval=None, rects=100000):
         rects = b - a
     area = 0
     x = a
+    dx = (b - a) / rects
     for n in range(rects):
         try:
-            area += func(x) * ((b - a) / rects)
+            area += func(x) * dx
         except Exception as e:
             print('Error:', e)
-        x += (b - a) / rects
+        x += dx
     return area
 
 def liminf(func, i=1, step_mag=False, logging=None):
@@ -178,7 +183,7 @@ def limit(func, num=0, side=None, step=0.1, dist=1):
         return lims
 
 def max_M(func, interval):
-    """Returns the max M of the given function on the closed interval"""
+    """Returns the max M of the given function on a closed interval"""
     if type(interval) not in (list, tuple):
         raise TypeError('interval must be an iterable')
     if len(interval) != 2:
@@ -290,7 +295,7 @@ def roots_approx(positive, initial_guess, dp=0, isclose_dp=9):
     """
 
     def negative(x):
-        """Returns the complimenting negative value for the polynomial
+        """Returns the complementing negative value for the polynomial
            function"""
         return -positive(x)
 
@@ -379,7 +384,7 @@ if __name__ == '__main__':
     print('Printing fraction 3/39...')
     print_fraction(Fraction(3, 39))
     testif('integral of inverse trig from 0 to 1 returns correct value',
-        integral(TESTS['invtrig'], (0, 1)), 1.0,
+        integrate(TESTS['invtrig'], (0, 1)), 1.0,
         transformer=lambda x: round(x, 4))
     testif('limit of harmonic function returns correct value close to 0.5',
         limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2), 0.5,
@@ -406,11 +411,9 @@ if __name__ == '__main__':
     testif('Newton\'s method returns correct root',
         roots_newtons_method(TESTS['quadratic'], 10), -1.0,
         transformer=lambda x: round(x, 4))
-    try:
-        print('Newton\'s method throws RuntimeError when no roots founds')
-        roots_newtons_method(TESTS['quadratic2'], 10)
-    except Exception as e:
-        print('Exception: %s' % e)
+    testif('Newton\'s method throws RuntimeError when no root found',
+        lambda: roots_newtons_method(TESTS['quadratic2'], 10), None,
+        raises='RuntimeError')
 
     testif('round_qty rounds scalar value correctly',
         round_qty(0.00009), 0.0001)
