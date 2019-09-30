@@ -210,15 +210,22 @@ def nchoosek(n, k):
     
 class Polar(object):
     """Class Polar can be used to convert from polar to cartesian"""
-    def __init__(self, radius, angle):
+    def __init__(self, radius, theta, phi=math.pi/2):
         self.radius = radius
-        self.angle = angle
+        self.theta = theta
+        self.phi = phi
 
-    def get_x(self):
-        return self.radius * math.cos(self.angle)
-        
-    def get_y(self):
-        return self.radius * math.sin(self.angle)
+    @property
+    def x(self):
+        return round(self.radius * math.sin(self.phi) * math.cos(self.theta), 12)
+
+    @property
+    def y(self):
+        return round(self.radius * math.sin(self.phi) * math.sin(self.theta), 12)
+
+    @property
+    def z(self):
+        return round(self.radius * math.cos(self.phi), 12)
         
 class Radical(object):
 
