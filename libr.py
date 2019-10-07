@@ -30,7 +30,7 @@ TEST_LINKS = [
     'http://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/organic-food/art-20043880'
     'http://www.eufic.org/article/en/health-and-lifestyle/food-choice/artid/social-economic-determinants-food-choice/'
 ]
-             
+
 
 class Essay(object):
     """Class Essay can be used for storing and analyzing essays.
@@ -69,7 +69,7 @@ class Essay(object):
     def __repr__(self):
         preview = self.source[:20].replace('\n', '\\n')
         return 'Essay(source={{{}...}}, line_start={})'.format(preview, self.line_start)
-        
+
     def are_paren_bal(self):
         """Finds if parentheses are balanced, returns boolean"""
         return self.text.count('(') == self.text.count(')')
@@ -189,9 +189,9 @@ class Citation(object):
        # container
        # date
        # url
-       
+
        # follows MLA 8 standards
-       
+
        Data is stored as a dictionary in the object's `data` attribute
 
     """
@@ -277,6 +277,18 @@ def define(words):
     except:
         print('No definitions found on', inituri)
 
+def proper_title(title):
+    """Returns the title with proper casing"""
+    words = title.split(' ')
+    title = ' '.join(map(proper_word, words))
+    return title[0].upper() + title[1:]
+
+def proper_word(word):
+    """Returns the word with proper casing"""
+    if word.lower() not in SHORT_WORDS:
+        return word.capitalize()
+    return word.lower()
+
 def sort_bib(filename):
     """Sorts a bibliography lexicographically, no stdout required.
        You need to sort quoted titles manually though"""
@@ -290,29 +302,9 @@ def sort_bib(filename):
     with open('sorted_' + filename, 'w') as cont:
         cont.write(content)
 
-class Title(object):
-    """Class Title can be used to create proper titles"""
-
-    def __init__(self, title):
-        self.title = title
-
-    def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.title)
-
-    def __xcaptilize(self, word):
-        if word.lower() not in SHORT_WORDS:
-            return word.capitalize()
-        return word.lower()
-
-    def get(self):
-        words = self.title.split(' ')
-        title = ' '.join(map(self.__xcaptilize, words))
-        return title[0].upper() + title[1:]
-
-    def set(self, title):
-        self.title = title
-
 if __name__ == '__main__':
+
+    from clay.tests import testif
 
     with open(r'test_files\essay.txt') as fp:
         fread = fp.read()
@@ -334,5 +326,10 @@ if __name__ == '__main__':
 
     define('vector quantity')
 
-    bt = Title('the best hot dog on a stick')
-    print(bt.get())
+    testif('proper_word converts short word "hi" correctly',
+        proper_word('hello'), 'Hello')
+    testif('proper_word converts short word "a" correctly',
+        proper_word('a'), 'a')
+    testif('proper_title converts title correctly',
+        proper_title('the best hot dog on a stick'),
+        'The Best Hot Dog on a Stick')
