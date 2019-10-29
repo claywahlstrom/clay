@@ -677,12 +677,12 @@ class PollenApiClient(object):
     TYPES = ('grass', 'ragweed', 'tree')
     WEATHER_QUERY_PARAMS = ':4:US'
 
-    def __init__(self, source, zipcode=98105, print_sources=True):
+    def __init__(self, source, zipcode, print_sources=True):
         """Constructs a new PollenApiClient object using the given source and zipcode"""
         self.zipcode = zipcode
-        self.print_sources = print_sources
         self.source = source
         self.set_zipcode(zipcode)
+        self.print_sources = print_sources
         self.__has_built = False
         self.build()
 
