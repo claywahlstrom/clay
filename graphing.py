@@ -48,11 +48,7 @@ class Graph(object):
         return '%s(%r)' % (self.__class__.__name__, list(self.sd.items()))
 
     def build(self, limit=0, shorten_keys=False, with_count=False):
-        if type(list(self.sd.keys())[0]) == str:
-            longest_key_len = max(map(len, map(str, list(self.sd.keys()))))
-        else: # for ints and floats
-            # longest str repr of a number
-            longest_key_len = len(str(max(list(self.sd.keys()))))
+        longest_key_len = max(map(lambda key: len(str(key)), list(self.sd.keys())))
         base_longest_key_len = longest_key_len
         if all(type(x) == int for x in self.sd.values()):
             # if integers, just print out one per count
@@ -145,13 +141,14 @@ class Histogram(Graph):
 
 def tabulate(dictionary, name=''):
     """Prints a basic table from the given dictionary called `name`"""
-    assert type(dictionary) != list
+    if not hasattr(dictionary, 'keys'):
+        raise TypeError('dictionary must derive from type dict')
     if len(name) > 0:
         print(name.upper())
         print('-' * 30)
-    largestlen = max(map(len, list(dictionary.keys())))
+    largestlen = max(map(lambda key: len(str(key)), list(dictionary.keys())))
     for i in dictionary:
-        print(str(i) + ' ' * (largestlen - len(i)), ':', dictionary[i])
+        print('{:{}} : {}'.format(i, largestlen, dictionary[i]))
 
 def tabulatef(func, start=-5, end=5, step=1, spacing=9,
               precision=10, roundto=14, file=_sys.stdout):
