@@ -9,8 +9,8 @@ import requests as _requests
 import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
+from clay.libr import replace_smart_quotes
 from clay.web import WEB_HDRS as _WEB_HDRS
-
 
 class ContentWatcher(object):
 
@@ -56,7 +56,7 @@ class File(object):
                     pass
             else:
                 raise FileNotFoundError(name)
-        
+
         self.name = name
 
     def append(self, string):
@@ -78,7 +78,7 @@ class File(object):
         with open(self.name) as fp:
             fcount = fp.read().count(char)
         return fcount
-    
+
     def get_content(self, binary=False):
         """Returns the content of this file"""
         mode = 'r'
@@ -98,12 +98,10 @@ class File(object):
         """Parses this by the given delimiter and returns the resulting list"""
         with open(self.name, mode) as fp:
             content = fp.read()
-
         if strip:
             content = content.strip()
-        spl = content.split(delim)
-        return spl
-    
+        return content.split(delim)
+
     def print(self):
         """Prints the binary contents of this file"""
         with open(self.name, 'rb') as fp:
@@ -188,17 +186,15 @@ class FileSizeReport(object):
         return lst
 
 def fix_quotes(filename):
-    """Replaces UTF-8 quotes with ANSI ones"""
+    """Replaces smart quotes with straight ones for the given filename"""
     try:
         fp = open(filename,'rb+')
         fread = fp.read()
         fp.seek(0)
-        fread = fread.replace(b'\xe2\x80', b'')
-        for i in (b'\x93', b'\x94', b'\x9c', b'\x9d'):
-            fread = fread.replace(i, b'"')
+        fread = replace_smart_quotes(fread)
         fp.write(fread)
         fp.truncate() # adds str terminator
-        print('FixQuotes complete')
+        print('Quotes fixed')
     except Exception as e:
         print('Error:', e)
     finally:

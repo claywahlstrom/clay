@@ -31,7 +31,6 @@ TEST_LINKS = [
     'http://www.eufic.org/article/en/health-and-lifestyle/food-choice/artid/social-economic-determinants-food-choice/'
 ]
 
-
 class Essay(object):
     """Class Essay can be used for storing and analyzing essays.
        Converts the given line separator to single carriage returns
@@ -44,7 +43,7 @@ class Essay(object):
         self.line_sep = line_sep
         end = '\n\n' # default
         if type(source) == bytes:
-            if b'\x0c' in text:
+            if b'\x0c' in source:
                 end = '\x0c' # google doc's new page delimiter
             source = source.decode('utf8')
         self.source = source.replace(line_sep, '\n') # for easier parsing
@@ -119,9 +118,7 @@ class Essay(object):
 
     def fix_quotes(self):
         """Replaces curly quotes with straight ones"""
-        for double in ('\x9c', '\x9d'):
-            self.text = self.text.replace('\xe2\x80' + double, '"')
-        self.text = self.text.replace('\xe2\x80\x99', "'")
+        self.text = replace_smart_quotes(self.text)
 
     def fix_spaces(self):
         """Replaces improper spacing"""
@@ -150,7 +147,7 @@ class Essay(object):
 
     def get_sentence_count(self):
         """Returns # of sentences"""
-        return len(_re.findall('\.\s', self.text))
+        return len(_re.findall('\.\s', replace_smart_quotes(self.text).replace('"', '')))
 
     def get_topics(self):
         """Returns list of topic sentences"""
@@ -288,6 +285,15 @@ def proper_word(word):
     if word.lower() not in SHORT_WORDS:
         return word.capitalize()
     return word.lower()
+
+def replace_smart_quotes(text, encoding='utf8'):
+    """Replaces smart single and double quotes with straight ones"""
+    encoded = text.encode(encoding)
+    for single in (b'\x98', b'\x99'):
+            encoded = encoded.replace(b'\xe2\x80' + single, b'\'')
+    for double in (b'\x93', b'\x94', b'\x9c', b'\x9d'):
+            encoded = encoded.replace(b'\xe2\x80' + double, b'"')
+    return encoded.decode(encoding)
 
 def sort_bib(filename):
     """Sorts a bibliography lexicographically, no stdout required.
