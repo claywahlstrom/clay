@@ -74,13 +74,14 @@ class Search(object):
                         flag = False
                         try:
                             if self.method.startswith('cont'):
-
                                 with open(_os.path.join(root, f), encoding='latin-1') as fp:
                                     text = fp.read()
                                 flag = len(findall(self.string, text)) > 0
-
                             elif self.method.startswith('name'):
                                 flag = findall(self.string, f)
+                        except PermissionError as e:
+                            print() # flush stdout
+                            print(e)
                         except Exception as e:
                             print() # flush stdout
                             input(e)
@@ -131,7 +132,7 @@ class Search(object):
                                                                                 self.ext))
             fp.write(self.raw_text)
 
-def print_containing_files(string, directories, ext=None):
+def print_files_containing(string, directories, ext=None):
     """Given a string, directory(ies), and optional extension,
        prints the search results for the files containing the
        string"""
