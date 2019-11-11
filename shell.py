@@ -20,7 +20,12 @@ def is_idle():
 def is_powershell():
     """Returns true if the script is running within PowerShell,
        false otherwise"""
-    return len(_sys.argv[0]) > 0 and (not((':' in _sys.argv[0])) or _sys.argv[0].startswith('.'))
+    return not is_idle() and not is_launcher()
+
+def is_launcher():
+    """Returns true if the script is running within the Python launcher (python.exe),
+       false otherwise"""
+    return not is_idle() and (_sys.argv[0] == 'python.exe' or not _sys.argv[0].startswith('.'))
 
 def is_unix():
     """Returns true if the script is running within a Unix machine,
@@ -281,7 +286,7 @@ def ren_all(old, new, directory=_os.curdir):
 def rm(path):
     """Moves the file with the given path to the trash"""
     rm_item(*_os.path.split(_os.path.abspath(path)))
-    
+
 def rm_all(criteria, directory=_os.curdir, prompt=True):
     """Moves all files of the given criteria to to the trash"""
     if prompt:
@@ -323,7 +328,7 @@ def rm_item(directory, name):
 
     from shutil import move
     from clay.shell import rm_dir
-    
+
     if not(_os.path.exists(TRASH)):
         _os.mkdir(TRASH)
 
