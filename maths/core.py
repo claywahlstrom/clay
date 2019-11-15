@@ -61,7 +61,7 @@ def differential(f, x, deltax=1e-12):
     return (f(x + deltax) - f(x - deltax)) / (2 * deltax)
 
 dfdx = differential # alias
-    
+
 def factors(number):
     """Returns a mapping of factors for the given int"""
     if type(number) != int:
@@ -106,7 +106,7 @@ def integrate(func, interval=None, rects=100000):
 def liminf(func, i=1, step_mag=False, logging=None):
     """Returns the limit to +infinity. Handles division by zero
        and divergent funcs"""
-       
+
     if logging is not None:
         if type(logging) == str:
             file = open(logging, 'w')
@@ -195,7 +195,7 @@ def max_M(func, interval):
         if abs(func(m)) > mval:
             m = i
             mval = abs(func(m))
-    return m        
+    return m
 
 def multiplicity(q, N):
     """Returns the multiplicity Omega given the number of objects
@@ -207,7 +207,7 @@ def nchoosek(n, k):
     if n < k:
         return 0
     return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))
-    
+
 class Polar(object):
     """Class Polar can be used to convert from polar to cartesian"""
     def __init__(self, radius, theta, phi=math.pi/2):
@@ -226,7 +226,7 @@ class Polar(object):
     @property
     def z(self):
         return round(self.radius * math.cos(self.phi), 12)
-        
+
 class Radical(object):
 
     """Class Radical can be used to simplify radicals
@@ -379,7 +379,7 @@ def series_sum(f, a=1, b=None, logging=True):
     else:
         print("Series doesn't converge")
         return None
-        
+
 if __name__ == '__main__':
 
     from fractions import Fraction
@@ -404,7 +404,7 @@ if __name__ == '__main__':
     testif('limit to infinity for converging function is 0.0',
         liminf(TESTS['harmonic'], step_mag=True,
             logging=LIMPATH_FMT.format('harmonic')), 0.0)
-    
+
     testif('multiplicity returns correct quantity for (4, 3)',
         multiplicity(4, 3), 15)
 
@@ -420,7 +420,7 @@ if __name__ == '__main__':
         transformer=lambda x: round(x, 4))
     testif('Newton\'s method throws RuntimeError when no root found',
         lambda: roots_newtons_method(TESTS['quadratic2'], 10), None,
-        raises='RuntimeError')
+        raises=RuntimeError)
 
     testif('round_qty rounds scalar value correctly',
         round_qty(0.00009), 0.0001)

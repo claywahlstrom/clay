@@ -28,8 +28,8 @@ def testif(expectation, test_input, test_output, raises=None, transformer=lambda
        given test input to the test output. Test output may either
        be a value or function accepting one argument."""
     if type(test_input).__name__ == 'function' and raises is not None: # lambda expressions
-        if type(raises) != str:
-            raise TypeError('raises must be of type string')
+        if type(raises) != type:
+            raise TypeError('raises must be an error type')
         has_raised = False
         is_correct_type = False
         ex_raised = None
@@ -37,7 +37,7 @@ def testif(expectation, test_input, test_output, raises=None, transformer=lambda
             test_input()
         except Exception as ex:
             has_raised = True
-            ex_raised = ex.__class__.__name__
+            ex_raised = ex.__class__
             if ex_raised == raises:
                 is_correct_type = True
                 _show_success(expectation)
@@ -54,6 +54,7 @@ def testif(expectation, test_input, test_output, raises=None, transformer=lambda
             _show_failure(expectation, test_output, result)
 
 if __name__ == '__main__':
+
     testif('testif passes test for equal values', 0, 0)
     print('The next test should fail')
     testif('testif passes test for unequal values', 0, 1)
@@ -63,7 +64,11 @@ if __name__ == '__main__':
         testif('testif passes test for raising division error', lambda: 0 / 0, None)
     except ZeroDivisionError: # pseudo branch
         print('Passed: testif passes test for raising division error when not specified')
-    testif('testif passes test for raising division error when specified', lambda: 0 / 0, None, raises='ZeroDivisionError')
+    try:
+        testif('testif raises TypeError for invalid error type', lambda: None, None, raises='NotAnError')
+    except TypeError:
+        print('Passed: testif raises TypeError for invalid error type')
+    testif('testif passes test for raising division error when specified', lambda: 0 / 0, None, raises=ZeroDivisionError)
     print('The next test should fail')
-    testif('testif passes test for not raising division error when specified', lambda: 0 / 1, None, raises='ZeroDivisionError')
+    testif('testif passes test for not raising division error when specified', lambda: 0 / 1, None, raises=ZeroDivisionError)
     testif('testif passes test for lambda expression without error', lambda: 1 / 1, 1)

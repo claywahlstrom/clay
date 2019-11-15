@@ -908,7 +908,7 @@ if __name__ == '__main__':
         testif('webdoc sets uri correctly for valid uri ({})'.format(scheme), \
             WebDocument(scheme).raw_uri, scheme)
     testif('webdoc raises exception for invalid uri scheme', \
-        lambda: WebDocument('test'), None, raises='ValueError')
+        lambda: WebDocument('test'), None, raises=ValueError)
     print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
                                              return_speed=True), 'bytes per second')
     print()
@@ -929,7 +929,7 @@ if __name__ == '__main__':
         WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(headers=WEB_HDRS),
         'I tracked every minute of my life for 3 months. - YouTube')
     testif('webdoc get_html throws TypeError for invalid headers type',
-        lambda: WebDocument().get_html(['invalid', 'headers', 'type']), None, raises='TypeError')
+        lambda: WebDocument().get_html(['invalid', 'headers', 'type']), None, raises=TypeError)
     testif('webdoc returns correct basename with no query',
         WebDocument(TEST_LINK).get_basename(),
         ('index.html', None))
@@ -942,6 +942,6 @@ if __name__ == '__main__':
     p.print_db()
 
     testif('pollen throws exception for invalid source', \
-        lambda: p.set_source('invalid source'), None, raises='ValueError')
+        lambda: p.set_source('invalid source'), None, raises=ValueError)
     testif('pollen throws exception for invalid zipcode', \
-        lambda: p.set_zipcode(97132), None, raises='ZipCodeNotFoundException')
+        lambda: p.set_zipcode(97132), None, raises=ZipCodeNotFoundException)
