@@ -24,13 +24,13 @@ def cross(v1, v2):
     k = v1[0] * v2[1] - v2[0] * v1[1]
     return [i, -j, k]
 
-def dot(vector1, vector2, angle):
-    """Returns the dot product of two vectors at some angle theta"""
-    return mag(vector1) * mag(vector2) * math.cos(angle)
-
-def dot_comp(vector1, vector2):
+def dot(vector1, vector2):
     """Returns the dot product of two vectors using their components"""
     return sum(map(lambda x: x[0] * x[1], zip(vector1, vector2)))
+
+def dot_theta(vector1, vector2, angle):
+    """Returns the dot product of two vectors at some angle theta"""
+    return mag(vector1) * mag(vector2) * math.cos(angle)
 
 def mag(vector):
     """Returns the magnitude of the given vector"""
@@ -66,11 +66,11 @@ if __name__ == '__main__':
     testif('cross returns correct value (parallel)',
         cross([3, -3, 1], [-12, 12, -4]),
         [0, 0, 0])
-    testif('dot returns correct value',
-        dot([1, 0], [0, 1], math.pi / 2), 0,
+    testif('dot returns correct value using vector components',
+        dot([1, 2], [3, 4]), 11)
+    testif('dot_angle returns correct value',
+        dot_angle([1, 0], [0, 1], math.pi / 2), 0,
         transformer=r)
-    testif('dot_comp returns correct value using vector components',
-        dot_comp([1, 2], [3, 4]), 11)
     testif('mag returns correct magnitude',
         mag([1 / math.sqrt(3), 1 / math.sqrt(3), 1 / math.sqrt(3)]), 1)
     testif('mult returns correct vector when scaled',
