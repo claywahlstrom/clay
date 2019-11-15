@@ -10,7 +10,6 @@ import traceback as _traceback
 import urllib.request, urllib.error, urllib.parse
 
 from clay.libr import replace_smart_quotes
-from clay.web import WEB_HDRS as _WEB_HDRS
 
 class ContentWatcher(object):
 

@@ -41,7 +41,6 @@ LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 TEST_LINK = 'https://minecraft.net/en-us/'
 VALID_SCHEMES = ('ftp', 'http', 'https')
 WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
-           #'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
            'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
            'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
            'Accept-Encoding': 'gzip, deflate, br',
@@ -488,7 +487,7 @@ class WebDocument(object):
         try:
             print('    Size :', end=' ')
             if not('.' in title) or 'htm' in title or 'php' in title: # small file types (pages)
-                response = _requests.get(url, params=query, headers=WEB_HDRS)
+                response = _requests.get(url, params=query, headers=headers)
                 if response.status_code != 200:
                     raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
                 before = _time.time() # start timer
@@ -497,7 +496,7 @@ class WebDocument(object):
                 fp.write(response.text.encode('utf-8'))
                 fp.close()
             else: # larger file types
-                response = _requests.get(url, params=query, headers=headers, stream=True) # previously urllib.request.urlopen(urllib.request.Request(url, headers=WEB_HDRS))
+                response = _requests.get(url, params=query, headers=headers, stream=True)
                 if response.status_code != 200:
                     raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
                 before = _time.time() # start timer
@@ -561,12 +560,18 @@ class WebDocument(object):
         title = urllib.parse.unquote_plus(title)
         return title, url_query
 
-    def get_html(self, headers=True):
+    def get_html(self, headers=None):
         """Returns the binary response from this document's `uri`"""
-        if headers:
-            fread = _requests.get(self.__raw_uri, params=self.__query, headers=WEB_HDRS)
-        else:
-            fread = _requests.get(self.__raw_uri, params=self.__query)
+        if headers is not None:
+            if not hasattr(headers, 'keys'):
+                raise TypeError('headers must derive from type dict')
+            # remove user-agent and accept-encoding to ensure html is returned
+            # for JS rendered pages
+            headers = headers.copy()
+            for header in ('User-Agent', 'Accept-Encoding'):
+                if header in headers:
+                    headers.pop(header)
+        fread = _requests.get(self.__raw_uri, params=self.__query, headers=headers)
         return fread.content
 
     def get_response(self):
@@ -575,9 +580,9 @@ class WebDocument(object):
         response = urllib.request.urlopen(request)
         return response.read()
 
-    def get_title(self):
+    def get_title(self, headers=None):
         from clay.web import get_title
-        soup = _BS(self.get_html(), 'html.parser')
+        soup = _BS(self.get_html(headers=headers), 'html.parser')
         return get_title(soup)
 
     @property
@@ -914,10 +919,22 @@ if __name__ == '__main__':
     testif('webdoc returns full name and no query', \
         WebDocument(LINKS['1MB']).get_basename(full=True), \
         ('download.thinkbroadband.com.1MB.zip', None))
-    testif('webdoc returns Official Minecraft site html title', WebDocument(TEST_LINK).get_title(), 'Official site | Minecraft')
-    testif('webdoc returns index.html and no query', WebDocument(TEST_LINK).get_basename(), ('index.html', None))
+    testif('webdoc returns correct Minecraft html title',
+        WebDocument(TEST_LINK).get_title(),
+        'Minecraft Official Site | Minecraft')
+    testif('webdoc returns correct YouTube html title',
+        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
+        'I tracked every minute of my life for 3 months. - YouTube')
+    testif('webdoc get_html ignores user-agent and accept-encoding headers',
+        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(headers=WEB_HDRS),
+        'I tracked every minute of my life for 3 months. - YouTube')
+    testif('webdoc get_html throws TypeError for invalid headers type',
+        lambda: WebDocument().get_html(['invalid', 'headers', 'type']), None, raises='TypeError')
+    testif('webdoc returns correct basename with no query',
+        WebDocument(TEST_LINK).get_basename(),
+        ('index.html', None))
     print()
-    p = PollenApiClient('weather text')
+    p = PollenApiClient('weather text', 98684)
     p.print_db()
     p.set_source('weather values')
     p.set_zipcode(98105)
