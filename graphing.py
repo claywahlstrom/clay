@@ -9,7 +9,7 @@ from collections import OrderedDict as _OrderedDict
 import operator as _operator
 import sys as _sys
 
-from clay.util import SortableDict as _SortableDict
+from clay.utils import SortableDict as _SortableDict
 
 SCREEN_WD = 80
 

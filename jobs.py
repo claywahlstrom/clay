@@ -13,7 +13,7 @@ import pprint
 from statistics import median, mean as average
 
 from clay.graphing import Histogram
-from clay.util import SortableDict
+from clay.utils import SortableDict
 
 BREAK_SCHEDULES = {'WA': {'hours': 6, 'length': 0.5},
                    'OR': {'hours': 5, 'length': 1.0}}

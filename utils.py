@@ -103,19 +103,15 @@ class Linq(object):
             else:
                 entity = []
             for prop in props:
-                if type(each) == dict and prop in each:
+                if hasattr(each, '__getitem__') and type(prop) in (int, str) \
+                    and (prop in each or type(prop) == int or hasattr(each, prop)):
+                    if type(prop) == int and prop >= len(each):
+                        print('Could not select index {} for {}. Skipping...' \
+                            .format(prop, each))
+                        continue
                     if model:
                         entity[prop] = each[prop]
                     else:
-                        entity.append(each[prop])
-                elif type(prop) == int:
-                    if prop >= len(each):
-                        print('Could not select index {} for {}. Skipping...' \
-                            .format(prop, each))
-                    else:
-                        if model:
-                            raise RuntimeError('cannot include properties ' \
-                                               'for entity without properties')
                         entity.append(each[prop])
                 elif hasattr(each, prop):
                     if model:
@@ -243,7 +239,7 @@ class Watch(object):
         objs = self.objs
         if sort:
             objs = sorted(objs, key=lambda x: x.lower())
-        
+
         for ob in objs:
             print(ob, '->', transformer(groupdict[ob]))
 

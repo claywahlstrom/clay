@@ -43,6 +43,6 @@ __all__ = ['files',
            'tests',
            'texteffects',
            'time',
-           'util',
+           'utils',
            'web',
            'wintitles']
