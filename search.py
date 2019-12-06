@@ -15,7 +15,6 @@ import time as _time
 
 from clay.shell import get_docs_folder as _get_docs_folder, is_idle as _is_idle
 
-
 EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
             '.jmc', '.matplotlib', '.oracle_jre_usage', '.pdfsam', '.phet',
             '3D Objects', 'AppData', 'Application Data', 'eclipse', 'Android',
@@ -24,7 +23,7 @@ EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
 STR_LIM = 75 # path printing termination number
 
 class Search(object):
-    """A class for searching a file system"""
+    """Used to search a file system"""
     def __init__(self, method='name', folder='.', string='', ext=None):
         """Searches files by method, folder, regex string, ext"""
         if ext is not None and type(ext) != str:
@@ -46,8 +45,8 @@ class Search(object):
             return 'No results'
 
     def build_results(self):
-        self.raw_text = 'Search for "{}" in "{}" took {} seconds\n' \
-            .format(self.string, self.folder, round(self.duration, 5))
+        self.raw_text = 'Search results for "{}" with extension "{}" in "{}" took {} seconds\n' \
+            .format(self.string, self.ext, self.folder, round(self.duration, 5))
         self.raw_text += '\n'.join([res + '\n\t' + \
                                     '\n\t'.join([val for val in self.results[res]]) \
                                     for res in list(self.results.keys())])
@@ -127,9 +126,6 @@ class Search(object):
     def write_output(self, filename):
         """Writes the search query to the given output file"""
         with open(filename, 'w') as fp:
-            fp.write('Search results for "{}" in "{}" with ext "{}"\n{}'.format(self.string,
-                                                                                self.folder,
-                                                                                self.ext))
             fp.write(self.raw_text)
 
 def print_files_containing(string, directories, ext=None):
