@@ -83,10 +83,9 @@ class Attendance(object):
     def print_money(self, per):
         """Calculates and prints the take-home estimate for the given period `per`"""
         if per in Attendance.PT_TYPES and per in self.pt:
-            exec("for i, peri in enumerate(self.filtered[str(per)]): \n \
-                       key = list(self.pt[str(per)].keys())[i] \n \
-                       money = self.pt[str(per)][key] * self.perhour * self.take_home_ratio \n \
-                       print(per, str(i) + ': ${:,.2f}'.format(money))")
+            for key, value in self.pt[per].items():
+                money = value * self.perhour * self.take_home_ratio
+                print('{} {}: ${:,.2f}'.format(per, key, money))
         else:
             print(per, 'is not a supported type')
 
@@ -171,7 +170,6 @@ class Attendance(object):
             sorted_months = OrderedDict()
             for month in months:
                 sorted_months[month] = sum(months[month])
-            self.filtered['month'] = sorted_months
             self.pt['month'] = sorted_months
 
         elif by == 'week':
@@ -202,14 +200,13 @@ class Attendance(object):
                 print(thisweek, '-> average =', average(thisweek), file=fp)
             fp.close()
 
-            self.filtered['week'] = sorted_weeks
             self.pt['week'] = OrderedDict()
             for week, values in sorted_weeks.items():
                 self.pt['week'][week] = sum(values)
         else:
             self.setup_pt('week')
             self.setup_pt('month')
-            
+
 def get_day_offset(day, number):
     """Returns an integer representing the day number shifted
     by the given amount"""
@@ -227,4 +224,4 @@ if __name__ == '__main__':
     att = Attendance(0.75, 11.0, 'OR', offset=3)
     att.remove_breaks(lunches=True)
     att.print_report()
-    
+
