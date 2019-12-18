@@ -6,7 +6,7 @@ google: open common Google(TM) apps using Python
 
 from urllib.parse import urlencode as _urlencode
 
-from clay.web import DEFAULT_BROWSER
+from clay.net.core import DEFAULT_BROWSER
 
 def launch_gs_app(name, browser, url):
     from subprocess import call
@@ -17,13 +17,13 @@ def launch_gs_app(name, browser, url):
 class GoogleSuite(object):
 
     SEARCH_URL = 'https://www.google.com/?gws_rd=ssl#newwindow=1&{}'
-    
+
     def __init__(self, browser=DEFAULT_BROWSER):
         self.browser = browser
 
     def calendar(self):
         launch_gs_app('calendar', self.browser, 'https://calendar.google.com')
-        
+
     def drive(self):
         launch_gs_app('drive', self.browser, 'https://drive.google.com')
 

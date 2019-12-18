@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
 from clay.lists import rmdup as _rmdup
-from clay.web import get_title as _get_title, WEB_HDRS as _WEB_HDRS
+from clay.net.core import get_title as _get_title, WEB_HDRS as _WEB_HDRS
 
 COM_SP = ', '
 # ! fix topics method for 'e.g.', 'et al. author' and other abbreviations, list in PER_EXCEPTIONS

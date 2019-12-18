@@ -117,7 +117,7 @@ class CacheableFile(object):
         self.uri = uri
         self.__init__(reload_on_set=self.reload_on_set)
 
-        if self.reload_on_set and not(_os.path.exists(self.title)):
+        if self.reload_on_set and not _os.path.exists(self.title):
             self.store()
 
     def store(self):
@@ -154,7 +154,7 @@ class CourseCatalogUW(object):
 
         pages['list'] = _BS(_requests.get(CourseCatalogUW.CATALOG_URI).content, 'html.parser')
         depts = [item['href'] for item in pages['list'].select('a')]
-        depts = [item[:item.index('.')] for item in depts if not('/' in item) and item.endswith('.html')]
+        depts = [item[:item.index('.')] for item in depts if '/' not in item and item.endswith('.html')]
         depts.sort()
 
         self.depts = depts
@@ -199,7 +199,7 @@ class CourseCatalogUW(object):
         course_list = []
         parts = text.strip().lower().split()
         if len(parts) > 0 and parts[0] in self.depts: # if a valid department
-            if not(parts[0] in self.pages): # insert into cache
+            if parts[0] not in self.pages: # insert into cache
                 link = CourseCatalogUW.CATALOG_URI + parts[0] + '.html'
                 self.pages[parts[0]] = _BS(_requests.get(link).content, 'html.parser')
             already_set = False
@@ -238,14 +238,14 @@ class CourseCatalogUW(object):
                         title = found.p.b.get_text()
                         description = found.p.get_text().replace(title, '')
                         course_list.append({'title': title,
-                                            'description': description if len(description) > 0 else None,
-                                            'instructor': instructor if len(instructor) > 0 else None})
+                                            'description': description if description else None,
+                                            'instructor': instructor if instructor else None})
                     else:
                         message = 'course not found within ' + parts[0]
                     already_set = True
             else:
                 header = self.pages[parts[0]].select('h1')[0].get_text()
-            if not(already_set):
+            if not already_set:
                 if len(found) > 0:
                     for f in found:
                         course_list.append({'title': f.get_text(),
@@ -280,12 +280,12 @@ def find_anchors(location, query={}, internal=True, php=False):
     if php or internal:
         for x in raw_links:
             try:
-                if (location[:16] in x['href'] or x['href'].startswith('/')) and not('#' in x['href']):
+                if (location[:16] in x['href'] or x['href'].startswith('/')) and '#' not in x['href']:
                     links.append(x['href'])
             except:
                 links.append(x)
         if internal:
-            links = [link for link in links if not('?' in link)]
+            links = [link for link in links if '?' not in link]
     else:
         for x in raw_links:
             try:
@@ -332,18 +332,18 @@ class HtmlBuilder(object):
             self.indent += 1
 
         self.builder += '>'
-        if len(text) > 0:
+        if text:
             self.builder += text
             self.close_tag(tag, has_text=True)
         self.add_nl()
 
     def close_tag(self, tag, has_text=False):
         self.indent -= 1
-        if not(has_text):
+        if not has_text:
             self.builder += HtmlBuilder.INDENT * self.indent
 
         self.builder += '</' + tag + '>'
-        if not(has_text):
+        if not has_text:
             self.add_nl()
 
         print('build', tag, 'now', self.indent)
@@ -366,7 +366,7 @@ class TagFinder(object):
         else:
             betterheaders = WEB_HDRS.copy()
             self.request = _requests.get(page, headers=betterheaders)
-            if not(self.request.content.startswith(b'<')):
+            if not self.request.content.startswith(b'<'):
                 betterheaders.pop('Accept-Encoding')
                 self.request = _requests.get(page, headers=betterheaders)
             self.src = self.request.content
@@ -414,7 +414,7 @@ class UrlBuilder(object):
         self.base_url = base
 
     def with_query_params(self, params):
-        if not(hasattr(self, 'url')):
+        if not hasattr(self, 'url'):
             self.url = self.base_url
         if '?' in self.url: # already exists
             self.url += '&'
@@ -470,7 +470,7 @@ class WebDocument(object):
         _os.chdir(destination) # better file handling
         print('CWD:', _os.getcwd())
 
-        if len(title) > 0: # if title already set
+        if title: # if title already set
             query = None
         else:
             title, query = self.get_basename(full=full_title)
@@ -486,7 +486,7 @@ class WebDocument(object):
         print('Retrieving "{}"...\n    Title: {}\n    Query: {}'.format(url, title, query))
         try:
             print('    Size :', end=' ')
-            if not('.' in title) or 'htm' in title or 'php' in title: # small file types (pages)
+            if '.' not in title or 'htm' in title or 'php' in title: # small file types (pages)
                 response = _requests.get(url, params=query, headers=headers)
                 if response.status_code != 200:
                     raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
@@ -533,7 +533,7 @@ class WebDocument(object):
                 set_title('Downloaded {}'.format(title))
             log_string = '[{}] {} of {} bytes @ {}\n'.format(url, title, size, _dt.datetime.today())
         finally:
-            if not(fp.closed):
+            if not fp.closed:
                 fp.close()
         if log_name:
             with open(log_path, 'a+') as lp:
@@ -541,14 +541,14 @@ class WebDocument(object):
         else:
             print(log_string.strip())
         _os.chdir(current) # better file handling
-        if return_speed and not(errors):
+        if return_speed and not errors:
             return round(size / taken, 2)
 
     def get_basename(self, full=False):
         """Returns the basename and query of this document's `uri`"""
-        url_query = self.__uri.query if len(self.__uri.query) > 0 else None
+        url_query = self.__uri.query if self.__uri.query else None
         title = _os.path.basename(self.__uri.path)
-        add_ext = not(any(ext in title for ext in ('htm', 'aspx', 'php'))) and len(title) < 2
+        add_ext = not any(ext in title for ext in ('htm', 'aspx', 'php')) and len(title) < 2
 
         if len(title) < 2: # if title is '' or '/'
             title = 'index'
@@ -581,7 +581,7 @@ class WebDocument(object):
         return response.read()
 
     def get_title(self, headers=None):
-        from clay.web import get_title
+        from clay.net.core import get_title
         soup = _BS(self.get_html(headers=headers), 'html.parser')
         return get_title(soup)
 
@@ -698,7 +698,7 @@ class PollenApiClient(object):
 
     def __check_built(self):
         """Throws a RuntimeError if this PollenApiClient instance has not been built"""
-        if not(self.__has_built):
+        if not self.__has_built:
             raise RuntimeError('PollenApiClient must be built after zipcode or source has been changed')
 
     def __verify_source(self, source):
@@ -707,7 +707,7 @@ class PollenApiClient(object):
 
     def __verify_zipcode(self, zipcode):
         if (self.source != 'weather text' and zipcode not in PollenApiClient.SOURCE_URLS.keys()) or \
-            not(zipcode in PollenApiClient.SOURCE_URLS.keys()) or zipcode < 0 or zipcode > 99501:
+            zipcode not in PollenApiClient.SOURCE_URLS.keys() or zipcode < 0 or zipcode > 99501:
             raise ZipCodeNotFoundException(zipcode)
 
     def __get_markup(self, uri):
@@ -745,7 +745,7 @@ class PollenApiClient(object):
 
         markup = self.__get_markup(uri)
 
-        if len(markup) > 0:
+        if markup:
             page = _BS(markup, 'html.parser')
 
             if self.source == 'weather text':
@@ -763,14 +763,14 @@ class PollenApiClient(object):
                 db = _collections.OrderedDict()
                 for i in range(len(lzt)):
                     db[i / 2] = lzt[i]
-            else: # wu poll
+            else: # self.source == 'wu poll'
                 j = page.select('.count') # or class .status
                 db = _collections.OrderedDict()
                 for i in range(PollenApiClient.SOURCE_SPAN[self.source]):
                     db[i] = j[i].get_text()
             if len(db) == 0:
                 if self.source == 'weather text':
-                    self.build(add_weather_query=not(add_weather_query)) # retry using the alternate query
+                    self.build(add_weather_query=not add_weather_query) # retry using the alternate query
                 else:
                     db = _collections.OrderedDict({i: 'null' for i in range(PollenApiClient.SOURCE_SPAN[self.source])})
             src = page
@@ -902,26 +902,29 @@ if __name__ == '__main__':
     we2.show(attribute='href')
 
     print()
-    testif('webdoc sets uri correctly for empty uri', \
+    testif('webdoc sets uri correctly for empty uri',
         WebDocument().raw_uri, None)
     for scheme in VALID_SCHEMES:
-        testif('webdoc sets uri correctly for valid uri ({})'.format(scheme), \
+        testif('webdoc sets uri correctly for valid uri ({})'.format(scheme),
             WebDocument(scheme).raw_uri, scheme)
-    testif('webdoc raises exception for invalid uri scheme', \
+    testif('webdoc raises exception for invalid uri scheme',
         lambda: WebDocument('test'), None, raises=ValueError)
-    print(WebDocument(LINKS['2MB']).download(destination=_get_docs_folder(), \
-                                             return_speed=True), 'bytes per second')
+    print(WebDocument(LINKS['2MB']) \
+        .download(
+            destination=_get_docs_folder(),
+            return_speed=True),
+        'bytes per second')
     print()
-    testif('webdoc returns basename and query', \
-        WebDocument('https://www.minecraft.net/change-language?next=/en/') \
-            .get_basename(full=False), \
+    testif('webdoc returns basename and query',
+        WebDocument('https://www.minecraft.net/change-language?next=/en/')
+            .get_basename(full=False),
         ('change-language', 'next=/en/'))
-    testif('webdoc returns full name and no query', \
-        WebDocument(LINKS['1MB']).get_basename(full=True), \
+    testif('webdoc returns full name and no query',
+        WebDocument(LINKS['1MB']).get_basename(full=True),
         ('download.thinkbroadband.com.1MB.zip', None))
     testif('webdoc returns correct Minecraft html title',
-        WebDocument(TEST_LINK).get_title(),
-        'Minecraft Official Site | Minecraft')
+        WebDocument(TEST_LINK).get_title().lower(),
+        'Minecraft Official Site | Minecraft'.lower())
     testif('webdoc returns correct YouTube html title',
         WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
         'I tracked every minute of my life for 3 months. - YouTube')
@@ -933,6 +936,7 @@ if __name__ == '__main__':
     testif('webdoc returns correct basename with no query',
         WebDocument(TEST_LINK).get_basename(),
         ('index.html', None))
+
     print()
     p = PollenApiClient('weather text', 98684)
     p.print_db()

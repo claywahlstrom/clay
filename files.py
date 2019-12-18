@@ -264,6 +264,6 @@ if __name__ == '__main__':
         print(File('http://www.google.com/').size())
     except Exception as e:
         _traceback.print_exc()
-    from clay.web import LINKS as _LINKS
+    from clay.net.core import LINKS as _LINKS
     print('Expects basename to exist')
     print(File(__file__).size())

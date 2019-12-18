@@ -1,6 +1,6 @@
 
 """
-Networking tools for Python
+Socket networking tools for Python
 
 AdvancedSocket difference finder functionality is not fully implemented
 
@@ -21,6 +21,7 @@ LOCALHOST = '127.0.0.1'
 UTF_SET = 'utf8'
 
 def get_ip_address():
+    """Returns the IP address of the host"""
     return socket.gethostbyname(socket.gethostname())
 
 def get_next_open_port(ip, port):
@@ -181,7 +182,7 @@ class AdvancedSocket(object):
 class Client(AdvancedSocket):
 
     """Class Client can be used to connect to a server"""
-    
+
     def __init__(self, ip=None, port=DEF_PORT):
         if ip is None:
             ip = input('ip? ')
@@ -193,7 +194,7 @@ class Client(AdvancedSocket):
 class Server(AdvancedSocket):
 
     """Class Server can be used to host connections"""
-    
+
     def __init__(self, ip='0.0.0.0', port=DEF_PORT, maxcon=MAX_CONN):
         port = get_next_open_port(ip, port)
         serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
