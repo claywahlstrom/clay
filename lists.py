@@ -42,23 +42,13 @@ class list(list):
        to query and filter data like Microsoft's (c) LINQ
        feature used in C#"""
 
-    MAX_LENGTH = 10000
-
-    def __check_distinct_projection(self, distinct):
-        """Checks if the queryable length limit for the projection
-           has been reached"""
-        if len(self) > self.MAX_LENGTH and distinct:
-            raise MemoryError('Linq cannot process more than ' + \
-                str(self.MAX_LENGTH) + ' elements for distinct=True')
-
     def first_or_default(self, default=None):
         """Returns the first item in this query or the default if
            the query is empty"""
         return next(iter(self), default)
 
-    def select(self, props, distinct=False, model=False):
+    def select(self, props, model=False):
         """Returns a list of property values selected from each element"""
-        self.__check_distinct_projection(distinct)
         if type(props) == str:
             props = [props]
         if type(props) not in (__builtins__.list, tuple):
@@ -91,8 +81,7 @@ class list(list):
                         entity.append(None)
             if len(props) == 1 and not model:
                 entity = entity[0]
-            if not(distinct and entity in projection):
-                projection.append(entity)
+            projection.append(entity)
         return list(projection)
 
     def where(self, predicate):
