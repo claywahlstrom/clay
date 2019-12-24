@@ -43,110 +43,6 @@ class Anonymous(object):
             result[attr] = getattr(self, attr)
         return result
 
-class Linq(object):
-
-    """Class Linq can be used to query and filter data like
-       Microsoft's (c) LINQ feature used in C#"""
-
-    MAX_QUERYABLE_LENGTH = 10000
-
-    __queryable_set = False
-    __select_called = False
-
-    def __check_queryable_exists():
-        if not Linq.__queryable_set:
-            raise RuntimeError('Linq queryable must be set')
-
-    def __check_distinct_projection(distinct):
-        if len(Linq.__queryable) > Linq.MAX_QUERYABLE_LENGTH and distinct:
-            raise MemoryError('Linq cannot process more than ' + \
-                             str(Linq.MAX_QUERYABLE_LENGTH) + ' elements for distinct=True')
-
-    def __end_query():
-        Linq.__queryable_set = False # select is the last statement
-
-    def count():
-        Linq.__check_queryable_exists()
-        Linq.__end_query()
-        return sum(1 for item in Linq.__queryable)
-
-    def first_or_default(default=None):
-        """Returns the first item in this query or None if empty"""
-        Linq.__check_queryable_exists()
-        Linq.__end_query()
-        return next(iter(Linq.__queryable), default)
-
-    def query(queryable):
-        """Sets the query source using the given queryable"""
-        Linq.__queryable = queryable
-        Linq.__queryable_set = True
-        Linq.__select_called = False
-        return Linq
-
-    def select(props, distinct=False, model=False):
-        """Returns a list of properties selected from each member.
-           If used, it must be the last step as it returns items
-           and not a Linq object."""
-        Linq.__check_queryable_exists()
-        Linq.__check_distinct_projection(distinct)
-        if type(props) == str:
-            props = [props]
-        if type(props) not in (list, tuple):
-            raise TypeError('properties must be of type list or tuple')
-        projection = []
-        for each in Linq.__queryable:
-            if model:
-                entity = {}
-            else:
-                entity = []
-            for prop in props:
-                if hasattr(each, '__getitem__') and type(prop) in (int, str) \
-                    and (prop in each or type(prop) == int or hasattr(each, prop)):
-                    if type(prop) == int and prop >= len(each):
-                        print('Could not select index {} for {}. Skipping...' \
-                            .format(prop, each))
-                        continue
-                    if model:
-                        entity[prop] = each[prop]
-                    else:
-                        entity.append(each[prop])
-                elif hasattr(each, prop):
-                    if model:
-                        entity[prop] = getattr(each, prop)
-                    else:
-                        entity.append(getattr(each, prop))
-                else:
-                    print(each, 'does not have property', prop)
-                    if not(model):
-                        entity.append(None)
-            if len(props) == 1 and not(model):
-                entity = entity[0]
-            if not(distinct and entity in filtered):
-                projection.append(entity)
-        Linq.__queryable = projection
-        Linq.__select_called = True
-        return Linq
-
-    def to_list():
-        """Returns this query as a list"""
-        Linq.__check_queryable_exists()
-        Linq.__end_query()
-        return Linq.__queryable
-
-    def where(lambda_expression):
-        """Filters elements where the lambda expression evaluates to True"""
-        Linq.__check_queryable_exists()
-        if Linq.__select_called:
-            raise RuntimeWarning('where cannot be called after select')
-        Linq.__queryable = list(filter(lambda_expression, Linq.__queryable))
-        return Linq
-
-    def whereif(predicate, lambda_expression):
-        if predicate:
-            return Linq.where(lambda_expression)
-        else:
-            return Linq
-
 def human_hex(dec):
     """Converts decimal values to human readable hex.
        Mainly used in engineering class"""
@@ -181,7 +77,7 @@ class Watch(object):
        in the debugging phase of a project."""
 
     def __init__(self, objs=[], module='__main__'):
-        if type(objs) != list or any(type(obj) != str for obj in objs):
+        if type(objs) not in (list, tuple) or any(type(obj) != str for obj in objs):
             raise TypeError('objs must be a list of strings')
 
         self.objs = objs
@@ -210,7 +106,7 @@ class Watch(object):
 
     def remove(self, var):
         """Removes the given object from this Watch"""
-        if type(var) == list:
+        if type(var) in (list, tuple):
             for v in var:
                 (self.objs).remove(v)
         elif type(var) == str:
@@ -249,29 +145,6 @@ class Watch(object):
 if __name__ == '__main__':
 
     from clay.tests import testif
-
-    objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
-
-    testif('Linq first or default selects correct element',
-        Linq.query(objs).where(lambda x: x.a == 2).first_or_default(),
-        objs[1])
-    testif('Linq select selects data from indices',
-        Linq.query([['John', 'Smith', '1/1/2000']]).select([0, 6, 2]).to_list(),
-        [['John', '1/1/2000']])
-
-    test_queryable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
-
-    testif('Linq raises RuntimeError when no queryable specified',
-        lambda: Linq.where(lambda x: True),
-        None,
-        raises=RuntimeError)
-    testif('Linq raises RuntimeError when filtering after select',
-        lambda: Linq.query(test_queryable).select('num').where(lambda x: x['num'] == 2),
-        None,
-        raises=RuntimeWarning)
-    testif('Linq query selects property correctly',
-        Linq.query(test_queryable).where(lambda x: x['num'] == 2).select('num').to_list(),
-        [2, 2])
 
     testif('human_hex converts integer 2700 correctly', human_hex(2700), 'a8c')
 

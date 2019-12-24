@@ -28,13 +28,83 @@ def frange(start, stop, step):
 def join_lines(file, join_sep=', '):
     """Returns the lines of text from the given file (object or str)
        joined by the separator"""
-    if type(file) == list:
+    if type(file) == __builtins__.list:
         return join_sep.join(file)
     elif file.__class__.__module__ == '_io':
         fp = file
     elif type(file) == str:
         fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
+
+class list(list):
+
+    """Class list contains extension methods that can be used
+       to query and filter data like Microsoft's (c) LINQ
+       feature used in C#"""
+
+    MAX_LENGTH = 10000
+
+    def __check_distinct_projection(self, distinct):
+        """Checks if the queryable length limit for the projection
+           has been reached"""
+        if len(self) > self.MAX_LENGTH and distinct:
+            raise MemoryError('Linq cannot process more than ' + \
+                str(self.MAX_LENGTH) + ' elements for distinct=True')
+
+    def first_or_default(self, default=None):
+        """Returns the first item in this query or the default if
+           the query is empty"""
+        return next(iter(self), default)
+
+    def select(self, props, distinct=False, model=False):
+        """Returns a list of property values selected from each element"""
+        self.__check_distinct_projection(distinct)
+        if type(props) == str:
+            props = [props]
+        if type(props) not in (__builtins__.list, tuple):
+            raise TypeError('properties must be of type list or tuple')
+        projection = []
+        for each in self:
+            if model:
+                entity = {}
+            else:
+                entity = []
+            for prop in props:
+                if hasattr(each, '__getitem__') and type(prop) in (int, str) \
+                    and (prop in each or type(prop) == int or hasattr(each, prop)):
+                    if type(prop) == int and prop >= len(each):
+                        print('Could not select index {} for {}. Skipping...' \
+                            .format(prop, each))
+                        continue
+                    if model:
+                        entity[prop] = each[prop]
+                    else:
+                        entity.append(each[prop])
+                elif hasattr(each, prop):
+                    if model:
+                        entity[prop] = getattr(each, prop)
+                    else:
+                        entity.append(getattr(each, prop))
+                else:
+                    print(each, 'does not have property', prop)
+                    if not(model):
+                        entity.append(None)
+            if len(props) == 1 and not model:
+                entity = entity[0]
+            if not(distinct and entity in projection):
+                projection.append(entity)
+        return list(projection)
+
+    def where(self, predicate):
+        """Filters elements based on the given predicate"""
+        return list(filter(predicate, self))
+
+    def whereif(self, condition, predicate):
+        """Filters elements based on the given condition and predicate"""
+        if condition:
+            return self.where(predicate)
+        else:
+            return self
 
 def printall(items):
     """Prints each item from the given items iterable"""
@@ -53,7 +123,7 @@ def printlines(content, lines=0, numbered=True):
     elif type(content) == list:
         chunks = [line.rstrip() for line in lines]
     assert type(chunks) == list
-    
+
     if not(lines):
         lines = len(chunks)
     chunks = chunks[:lines]
@@ -106,6 +176,23 @@ if __name__ == '__main__':
     testif('join_lines returns correct string',
         join_lines(TEST_LIST),
         'h, e, l, l, o')
+
+    from clay.utils import Anonymous
+    objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
+
+    testif('list extension "first or default" selects correct element',
+        list(objs).where(lambda x: x.a == 2).first_or_default(),
+        objs[1])
+    testif('list extension "select" selects data from indices',
+        list([['John', 'Smith', '1/1/2000']]).select([0, 6, 2]),
+        [['John', '1/1/2000']])
+
+    test_queryable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
+
+    testif('list extensions where-select selects property correctly',
+        list(test_queryable).where(lambda x: x['num'] == 2).select('num'),
+        [2, 2])
+
     printall(TEST_LIST)
     printlines(r'test_files\essay.txt', 4)
     testif('rmdup removes duplicates correctly',
