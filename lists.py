@@ -6,6 +6,8 @@ Basic operations for lines, lists, and files
 
 # possible: rmdup could use "set" object to remove duplicates
 
+import traceback as _traceback
+
 TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
 def apply(function, vector):
@@ -47,41 +49,18 @@ class list(list):
            the query is empty"""
         return next(iter(self), default)
 
-    def select(self, props, model=False):
-        """Returns a list of property values selected from each element"""
-        if type(props) == str:
-            props = [props]
-        if type(props) not in (__builtins__.list, tuple):
-            raise TypeError('properties must be of type list or tuple')
+    def select(self, selector):
+        """Returns each element projected into a new form using the selector function"""
         projection = []
         for each in self:
-            if model:
-                entity = {}
-            else:
-                entity = []
-            for prop in props:
-                if hasattr(each, '__getitem__') and type(prop) in (int, str) \
-                    and (prop in each or type(prop) == int or hasattr(each, prop)):
-                    if type(prop) == int and prop >= len(each):
-                        print('Could not select index {} for {}. Skipping...' \
-                            .format(prop, each))
-                        continue
-                    if model:
-                        entity[prop] = each[prop]
-                    else:
-                        entity.append(each[prop])
-                elif hasattr(each, prop):
-                    if model:
-                        entity[prop] = getattr(each, prop)
-                    else:
-                        entity.append(getattr(each, prop))
-                else:
-                    print(each, 'does not have property', prop)
-                    if not(model):
-                        entity.append(None)
-            if len(props) == 1 and not model:
-                entity = entity[0]
-            projection.append(entity)
+            new_form = None # default form
+            try:
+                new_form = selector(each)
+            except (KeyError, IndexError, TypeError) as ex:
+                print('list.select errored on', each)
+                _traceback.print_exc()
+                raise ex
+            projection.append(new_form)
         return list(projection)
 
     def where(self, predicate):
@@ -111,7 +90,7 @@ def printlines(content, lines=0, numbered=True):
             chunks = [x.rstrip() for x in f.readlines()]
     elif type(content) == list:
         chunks = [line.rstrip() for line in lines]
-    assert type(chunks) == list
+    assert type(chunks) == __builtins__.list
 
     if not(lines):
         lines = len(chunks)
@@ -137,7 +116,7 @@ if __name__ == '__main__':
 
     testif('apply returns correct type (list)',
         type(apply(lambda x: x, [0, 0])),
-        list)
+        __builtins__.list)
     testif('apply returns correct type (tuple)',
         type(apply(lambda x: x, (0, 0))),
         tuple)
@@ -153,14 +132,14 @@ if __name__ == '__main__':
     testif('frange returns correct values',
         list(frange(0.9, 1.0, 0.1)),
         [0.9])
-    try:
-        print(list(frange(1, 0, 0.25)))
-    except AssertionError as ae:
-        print('AssertionError successfully thrown (start > stop && step > 0)')
-    try:
-        print(list(frange(0, 1, -0.25)))
-    except AssertionError as ae:
-        print('AssertionError successfully thrown (stop > start && step < 0)')
+    testif('frange raises AssertionError when start > stop && step > 0',
+        lambda: list(frange(1, 0, 0.25)),
+        None,
+        raises=AssertionError)
+    testif('frange raises AssertionError when stop > start && step < 0',
+        lambda: list(frange(0, 1, -0.25)),
+        None,
+        raises=AssertionError)
 
     testif('join_lines returns correct string',
         join_lines(TEST_LIST),
@@ -168,18 +147,34 @@ if __name__ == '__main__':
 
     from clay.utils import Anonymous
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
+    expected_default = Anonymous(a=0)
 
     testif('list extension "first or default" selects correct element',
         list(objs).where(lambda x: x.a == 2).first_or_default(),
         objs[1])
+    testif('list extension "first or default" selects default when no element found',
+        list(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
+        expected_default)
+    testif('list extension "select" raises KeyError when key missing',
+        lambda: list([{'key': 'value'}]).select(lambda x: x[0]),
+        None,
+        raises=KeyError)
+    testif('list extension "select" raises IndexError when index out of bounds',
+        lambda: list([[0]]).select(lambda x: x[1]),
+        None,
+        raises=IndexError)
+    testif('list extension "select" raises TypeError when list indices are of incorrect type',
+        lambda: list([[0]]).select(lambda x: x['key']),
+        None,
+        raises=TypeError)
     testif('list extension "select" selects data from indices',
-        list([['John', 'Smith', '1/1/2000']]).select([0, 6, 2]),
+        list([['John', 'Smith', '1/1/2000']]).select(lambda x: [x[0], x[2]]),
         [['John', '1/1/2000']])
 
     test_queryable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
 
     testif('list extensions where-select selects property correctly',
-        list(test_queryable).where(lambda x: x['num'] == 2).select('num'),
+        list(test_queryable).where(lambda x: x['num'] == 2).select(lambda x: x['num']),
         [2, 2])
 
     printall(TEST_LIST)

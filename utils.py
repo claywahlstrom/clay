@@ -1,11 +1,6 @@
 
 """
-
 Utilities for Python
-
-TODO:
-    - fix Linq querable select max size limit by partitioning
-      queryable into lists
 
 """
 
