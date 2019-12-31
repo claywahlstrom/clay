@@ -43,5 +43,4 @@ __all__ = ['files',
            'tests',
            'texteffects',
            'time',
-           'utils',
-           'wintitles']
+           'utils']

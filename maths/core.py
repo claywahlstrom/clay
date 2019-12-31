@@ -9,7 +9,7 @@ import math
 import statistics
 
 from clay.lists import apply as _apply
-from clay.shell import is_unix as _is_unix
+from clay.shell.core import is_unix as _is_unix
 
 if _is_unix():
     LIMPATH_FMT = r'/home/clay/Desktop/liminf-{}.log'

@@ -6,7 +6,7 @@ Default WIDTH is 80 characters for IDLE and 100 for shell.
 
 """
 
-from clay.shell import is_idle as _is_idle
+from clay.shell.core import is_idle as _is_idle
 
 if _is_idle():
     WIDTH = 80
@@ -23,11 +23,11 @@ def box(text, width=0, height=3, module=False):
     assert height >= 3
     if module:
         height += 2
-   
+
     border = 1
 
     print('#' * width)
-    
+
     for x in range(border):
         print('#' + ' ' * (width - 2) + '#')
 
@@ -38,7 +38,7 @@ def box(text, width=0, height=3, module=False):
 
     for x in range(border):
         print('#' + ' ' * (width - 2) + '#')
-        
+
     print('#' * width)
 
 def center(text):
@@ -52,15 +52,15 @@ def fullbox(text, thickness=1, border=1):
 
     for x in range(thickness):
         print('#' * width)
-    
+
     for x in range(border): # greater than one
         _fullbox_printline(' ' * (len(text) + 2 * border), thickness)
 
     _fullbox_printline(text.center(len(text) + 2, ' '), thickness)
-    
+
     for x in range(border): # greater than one
         _fullbox_printline(' ' * (len(text) + 2 * border), thickness)
-        
+
     for x in range(thickness):
         print('#' * width)
 
@@ -92,4 +92,4 @@ if __name__ == '__main__':
     print('UNDERLINE TESTS')
     print(underline('underlined text (-)'))
     print(underline('underlined text (*)', '*'))
-    
+

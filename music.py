@@ -15,7 +15,7 @@ import time as _time
 import winsound as _ws
 
 from clay.files import save as _save
-from clay.shell import set_title, notify as _notify, is_unix as _is_unix
+from clay.shell.core import set_title, notify as _notify, is_unix as _is_unix
 
 # scale types
 NATURAL_MINOR = [0, 2, 3, 5, 7, 8, 10, 12]
@@ -176,7 +176,7 @@ class Song(object):
     def play(self):
         """Plays this song using Windows' Beep"""
         for note in self.notes:
-            play_note(note.name[:-1], note.name[-1], note.length, self.tempo) 
+            play_note(note.name[:-1], note.name[-1], note.length, self.tempo)
 
     def save(self):
         """Saves this song to a new file"""

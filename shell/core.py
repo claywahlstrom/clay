@@ -5,7 +5,6 @@ shell: commands that can be used to manage your system or
 
 """
 
-import inspect as _inspect
 import os as _os
 import string as _string
 import subprocess as _subprocess
@@ -89,7 +88,7 @@ pwd = _os.getcwd # alias
 
 def file_manager(directory=_os.curdir):
     """Opens the system file manager to the specified directory"""
-    from clay.shell import is_unix
+    from clay.shell.core import is_unix
     if is_unix():
         fm_name = 'xdg-open' # This should work for most systems
     else:
@@ -119,7 +118,7 @@ def get_disk_drives():
 
 def get_docs_folder():
     """Returns the location of the documents folder for this computer."""
-    from clay.shell import get_disk_drives
+    from clay.shell.core import get_disk_drives
     if 'E:\\' in get_disk_drives():
         return r'E:\Docs'
     else:
@@ -160,7 +159,7 @@ class Compiler(object):
                          should be printed for each file
 
         """
-        from clay.shell import lsgrep
+        from clay.shell.core import lsgrep
         _os.chdir(self.directory)
         sources = self.sources
         if sources is None:
@@ -327,7 +326,7 @@ def rm_item(directory, name):
     DEBUG = False
 
     from shutil import move
-    from clay.shell import rm_dir
+    from clay.shell.core import rm_dir
 
     if not(_os.path.exists(TRASH)):
         _os.mkdir(TRASH)

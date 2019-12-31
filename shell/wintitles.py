@@ -3,18 +3,17 @@ import re as _re
 import time as _time
 import ctypes as _ctypes
 
-from clay.shell import is_unix as _is_unix
+from clay.shell.core import is_unix as _is_unix
 
 if _is_unix():
-    print('wintitles can only be run on Windows')
-    exit()
+    raise NotImplementedError('wintitles can only be run on Windows')
 
 EnumWindows = _ctypes.windll.user32.EnumWindows
 EnumWindowsProc = _ctypes.WINFUNCTYPE(_ctypes.c_bool, _ctypes.POINTER(_ctypes.c_int), _ctypes.POINTER(_ctypes.c_int))
 GetWindowTextW = _ctypes.windll.user32.GetWindowTextW
 GetWindowTextLengthW = _ctypes.windll.user32.GetWindowTextLengthW
 IsWindowVisible = _ctypes.windll.user32.IsWindowVisible
- 
+
 def _foreach_window(hwnd, lParam):
     """Callback func for the EnumWindowsProc"""
     if IsWindowVisible(hwnd):
@@ -35,7 +34,7 @@ def get_wintitles():
 
 class WindowHandler(object):
     """Class WindowHandler can be used to find Window titles by their name"""
-    
+
     def __init__(self, query, regex=False):
         """Initializes a new WindowHandler with the given query and whether
            the query is regex or not"""
@@ -45,7 +44,7 @@ class WindowHandler(object):
     def getfirst(self):
         """Returns the first window handle name"""
         return self.getname(0)
-        
+
     def getlast(self):
         """Returns the last window handle name"""
         return self.getname(-1)
@@ -55,7 +54,7 @@ class WindowHandler(object):
         return self.getnames()[index]
 
     def getnames(self):
-        """Returns a list of all of the window handle names"""  
+        """Returns a list of all of the window handle names"""
         titles = get_wintitles()
         if self.regex:
             return tuple(query for title in titles for query in _re.findall(self.query, title))

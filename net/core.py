@@ -22,7 +22,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay.shell import \
+from clay.shell.core import \
     get_docs_folder as _get_docs_folder, \
     is_idle as _is_idle, \
     is_unix as _is_unix
@@ -457,7 +457,7 @@ class WebDocument(object):
 
         # http://stackoverflow.com/a/16696317/5645103
 
-        from clay.shell import set_title
+        from clay.shell.core import set_title
 
         url = self.__raw_uri
         errors = False
