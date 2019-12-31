@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # for "from clay import *" compatibility
 __all__ = ['files',
-           'google',
            'graphing',
            'jobs',
            'libr',
