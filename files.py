@@ -5,9 +5,6 @@ files: Common file operations done easier with Python
 """
 
 import os as _os
-import requests as _requests
-import traceback as _traceback
-import urllib.request, urllib.error, urllib.parse
 
 from clay.libr import replace_smart_quotes
 
@@ -141,7 +138,6 @@ class File(object):
         else:
             print('Converted to crlf')
 
-
 class FileSizeReport(object):
     """A class for generating reports on file systems
        An exmaple of output:
@@ -259,11 +255,13 @@ def _rt_helper(filename, old, new):
         fp.close()
 
 if __name__ == '__main__':
-    print('Expects basename not to exist')
-    try:
-        print(File('http://www.google.com/').size())
-    except Exception as e:
-        _traceback.print_exc()
-    from clay.net.core import LINKS as _LINKS
-    print('Expects basename to exist')
-    print(File(__file__).size())
+
+    from clay.tests import testif
+
+    testif('File.size raises FileNotFoundError when file not found',
+        lambda: File('http://www.google.com/').size(),
+        None,
+        raises=FileNotFoundError)
+    testif('File.size returns type int when file found',
+        type(File(__file__).size()),
+        int)
