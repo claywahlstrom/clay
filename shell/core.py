@@ -413,7 +413,7 @@ def timeout(seconds, hidden=False):
             print()
 
 if __name__ == '__main__':
-    jc = JavaCompiler(directory=r'E:\Docs\Clay\College\UW\Class Archive\INTRO CSE SHARED\Java Local\gravity')
+    jc = JavaCompiler(directory=r'E:\Docs\Clay\Programming\java\gravity')
     jc.compile(exclude=['-', 'unused'])
 
     # used to test if pause runs correctly
