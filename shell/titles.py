@@ -1,4 +1,9 @@
 
+"""
+titles: Module for inspecting window titles on Windows
+
+"""
+
 import re as _re
 import time as _time
 import ctypes as _ctypes
@@ -6,7 +11,7 @@ import ctypes as _ctypes
 from clay.shell.core import is_unix as _is_unix
 
 if _is_unix():
-    raise NotImplementedError('wintitles can only be run on Windows')
+    raise NotImplementedError('titles can only be run on Windows')
 
 EnumWindows = _ctypes.windll.user32.EnumWindows
 EnumWindowsProc = _ctypes.WINFUNCTYPE(_ctypes.c_bool, _ctypes.POINTER(_ctypes.c_int), _ctypes.POINTER(_ctypes.c_int))
@@ -23,7 +28,7 @@ def _foreach_window(hwnd, lParam):
         titles.append(buff.value)
     return True
 
-def get_wintitles():
+def get_titles():
     """Returns a list of active window titles"""
     global titles
     titles = []
@@ -55,7 +60,7 @@ class WindowHandler(object):
 
     def getnames(self):
         """Returns a list of all of the window handle names"""
-        titles = get_wintitles()
+        titles = get_titles()
         if self.regex:
             return tuple(query for title in titles for query in _re.findall(self.query, title))
         return tuple(title for title in titles if self.query in title)

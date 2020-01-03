@@ -1,3 +1,3 @@
 
 from clay.shell import core
-from clay.shell import wintitles
+from clay.shell import titles
