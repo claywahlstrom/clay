@@ -11,7 +11,7 @@ import ctypes as _ctypes
 from clay.shell.core import is_unix as _is_unix
 
 if _is_unix():
-    raise NotImplementedError('titles can only be run on Windows')
+    raise NotImplementedError('titles can only be used on Windows')
 
 EnumWindows = _ctypes.windll.user32.EnumWindows
 EnumWindowsProc = _ctypes.WINFUNCTYPE(_ctypes.c_bool, _ctypes.POINTER(_ctypes.c_int), _ctypes.POINTER(_ctypes.c_int))

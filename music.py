@@ -8,6 +8,11 @@ Registers are in ovtaves with the lowest pitch of 55.
 
 """
 
+from clay.shell.core import is_unix as _is_unix
+
+if _is_unix():
+    raise NotImplementedError('music can only be used on Windows')
+
 from collections import OrderedDict as _od
 import itertools as _it
 import os as _os
@@ -15,7 +20,7 @@ import time as _time
 import winsound as _ws
 
 from clay.files import save as _save
-from clay.shell.core import set_title, notify as _notify, is_unix as _is_unix
+from clay.shell.core import set_title, notify as _notify
 
 # scale types
 NATURAL_MINOR = [0, 2, 3, 5, 7, 8, 10, 12]
