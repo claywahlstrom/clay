@@ -209,7 +209,7 @@ if __name__ == '__main__':
     testif('Watch is watching d', w.is_watching('d'), True)
     print('after add')
     w.view()
-    w.write_file(r'test_files\watch_test.txt')
+    w.write_file(r'test_files\watch-test.txt')
 
     testif('Watch raises TypeError when adding non-string type',
         lambda: w.add(None),

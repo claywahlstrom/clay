@@ -305,7 +305,7 @@ def sort_bib(filename):
     lines = sorted(lines, key=lambda x: x.replace('"', ''))
     content = '\n'.join(lines)
 
-    with open('sorted_' + filename, 'w') as cont:
+    with open('sorted-' + filename, 'w') as cont:
         cont.write(content)
 
 if __name__ == '__main__':
@@ -323,7 +323,7 @@ if __name__ == '__main__':
     e.find_topics()
     e.fix_spaces()
 
-    with open(r'test_files\essay_fixper.txt','w') as fp:
+    with open(r'test_files\essay-fixper.txt','w') as fp:
         fp.write(e.text)
 
     link = 'http://www.datascribble.com/deep-learning/deep-learning-tensorflow-series-part-1-neural-network/'
