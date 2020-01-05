@@ -13,18 +13,18 @@ from clay.shell.core import is_unix as _is_unix
 if _is_unix():
     raise NotImplementedError('titles can only be used on Windows')
 
-EnumWindows = _ctypes.windll.user32.EnumWindows
-EnumWindowsProc = _ctypes.WINFUNCTYPE(_ctypes.c_bool, _ctypes.POINTER(_ctypes.c_int), _ctypes.POINTER(_ctypes.c_int))
-GetWindowTextW = _ctypes.windll.user32.GetWindowTextW
-GetWindowTextLengthW = _ctypes.windll.user32.GetWindowTextLengthW
-IsWindowVisible = _ctypes.windll.user32.IsWindowVisible
+_EnumWindows = _ctypes.windll.user32.EnumWindows
+_EnumWindowsProc = _ctypes.WINFUNCTYPE(_ctypes.c_bool, _ctypes.POINTER(_ctypes.c_int), _ctypes.POINTER(_ctypes.c_int))
+_GetWindowTextW = _ctypes.windll.user32.GetWindowTextW
+_GetWindowTextLengthW = _ctypes.windll.user32.GetWindowTextLengthW
+_IsWindowVisible = _ctypes.windll.user32.IsWindowVisible
 
 def _foreach_window(hwnd, lParam):
     """Callback func for the EnumWindowsProc"""
-    if IsWindowVisible(hwnd):
-        length = GetWindowTextLengthW(hwnd)
+    if _IsWindowVisible(hwnd):
+        length = _GetWindowTextLengthW(hwnd)
         buff = _ctypes.create_unicode_buffer(length + 1)
-        GetWindowTextW(hwnd, buff, length + 1)
+        _GetWindowTextW(hwnd, buff, length + 1)
         titles.append(buff.value)
     return True
 
@@ -32,7 +32,7 @@ def get_titles():
     """Returns a list of active window titles"""
     global titles
     titles = []
-    EnumWindows(EnumWindowsProc(_foreach_window), 0)
+    _EnumWindows(_EnumWindowsProc(_foreach_window), 0)
     while '' in titles: # remove blank entries
         titles.remove('')
     return titles
@@ -45,36 +45,48 @@ class WindowHandler(object):
            the query is regex or not"""
         self.query = query
         self.regex = regex
+        self.__names = ()
 
-    def getfirst(self):
-        """Returns the first window handle name"""
-        return self.getname(0)
-
-    def getlast(self):
-        """Returns the last window handle name"""
-        return self.getname(-1)
-
-    def getname(self, index=0):
-        """Returns the given window handle name at the given index"""
-        return self.getnames()[index]
-
-    def getnames(self):
+    def fetch_names(self):
         """Returns a list of all of the window handle names"""
         titles = get_titles()
         if self.regex:
-            return tuple(query for title in titles for query in _re.findall(self.query, title))
-        return tuple(title for title in titles if self.query in title)
-
-    def isactive(self):
-        """Returns True if this window handle query is active, False otherwise"""
-        return bool(self.getnames())
+            names = tuple(query for title in titles for query in _re.findall(self.query, title))
+        else:
+            names = tuple(title for title in titles if self.query in title)
+        self.__names = names
 
     def wait(self):
         """Waits until a window with this query is active, retries every 1.0 second interval"""
-        if not self.isactive():
+        self.fetch_names()
+        if not self.is_active:
             print('Waiting for a new window')
-            while not self.isactive():
+            while not self.is_active:
                 _time.sleep(1.0)
+                self.fetch_names()
+
+    @property
+    def is_active(self):
+        """Returns True if this window handle query is active, False otherwise"""
+        return any(self.names)
+
+    @property
+    def names(self):
+        """Returns the names found for this window handle's query"""
+        return self.__names
+
+    @property
+    def first(self):
+        """Returns the first window handle name"""
+        return self.names[0]
+
+    @property
+    def last(self):
+        """Returns the last window handle name"""
+        return self.names[-1]
 
 if __name__ == '__main__':
-    print('current windows:', WindowHandler('.*Python.*', regex=True).getnames())
+
+    wh = WindowHandler('.*Python.*', regex=True)
+    wh.fetch_names()
+    print('current windows:', wh.names)
