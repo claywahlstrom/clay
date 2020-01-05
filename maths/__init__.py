@@ -1,3 +1,2 @@
 
-from clay.maths import core
-from clay.maths import vectors
+__all__ = ['core', 'vectors']
