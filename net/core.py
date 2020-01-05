@@ -683,7 +683,8 @@ class PollenApiClient(object):
     WEATHER_QUERY_PARAMS = ':4:US'
 
     def __init__(self, source, zipcode, print_sources=True):
-        """Constructs a new PollenApiClient object using the given source and zipcode"""
+        """Initializes this PollenApiClient object using the given source and
+           zipcode. Builds the database when all inputs are valid."""
         self.zipcode = zipcode
         self.source = source
         self.set_zipcode(zipcode)
@@ -818,12 +819,12 @@ class PollenApiClient(object):
         """Returns the pollen data forecasted for tomorrow"""
         return self.get_day(1) # checks for valid db in get_day
 
-    def print_db(self):
+    def print_db(self, file=_sys.stdout):
         """Prints all of the db information in a table format"""
         self.__check_built()
-        print('Pollen data for', self.zipcode)
+        print('Pollen data for', self.zipcode, file=file)
         for i, j in self.db.items():
-            print('{:>{}}: {}'.format(i, len('Tonight'), j))
+            print('{:>{}}: {}'.format(i, len('Tonight'), j), file=file)
 
     def set_source(self, source):
         """Sets the source for this PollenApiClient object. Requires `build` to be called to update data"""
@@ -890,16 +891,16 @@ if __name__ == '__main__':
               'instructor': None}],
          'header': None}})
 
-    print()
-    print('ANCHORS')
-    print(find_anchors(TEST_LINK, internal=False))
-    print()
+    with open('logs/net-core-find-anchors.log', 'w') as fa_log:
+        print('ANCHORS', file=fa_log)
+        print(find_anchors(TEST_LINK, internal=False), file=fa_log)
 
     we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
     testif('best music school list contains 21 elements', len(we1.find('h3')), 21)
     we2 = TagFinder(TEST_LINK)
     we2.find('a')
-    we2.show(attribute='href')
+    with open('logs/net-core-tagfinder.log', 'w') as tf_log:
+        we2.show(attribute='href', file=tf_log)
 
     print()
     testif('webdoc sets uri correctly for empty uri',
@@ -937,13 +938,16 @@ if __name__ == '__main__':
         WebDocument(TEST_LINK).get_basename(),
         ('index.html', None))
 
-    print()
     p = PollenApiClient('weather text', 98684)
-    p.print_db()
-    p.set_source('weather values')
-    p.set_zipcode(98105)
-    p.build()
-    p.print_db()
+    with open('logs/net-core-pollen.log', 'w') as pollen_log:
+        try:
+            p.print_db(file=pollen_log)
+            p.set_source('weather values')
+            p.set_zipcode(98105)
+            p.build()
+            p.print_db(file=pollen_log)
+        except Exception:
+            traceback.print_exc()
 
     testif('pollen throws exception for invalid source', \
         lambda: p.set_source('invalid source'), None, raises=ValueError)
