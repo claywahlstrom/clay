@@ -924,7 +924,7 @@ if __name__ == '__main__':
         ('download.thinkbroadband.com.1MB.zip', None))
     testif('webdoc returns correct Minecraft html title',
         WebDocument(TEST_LINK).get_title().lower(),
-        'Minecraft Official Site | Minecraft'.lower())
+        'Official Site | Minecraft'.lower())
     testif('webdoc returns correct YouTube html title',
         WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
         'I tracked every minute of my life for 3 months. - YouTube')
