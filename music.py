@@ -19,7 +19,7 @@ import os as _os
 import time as _time
 import winsound as _ws
 
-from clay.files import save as _save
+from clay.files.core import save as _save
 from clay.shell.core import set_title, notify as _notify
 
 # scale types

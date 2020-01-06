@@ -1,6 +1,6 @@
 
 """
-files: Common file operations done easier with Python
+Common file operations done easier with Python
 
 """
 
@@ -217,7 +217,7 @@ def _save_helper(split_ext, x):
 
 def replace_text(name, old, new, recurse=False, ext=''):
     """Replaces `name` with binary string params `old` and `new`"""
-    from clay.files import _rt_helper
+    from clay.files.core import _rt_helper
     if recurse:
         sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(name, old, new)))
 
