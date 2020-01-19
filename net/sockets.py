@@ -1,23 +1,23 @@
 
 """
-Socket networking tools for Python
+Socket networking tools
 
-AdvancedSocket difference finder functionality is not fully implemented
-
+AdvancedSocket difference finder is not complete
 
 """
-
 
 import os
 import socket
 import time
 
+from clay.files.core import FileSizeReport as _FSR
+
 DEF_PORT = 1024
 MAX_BUFFER = 10000
 MAX_CONN = 1
 
-FILESEP = b'eof' + b'eof'
 LOCALHOST = '127.0.0.1'
+UNIT_SEP = b'\x1f'
 UTF_SET = 'utf8'
 
 def get_ip_address():
@@ -41,36 +41,40 @@ def get_next_open_port(ip, port):
     print('next open port ->', port)
     return port
 
-class AdvancedSocket(object):
-    """Super-class for Server and Client socket handlers. Extends `object` ATM"""
+class AdvancedSocket:
+    """Super-class for Server and Client socket handlers"""
 
-    def getbin(self, buffer=MAX_BUFFER):
-        """Receives up to `buffer` bytes from the stream"""
+    def show_info(self):
+        """Prints information about this socket and is called
+           at the beginning of a session"""
+        print(self.sock, 'started')
+
+    def read_bin(self, buffer=MAX_BUFFER):
+        """Reads up to `buffer` bytes from the stream"""
         try:
             return self.sock.recv(buffer)
         except:
             return b'quit'
 
-    def getfilestream(self, streamlen, buffer=MAX_BUFFER):
-        """Receives and returns a filestream read from the stream of
-           given length at buffer sized chunks"""
+    def read_stream_len(self, length, buffer=MAX_BUFFER):
+        """Receives and returns a filestream from the stream of given
+           length at buffer sized chunks"""
         stream = bytes()
         while True:
-            stuff = self.getbin(buffer)
+            stuff = self.read_bin(buffer)
             stream += stuff
-            if len(stream) >= streamlen:
+            if len(stream) >= length:
                 print('max reached')
                 break
         return stream
 
-    # work in progress
-    def getstream(self, buffer=MAX_BUFFER, file=False):
+    def read_stream(self, buffer=MAX_BUFFER, file=False):
         """Receives and returns a stream of bytes read from a file"""
         stream = bytes()
         while True:
-            stuff = self.getbin(buffer)
-            if FILESEP in stuff:
-                stream += stuff[:stuff.index(FILESEP)]
+            stuff = self.read_bin(buffer)
+            if UNIT_SEP in stuff:
+                stream += stuff[:stuff.index(UNIT_SEP)]
                 break
             stream += stuff
             if file:
@@ -78,106 +82,88 @@ class AdvancedSocket(object):
         time.sleep(0.01)
         return stream
 
-    def sendbin(self, text, charset=UTF_SET):
+    def send_bin(self, text, charset=UTF_SET):
         """Sends the text through the stream"""
         if type(text) == str:
             text = text.encode(charset)
         self.sock.send(text)
 
-    def sendeof(self):
-        """Sends the end of file signal"""
-        self.sock.send(FILESEP)
+    def send_sep(self):
+        """Sends the end of unit signal"""
+        self.sock.send(UNIT_SEP)
 
-    def sendstream(self, stream, buffer=MAX_BUFFER):
+    def send_stream(self, stream, buffer=MAX_BUFFER):
         """Sends a stream of bytes to the recipient"""
         for i in range(0, len(stream), buffer):
             try:
-                self.sendbin(stream[i:i+buffer])
+                self.send_bin(stream[i:i + buffer])
             except:
-                self.sendbin(stream[i:])
+                self.send_bin(stream[i:])
             finally:
                 pass # alternatively time.sleep(0.01)
 
-    def test(self):
-        """Prints information about this socket and is called
-           at the beginning of a session"""
-        print(self.sock, 'started')
-
-    def terminate(self):
+    def close(self):
         """Closes this session"""
         print('closing {}'.format(self.__class__))
         self.sock.close()
         print('{} closed'.format(self.__class__))
 
-    def writestream(self, filename, buffer=MAX_BUFFER, charset=UTF_SET):
+    def write_stream(self, filename, buffer=MAX_BUFFER, charset=UTF_SET):
         """Write a file stream to the given filename"""
-        stream = self.getstream(buffer, file=True)
+        stream = self.read_stream(buffer, file=True)
         with open(filename, 'wb') as fp:
             print('\r' + str(fp.write(stream)), 'bytes')
         time.sleep(0.1)
 
-    def writestreams(self, files, streamlen, buffer=MAX_BUFFER, charset=UTF_SET):
+    def write_streams(self, files, length, buffer=MAX_BUFFER, charset=UTF_SET):
         """Receives file content as one string and parses for each file
            Assumes 'eof' is not contained in the files"""
-        print('expected', streamlen)
-        streams = self.getfilestream(streamlen=streamlen, buffer=buffer)
+        print('expected', length)
+        streams = self.read_stream_len(length=length, buffer=buffer)
         print('actual', len(streams))
-        #for num, stream in enumerate(streams[:-3].split(b'eof')):
         for num in range(len(files)):
             stream = streams[:streams.index(b'eof')]
             filename = files[num]
             with open(filename, 'wb') as fp:
                 print(filename, '//', str(fp.write(stream)), 'bytes')
-            streams = streams[streams.index(FILESEP)+len(FILESEP):]
+            streams = streams[streams.index(UNIT_SEP) + len(UNIT_SEP):]
         time.sleep(0.2)
 
-    def getdiffs(self, src, dst):
-        """Detects changes and removals to get from the given src state
-           to the dst state"""
+    def show_diff(self, src, dst):
+        """Shows file changes between the given src state and the dst state"""
         changed = []
         removing = []
-        self.sendbin(dst.encode(UTF_SET))
 
-        d_src = self.loaddiff(src)
+        self.send_bin(dst.encode(UTF_SET))
+
+        d_src = _FSR(src).generate()
 
         print('d_src =', d_src)
 
-        stream = self.getbin()
+        stream = self.read_bin()
         d_dst = eval(stream.decode(UTF_SET))
         # check for changed or added
         for thing in d_src:
-            if thing in d_dst and d_src[thing] != d_dst[thing] or not(thing in d_dst):
+            if thing in d_dst and d_src[thing] != d_dst[thing] or thing not in d_dst:
                 changed.append(thing)
         # check for files to be removed
         for thing in d_dst:
-            if not(thing in d_src):
+            if thing not in d_src:
                 removing.append(thing)
 
         self.d_src = d_src
         print('changed', changed)
         print('removing', removing)
 
-    def senddiffs(self):
+    def send_diff(self):
         """Send the differences through the steam"""
 
-        from subprocess import check_output
+        recv = self.read_bin().decode(UTF_SET)
+        d_dst = _FSR(recv).generate()
 
-        recv = self.getbin().decode(UTF_SET)
-        d_dst = self.loaddiff(recv)
-
-        print('dd =', d_dst)
-        self.sendstream(str(d_dst).encode(UTF_SET))
-        self.d_dst = d_dst
-
-    def loaddiff(self, Dir):
-        """Loads and returns the differces as a dict"""
-        Dict = {}
-        for root, dirs, files in os.walk(Dir):
-            for file in files:
-                name = os.path.join(root, file)
-                key = name[name.index(os.path.sep)+1:]
-                Dict[key] = os.stat(name).st_size
-        return Dict.copy()
+        print('d_dst =', d_dst)
+        self.send_stream(str(d_dst).encode(UTF_SET))
+        self.d_dst = d_dst # debug
 
 class Client(AdvancedSocket):
 
@@ -205,12 +191,3 @@ class Server(AdvancedSocket):
         sock, addr = serv.accept()
         self.sock = sock
         self.addr = addr
-
-if __name__ == '__main__':
-
-    from clay.files.core import FileSizeReport
-
-    report = FileSizeReport(directory='.')
-    print('File size report')
-    print(report)
-    print(report.parse())
