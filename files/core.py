@@ -152,33 +152,33 @@ class FileSizeReport(object):
        TODO: file IO
 
     """
+
     def __init__(self, directory='.'):
         """Initializes this report using the given directory and stores
            the result in the string field"""
         self.directory = directory
-        self.generate()
-        self.string = '\n'.join(['{} | {}'.format(x, y) for x,y in self.report])
+        self.report = self.generate()
 
     def __repr__(self):
         """Prints the string representation of this report"""
-        return self.string
+        return '\n'.join(['{} | {}'.format(x, y) for x,y in self.report.items()])
 
     def generate(self):
-        """Generates a report in the format (filename, filesize)"""
-        report = []
+        """Generates a report of file names and their sizes"""
+        report = {}
         Walk = _os.walk(self.directory)
 
         for root, dirs, files in Walk:
             for file in files:
                 filename = _os.path.join(root, file)
-                report.append((filename, _os.stat(filename).st_size))
-        self.report = report
+                report[filename] = _os.stat(filename).st_size
+        return report
 
-    def parse(self):
-        """Parses the string field and returns the original report"""
-        splt = [x.split(' | ') for x in self.string.strip().split('\n')]
-        lst = [(x, int(y.strip())) for x, y in splt]
-        return lst
+    def parse(string):
+        """Parses the given string and returns the corresponding report"""
+        splt = [x.split(' | ') for x in string.strip().split('\n')]
+        report = {x: int(y.strip()) for x, y in splt}
+        return report
 
 def fix_quotes(filename):
     """Replaces smart quotes with straight ones for the given filename"""
@@ -265,3 +265,7 @@ if __name__ == '__main__':
     testif('File.size returns type int when file found',
         type(File(__file__).size()),
         int)
+
+    report = FileSizeReport(directory='.')
+    print('File size report')
+    print(report)
