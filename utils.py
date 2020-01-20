@@ -56,10 +56,10 @@ def _map_args_test(x, y=2, z=3):
 
 class SortableDict(_collections.OrderedDict):
     """Sortable dict, child of collections.OrderedDict"""
-    def sort(self, reverse=False, debug=False):
+    def sort(self, key=None, reverse=False, debug=False):
         """Sorts this dict"""
         part = list(self.keys()) # extract keys
-        part.sort(reverse=reverse) # sorts keys
+        part.sort(key=key, reverse=reverse) # sorts keys
         if debug:
             print('sorted keys =', part)
         copy = self.copy()
