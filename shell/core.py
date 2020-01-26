@@ -282,10 +282,6 @@ def ren_all(old, new, directory=_os.curdir):
             print("Couldn't rename", old)
     print('Renamed {} item(s)'.format(x))
 
-def rm(path):
-    """Moves the file with the given path to the trash"""
-    rm_item(*_os.path.split(_os.path.abspath(path)))
-
 def rm_all(criteria, directory=_os.curdir, prompt=True):
     """Moves all files of the given criteria to to the trash"""
     if prompt:
@@ -299,12 +295,12 @@ def rm_all(criteria, directory=_os.curdir, prompt=True):
         print('Deleting all w/ "{}"...'.format(criteria))
         for name in filter(lambda name: criteria.lower() in name.lower(),
                            _os.listdir(directory)):
-            rm_item(directory, name)
+            rm(_os.path.join(directory, name))
             x += 1
     print('Deleted {} item(s)'.format(x))
 
-def rm_dir(target):
-    """Removes the given target directory from the `shell` trash"""
+def rm_target(target):
+    """Removes the given target from the file system"""
     rms = {'win32': ('del', 'rmdir /s'),
            'linux': ('rm', 'rm -r')}
 
@@ -319,43 +315,36 @@ def rm_dir(target):
         key = 'win32'
     _os.system('{} "{}"'.format(rms[key][i], target))
 
-def rm_item(directory, name):
-    """Moves an item from the given directory with its name including its
-       path neutral version of its origin to the trash"""
+def rm(target):
+    """Moves an item from the given target to the `shell` trash"""
 
-    DEBUG = False
+    target = _os.path.abspath(target)
+    if not _os.path.exists(target):
+        raise FileNotFoundError(target)
 
     from shutil import move
-    from clay.shell.core import rm_dir
+    import uuid
 
-    if not(_os.path.exists(TRASH)):
+    MAX_FILE_NAME_LENGTH = 230
+
+    if not _os.path.exists(TRASH):
         _os.mkdir(TRASH)
 
-    try:
-        target = _os.path.join(directory, name)
-        src_dir = _os.path.dirname(_os.path.abspath(name))
-        dir_info = src_dir.lower().replace('\\', '.').replace(':', '.')
-        new_name = '.'.join((dir_info, name))
-        new_path = _os.path.join(directory, new_name)
-        dst_path = _os.path.join(TRASH, new_name)
-        if DEBUG:
-            print('name', name)
-            print('dir_info', dir_info)
-            print('new_name', new_name)
-            print('new_path', new_path)
-            print('dst_path', dst_path)
-        move(target, new_name)
-        if _os.path.exists(dst_path):
-            if DEBUG:
-                print(name, 'exists in TRASH, deleting...')
-            print('Removing', dst_path)
-            rm_dir(dst_path)
-        move(new_path, TRASH)
-        print('Deleted "{}"'.format(target))
-    except Exception as e:
-        print(e)
-        # rollback removal if something went wrong
-        move(new_path, name)
+    src_dir = _os.path.dirname(target)
+    dir_info = src_dir.lower().replace('\\', '.').replace(':', '.') # make path safe
+
+    base_name = _os.path.basename(target)
+    item_name, item_ext = _os.path.splitext(base_name)
+
+    new_name = '{} {} ({}){}'.format(str(uuid.uuid4()), item_name, dir_info, item_ext)
+    # prevent file name overflow errors by shrinking the dir name
+    while len(new_name) > MAX_FILE_NAME_LENGTH:
+        dir_info = dir_info[len(new_name) - MAX_FILE_NAME_LENGTH:].strip('.')
+        new_name = '{} {} ({}){}'.format(str(uuid.uuid4()), item_name, dir_info, item_ext)
+
+    dst_path = _os.path.join(TRASH, new_name)
+    move(target, dst_path) # move the item to the trash
+    print('Deleted "{}"'.format(target))
 
 def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
               flask_default_name=True):
