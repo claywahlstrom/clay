@@ -23,22 +23,21 @@ class JsonRepository(object):
             raise RuntimeError('database has not been read')
 
     def clear(self):
-        """Clears this database"""
+        """Sets this database to the empty structure"""
         self.__db = self.__empty
 
     def create(self, force=False, write=True):
         """Creates this database if it does not exist and returns
-           a boolean of whether the creation was success or not.
-           Use force=True if this database exists to clear
-           its contents."""
-        if force or not _os.path.exists(self.__name):
-            self.clear()
-            if write:
-                self.write()
-            return True
-        else:
-            print('Cannot overwrite database "' + self.__name + '" because it already exists')
+           a boolean of whether it was successful or not. Use force=True
+           if this database exists to clear its contents."""
+        if _os.path.exists(self.__name) and not force:
+            # could not create the database because it already exists
             return False
+
+        self.clear()
+        if write:
+            self.write()
+        return True
 
     def exists(self):
         """Returns True if this database exists, False otherwise"""
@@ -47,7 +46,7 @@ class JsonRepository(object):
     def get_name(self):
         """Returns the name of this database"""
         return self.__name
-        
+
     def get_empty(self):
         """Returns the empty structure for this database"""
         return self.__empty
@@ -120,7 +119,7 @@ class CrudRepository(JsonRepository):
     def default_model(self):
         """Returns the default model for this repository"""
         return self.__default_model
-        
+
     @default_model.setter
     def default_model(self, model):
         """Sets the default model for this repository"""
@@ -214,7 +213,7 @@ if __name__ == '__main__':
 
     js1 = JsonRepository('README.md', {})
     js2 = JsonRepository('README.mda', [])
-    
+
     testif('initializes new json repo with correct empty structure', js1.empty, {})
     testif('fails to overwrite when already exists and not forced', js1.create(force=False, write=False), False)
     testif('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
