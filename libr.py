@@ -274,15 +274,19 @@ def define(words):
     except:
         print('No definitions found on', inituri)
 
-def proper_title(title):
+def proper_title(title, ignore_acronyms=True):
     """Returns the title with proper casing"""
     words = title.split(' ')
-    title = ' '.join(map(proper_word, words))
+    title = ' '.join(
+        map(lambda word: proper_word(word, ignore_acronyms=ignore_acronyms),
+            words))
     return title[0].upper() + title[1:]
 
-def proper_word(word):
+def proper_word(word, ignore_acronyms=True):
     """Returns the word with proper casing"""
-    if word.lower() not in SHORT_WORDS:
+    if word.isupper() and not ignore_acronyms:
+        return word
+    elif word.lower() not in SHORT_WORDS:
         return word.capitalize()
     return word.lower()
 
