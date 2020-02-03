@@ -6,6 +6,7 @@ Basic operations for lines, lists, and files
 
 # possible: rmdup could use "set" object to remove duplicates
 
+import builtins as _builtins
 import traceback as _traceback
 
 TEST_LIST = ['h', 'e', 'l', 'l', 'o']
@@ -30,7 +31,7 @@ def frange(start, stop, step):
 def join_lines(file, join_sep=', '):
     """Returns the lines of text from the given file (object or str)
        joined by the separator"""
-    if type(file) == __builtins__.list:
+    if type(file) == _builtins.list:
         return join_sep.join(file)
     elif file.__class__.__module__ == '_io':
         fp = file
@@ -90,7 +91,7 @@ def printlines(content, lines=0, numbered=True):
             chunks = [x.rstrip() for x in f.readlines()]
     elif type(content) == list:
         chunks = [line.rstrip() for line in lines]
-    assert type(chunks) == __builtins__.list
+    assert type(chunks) == _builtins.list
 
     if not(lines):
         lines = len(chunks)
@@ -116,7 +117,7 @@ if __name__ == '__main__':
 
     testif('apply returns correct type (list)',
         type(apply(lambda x: x, [0, 0])),
-        __builtins__.list)
+        _builtins.list)
     testif('apply returns correct type (tuple)',
         type(apply(lambda x: x, (0, 0))),
         tuple)
