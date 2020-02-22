@@ -1,12 +1,10 @@
 
-
 """
 Collection of common and advanced math operations
 
 """
 
 import math
-import statistics
 
 from clay.lists import apply as _apply
 from clay.shell.core import is_unix as _is_unix
@@ -196,17 +194,6 @@ def max_M(func, interval):
             m = i
             mval = abs(func(m))
     return m
-
-def multiplicity(q, N):
-    """Returns the multiplicity Omega given the number of objects
-       distribute q and the number of objects to distribute to N"""
-    return int(math.factorial(q + N - 1) / (math.factorial(q) * math.factorial(N - 1)))
-
-def nchoosek(n, k):
-    """Returns the number of combinations of n items taken k at a time"""
-    if n < k:
-        return 0
-    return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))
 
 class Polar(object):
     """Class Polar can be used to convert from polar to cartesian"""
@@ -450,4 +437,3 @@ if __name__ == '__main__':
     testif('series_sum returns correct value (convergent2 function)',
         series_sum(TESTS['convergent2']), 1.7449,
         transformer=lambda x: round(x, 4))
-
