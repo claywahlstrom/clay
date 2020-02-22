@@ -50,6 +50,18 @@ class list(list):
            the query is empty"""
         return next(iter(self), default)
 
+    def group_by(self, property):
+        """Returns the elements grouped by the given property"""
+        grouped = {}
+        for each in self:
+            if property in each:
+                if each[property] not in grouped:
+                    grouped[each[property]] = []
+                grouped[each[property]].append(each)
+            else:
+                print('Could not group by {}: {}'.format(property, each))
+        return grouped
+
     def select(self, selector):
         """Returns each element projected into a new form using the selector function"""
         projection = []
