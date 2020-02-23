@@ -973,9 +973,9 @@ if __name__ == '__main__':
     testif('webdoc returns full name and no query',
         WebDocument(LINKS['1MB']).get_basename(full=True),
         ('download.thinkbroadband.com.1MB.zip', None))
-    testif('webdoc returns correct Minecraft html title',
-        WebDocument(TEST_LINK).get_title().lower(),
-        'Official Site | Minecraft'.lower())
+    testif('webdoc returns correct website html title',
+        WebDocument(EXAMPLE_URL).get_title(),
+        'Example Domain')
     testif('webdoc returns correct YouTube html title',
         WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
         'I tracked every minute of my life for 3 months. - YouTube')
