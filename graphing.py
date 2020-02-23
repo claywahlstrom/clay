@@ -48,55 +48,54 @@ class Graph(object):
         return '%s(%r)' % (self.__class__.__name__, list(self.sd.items()))
 
     def build(self, limit=0, shorten_keys=False, with_count=False):
-        longest_key_len = max(map(lambda key: len(str(key)), list(self.sd.keys())))
-        base_longest_key_len = longest_key_len
-        if all(type(x) == int for x in self.sd.values()):
-            # if integers, just print out one per count
-            width = min(max(self.sd.values()), SCREEN_WD)
+        longest_key_len = max(map(lambda x: len(str(x)), self.sd.keys()))
+        longest_value_len = max(map(lambda x: len(str(x)), self.sd.values()))
+        max_value = max(self.sd.values())
+        width = self.max_width - 1 # account for the key-value spacer
+        if with_count:
+            # account for the count spacer and parens
+            width -= longest_value_len + 3
+        if shorten_keys or longest_key_len >= width:
+            width -= Graph.SHORT_LENGTH
+            longest_key_len = Graph.SHORT_LENGTH
+        # if the max value stays within the width
+        if max_value <= width:
             using = 'ints'
         else:
-            # otherwise, adjust width for better representation of floats
-            width = self.max_width
             using = 'floats'
-        if width + longest_key_len + 1 > SCREEN_WD:
-            using = 'floats'
-        width = max(width, SCREEN_WD) - longest_key_len - 1
-        if with_count:
-            max_count_len = max(map(len, map(str, list(self.sd.values()))))
-            width -= 3 + max_count_len
-        if longest_key_len > width:
-            print('Using shortened keys')
-            shorten_keys = True
-            longest_key_len = Graph.SHORT_LENGTH
 
-        max_val = max(list(self.sd.values()))
-
-        print('      Graph for', self.title)
-        print('longest key len', longest_key_len)
-        print('    graph width', width)
-        print('      max value', max_val)
-        print('          using', using)
-        print('     with count', with_count)
+        print('        Graph for', self.title)
+        print('            limit', limit)
+        print('  longest key len', longest_key_len)
+        print('longest value len', longest_value_len)
+        print('      graph width', width)
+        print('        max width', self.max_width)
+        print('        max value', max_value)
+        print('            using', using)
+        print('       with count', with_count)
         shorten_wings = 5 * ((Graph.SHORT_LENGTH - 3) // 10)
         for i, (k, v) in enumerate(self.sd.items()):
             if shorten_keys and len(k) > Graph.SHORT_LENGTH:
                 k = k[:shorten_wings] + '...' + k[-shorten_wings:]
             print('{:>{}}'.format(k, longest_key_len), end=' ')
             if with_count:
-                print('({:>{}})'.format(v, max_count_len), end=' ')
+                print('({:>{}})'.format(v, longest_value_len), end=' ')
             try:
-                if using == 'ints' and base_longest_key_len < width and \
-                   v <= SCREEN_WD - longest_key_len - 1:
+                if using == 'ints':
                     print('0' * int(v))
                 else:
-                    print('0' * int(v * width / max_val))
+                    print('0' * int(v / max_value * width))
             except Exception as e:
                 print(e)
             if limit != 0 and i >= limit:
                 break
+
+        # graphed attributes
+        self.limit = limit
         self.longest_key_len = longest_key_len
+        self.longest_value_len = longest_value_len
         self.width = width
-        self.max_val = max_val
+        self.max_value = max_value
         self.using = using
         self.with_count = with_count
 
