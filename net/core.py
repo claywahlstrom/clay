@@ -40,7 +40,7 @@ LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 EXAMPLE_URL = 'http://example.com'
 TEST_LINK = 'https://minecraft.net/en-us/'
-VALID_SCHEMES = ('ftp', 'http', 'https')
+VALID_SCHEMES = ('file', 'ftp', 'http', 'https')
 WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
            'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
            'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
@@ -649,7 +649,7 @@ class WebDocument(object):
             if type(uri) != str:
                 raise TypeError('uri must of type str')
             elif not any(uri.startswith(scheme) for scheme in VALID_SCHEMES):
-                raise ValueError('uri must have a ftp or http[s] scheme')
+                raise ValueError('uri must have a file, ftp, or http[s] scheme')
         self.__raw_uri = uri
         self.__uri = urllib.parse.urlsplit(uri)
 
