@@ -201,7 +201,6 @@ class Citation(object):
     def __init__(self, link):
         self.link = link
         self.build_dict()
-        self.to_string()
 
     def build_dict(self):
         """Sets up the variables"""
@@ -209,11 +208,11 @@ class Citation(object):
         page = req.content
         soup = _BS(page, 'html.parser')
         now = _time.ctime().split()
-        data = {}
 
-        data['title'] = _get_title(soup)
-        data['date_retr'] = ' '.join([str(int(now[2])), now[1] + '.',now[-1]])
-        data['url'] = self.link
+        self.data = {}
+        self.data['title'] = _get_title(soup)
+        self.data['date_retr'] = ' '.join([str(int(now[2])), now[1] + '.',now[-1]])
+        self.data['url'] = self.link
 
         for prop in Citation.REQUIRED:
             metas = ['og','article']
@@ -221,7 +220,7 @@ class Citation(object):
                 desc = soup.find_all(attrs={'property': meta + ':' + prop})
                 if desc: # if found
                     try:
-                        data[prop] = desc[0]['content']
+                        self.data[prop] = desc[0]['content']
                     except Exception as e:
                         print(e)
                     break
@@ -229,15 +228,14 @@ class Citation(object):
                     desc = soup.find_all(attrs={'name': prop})
             if desc: # if found
                 try:
-                    data[prop] = desc[0]['content']
+                    self.data[prop] = desc[0]['content']
                 except Exception as e:
                     print(e)
 
-        if not('author' in data.keys()):
+        if 'author' not in self.data.keys():
             print('author not found')
-            data['author'] = soup.find_all('span', attrs={'itemprop': 'name'})[0].text
+            self.data['author'] = soup.find_all('span', attrs={'itemprop': 'name'})[0].text
 
-        self.data = data
         self.soup = soup
         self.req = req
         self.page = page
@@ -256,7 +254,7 @@ class Citation(object):
             string += '"' + self.data['title'] + '." '
         if 'publisher' in self.data.keys():
             string += self.data['publisher'] + COM_SP
-        string += COM_SP.join([self.data['date_retr'], self.data['url']]) + PER_SP[0] # using data
+        string += COM_SP.join([self.data['date_retr'], self.data['url']]) + PER_SP[0]
         return string
 
 def define(words):
