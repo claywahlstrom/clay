@@ -392,9 +392,6 @@ if __name__ == '__main__':
         liminf(TESTS['harmonic'], step_mag=True,
             logging=LIMPATH_FMT.format('harmonic')), 0.0)
 
-    testif('multiplicity returns correct quantity for (4, 3)',
-        multiplicity(4, 3), 15)
-
     testif('roots_approx returns empty list for polynomials without roots',
         roots_approx(TESTS['imaginary'], 0, 3),
         [])
