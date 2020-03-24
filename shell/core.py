@@ -11,6 +11,11 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
+def is_dev_env():
+    """Returns true if the script is running within the
+       developer's environment, false otherwise"""
+    return _os.path.exists(r'E:\Docs')
+
 def is_idle():
     """Returns true if the script is running within IDLE,
        false otherwise"""
@@ -402,8 +407,10 @@ def timeout(seconds, hidden=False):
             print()
 
 if __name__ == '__main__':
-    jc = JavaCompiler(directory=r'E:\Docs\Clay\Computer\Software\java\gravity')
-    jc.compile(exclude=['-', 'unused'])
+    if is_dev_env():
+        # only test on developer's machine due to paths
+        jc = JavaCompiler(directory=r'E:\Docs\Clay\Tech\Software\java\gravity')
+        jc.compile(exclude=['-', 'unused'])
 
     # used to test if pause runs correctly
     # is_unix = lambda: True
