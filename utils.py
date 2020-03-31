@@ -10,17 +10,11 @@ import sys as _sys
 
 class Anonymous(object):
     """Class Anonymous can be used to initialize properties
-       using a list, tuple, or dictionary"""
+       using dictionaries or keyword arguments"""
     def __init__(self, *initial_data, **kwargs):
         for param in initial_data:
-            if type(param) == dict:
-                for key in param:
-                    setattr(self, key, param[key])
-            elif type(param) in (list, tuple):
-                for item in param:
-                    setattr(self, item, item)
-            else:
-                setattr(self, param, param)
+            for key in param.keys():
+                setattr(self, key, param[key])
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
@@ -151,6 +145,10 @@ if __name__ == '__main__':
         map_args(_map_args_test, array, z = 4),
         (7, 10, 22, 31))
 
+    testif('Anonymous raises AttributeError for invalid argument types',
+        lambda: Anonymous([1, 2, 3]),
+        None,
+        raises=AttributeError)
     obj = Anonymous({
         'one': 1,
         'two': 2,
