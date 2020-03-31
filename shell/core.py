@@ -358,9 +358,8 @@ def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
        use the command-line arguments"""
     if title == FLASK_APP:
         add = _os.path.split(_os.path.dirname(_os.path.abspath(RUNTIME_ARGS[0])))[-1]
-    if args:
-        if len(RUNTIME_ARGS) > 1:
-            name += ' ' + ' '.join(RUNTIME_ARGS[1:])
+    if args and len(RUNTIME_ARGS) > 1:
+        title += ' ' + ' '.join(RUNTIME_ARGS[1:])
     if len(add) > 0:
         title += ' - '  + add
     if not(is_unix()):
