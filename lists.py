@@ -9,9 +9,6 @@ Basic operations for lines, lists, and files
 import io as _io
 import traceback as _traceback
 
-TEST_FILE = _io.StringIO('h\ne\nl\nl\no')
-TEST_LIST = ['h', 'e', 'l', 'l', 'o']
-
 def apply(function, vector):
     """Applies the function to the given vector and returns the result
        of the same type"""
@@ -149,6 +146,9 @@ def rmdup(lizt):
 if __name__ == '__main__':
 
     from clay.tests import testif
+
+    TEST_FILE = _io.StringIO('h\ne\nl\nl\no')
+    TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
     testif('apply returns correct type (list)',
         type(apply(lambda x: x, [0, 0])),
