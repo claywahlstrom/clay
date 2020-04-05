@@ -6,9 +6,10 @@ Basic operations for lines, lists, and files
 
 # possible: rmdup could use "set" object to remove duplicates
 
-import builtins as _builtins
+import io as _io
 import traceback as _traceback
 
+TEST_FILE = _io.StringIO('h\ne\nl\nl\no')
 TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
 def apply(function, vector):
@@ -31,61 +32,81 @@ def frange(start, stop, step):
 def join_lines(file, join_sep=', '):
     """Returns the lines of text from the given file (object or str)
        joined by the separator"""
-    if type(file) == _builtins.list:
-        return join_sep.join(file)
-    elif file.__class__.__module__ == '_io':
+    if file.__class__.__module__ == '_io':
         fp = file
     elif type(file) == str:
         fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
 
-class list(list):
+def extend(iterable=()):
+    """Returns an instance of Enumerable using the given iterable"""
 
-    """Class list contains extension methods that can be used
-       to query and filter data like Microsoft's (c) LINQ
-       feature used in C#"""
+    if not isinstance(iterable, (list, set, tuple)):
+        raise TypeError('iterable must be of type list, set or tuple')
 
-    def first_or_default(self, default=None):
-        """Returns the first item in this query or the default if
-           the query is empty"""
-        return next(iter(self), default)
+    base = type(iterable)
 
-    def group_by(self, property):
-        """Returns the elements grouped by the given property"""
-        grouped = {}
-        for each in self:
-            if property in each:
-                if each[property] not in grouped:
-                    grouped[each[property]] = []
-                grouped[each[property]].append(each)
+    class Enumerable(base):
+
+        """Class Enumerable contains extension methods that can be
+           used to query and filter data like Microsoft's (c) LINQ
+           feature in C#"""
+
+        def __repr__(self):
+            """Returns the string representation of this Enumerable"""
+            return '{}({})'.format(self.__class__.__name__, base(self))
+
+        def first_or_default(self, default=None):
+            """Returns the first item in this Enumerable or
+               the default if this Enumerable is empty"""
+            return next(iter(self), default)
+
+        def group_by(self, property):
+            """Returns items grouped by the given property"""
+            grouped = {}
+            for each in self:
+                if property in each:
+                    if each[property] not in grouped:
+                        grouped[each[property]] = []
+                    grouped[each[property]].append(each)
+                else:
+                    print('Could not group by {}: {}'.format(property, each))
+            return grouped
+
+        def select(self, selector):
+            """Returns a list of items projected into
+               a new form using the selector function"""
+            projection = []
+            for each in self:
+                new_form = None # default form
+                try:
+                    new_form = selector(each)
+                except (KeyError, IndexError, TypeError) as ex:
+                    print('{}.select errored on {}'.format(
+                        self.__class__.__name__,
+                        each))
+                    _traceback.print_exc()
+                    raise ex
+                projection.append(new_form)
+            return list(projection)
+
+        def where(self, predicate):
+            """Filters items based on the given predicate"""
+            return Enumerable(base(filter(predicate, self)))
+
+        def whereif(self, condition, predicate):
+            """Filters items based on the given condition and predicate"""
+            if condition:
+                return self.where(predicate)
             else:
-                print('Could not group by {}: {}'.format(property, each))
-        return grouped
+                return self
 
-    def select(self, selector):
-        """Returns each element projected into a new form using the selector function"""
-        projection = []
-        for each in self:
-            new_form = None # default form
-            try:
-                new_form = selector(each)
-            except (KeyError, IndexError, TypeError) as ex:
-                print('list.select errored on', each)
-                _traceback.print_exc()
-                raise ex
-            projection.append(new_form)
-        return list(projection)
+        @property
+        def base(self):
+            """Base class for this Enumerable"""
+            return base
 
-    def where(self, predicate):
-        """Filters elements based on the given predicate"""
-        return list(filter(predicate, self))
-
-    def whereif(self, condition, predicate):
-        """Filters elements based on the given condition and predicate"""
-        if condition:
-            return self.where(predicate)
-        else:
-            return self
+    return Enumerable(iterable)
 
 def printall(items):
     """Prints each item from the given items iterable"""
@@ -98,12 +119,14 @@ def printall(items):
 
 def printlines(content, lines=0, numbered=True):
     """Prints the given content (list of str or str), w/ or w/o line numbers"""
-    if type(content) == str:
-        with open(content,'r') as f:
-            chunks = [x.rstrip() for x in f.readlines()]
-    elif type(content) == list:
-        chunks = [line.rstrip() for line in lines]
-    assert type(chunks) == _builtins.list
+    if not isinstance(content, (list, str)):
+        raise TypeError('content must be of type str or list')
+
+    if isinstance(content, str):
+        with open(content, 'r') as fp:
+            content = fp.readlines()
+
+    chunks = [line.rstrip() for line in content]
 
     if not(lines):
         lines = len(chunks)
@@ -129,7 +152,7 @@ if __name__ == '__main__':
 
     testif('apply returns correct type (list)',
         type(apply(lambda x: x, [0, 0])),
-        _builtins.list)
+        list)
     testif('apply returns correct type (tuple)',
         type(apply(lambda x: x, (0, 0))),
         tuple)
@@ -155,39 +178,48 @@ if __name__ == '__main__':
         raises=AssertionError)
 
     testif('join_lines returns correct string',
-        join_lines(TEST_LIST),
+        join_lines(TEST_FILE),
         'h, e, l, l, o')
+
+    testif('extend raises TypeError for invalid iterable (str)',
+        lambda: extend('string'),
+        None,
+        raises=TypeError)
+    testif('extend raises TypeError for invalid iterable (dict)',
+        lambda: extend({}),
+        None,
+        raises=TypeError)
 
     from clay.utils import Anonymous
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
     expected_default = Anonymous(a=0)
 
-    testif('list extension "first or default" selects correct element',
-        list(objs).where(lambda x: x.a == 2).first_or_default(),
+    testif('Enumerable "first or default" selects correct element',
+        extend(objs).where(lambda x: x.a == 2).first_or_default(),
         objs[1])
-    testif('list extension "first or default" selects default when no element found',
-        list(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
+    testif('Enumerable "first or default" selects default when no element found',
+        extend(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
         expected_default)
-    testif('list extension "select" raises KeyError when key missing',
-        lambda: list([{'key': 'value'}]).select(lambda x: x[0]),
+    testif('Enumerable "select" raises KeyError when key missing',
+        lambda: extend([{'key': 'value'}]).select(lambda x: x[0]),
         None,
         raises=KeyError)
-    testif('list extension "select" raises IndexError when index out of bounds',
-        lambda: list([[0]]).select(lambda x: x[1]),
+    testif('Enumerable "select" raises IndexError when index out of bounds',
+        lambda: extend([[0]]).select(lambda x: x[1]),
         None,
         raises=IndexError)
-    testif('list extension "select" raises TypeError when list indices are of incorrect type',
-        lambda: list([[0]]).select(lambda x: x['key']),
+    testif('Enumerable "select" raises TypeError when list indices are of incorrect type',
+        lambda: extend([[0]]).select(lambda x: x['key']),
         None,
         raises=TypeError)
-    testif('list extension "select" selects data from indices',
-        list([['John', 'Smith', '1/1/2000']]).select(lambda x: [x[0], x[2]]),
+    testif('Enumerable "select" selects data from indices',
+        extend([['John', 'Smith', '1/1/2000']]).select(lambda x: [x[0], x[2]]),
         [['John', '1/1/2000']])
 
-    test_queryable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
+    test_iterable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
 
-    testif('list extensions where-select selects property correctly',
-        list(test_queryable).where(lambda x: x['num'] == 2).select(lambda x: x['num']),
+    testif('Enumerable where-select selects property correctly',
+        extend(test_iterable).where(lambda x: x['num'] == 2).select(lambda x: x['num']),
         [2, 2])
 
     printall(TEST_LIST)
