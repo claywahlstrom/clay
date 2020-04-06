@@ -42,7 +42,7 @@ class Essay(object):
         self.line_start = line_start
         self.line_sep = line_sep
         end = '\n\n' # default
-        if type(source) == bytes:
+        if isinstance(source, bytes):
             if b'\x0c' in source:
                 end = '\x0c' # google doc's new page delimiter
             source = source.decode('utf8')

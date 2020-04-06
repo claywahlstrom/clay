@@ -31,7 +31,7 @@ def join_lines(file, join_sep=', '):
        joined by the separator"""
     if file.__class__.__module__ == '_io':
         fp = file
-    elif type(file) == str:
+    elif isinstance(file, str):
         fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
 
@@ -107,9 +107,9 @@ def extend(iterable=()):
 
 def printall(items):
     """Prints each item from the given items iterable"""
-    if type(items) == dict:
-        for item in list(items.keys()):
-            print(item, ':', items[item])
+    if isinstance(items, dict):
+        for key, value in items.items():
+            print(key, ':', value)
     else:
         for item in items:
             print(item)

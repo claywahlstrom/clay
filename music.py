@@ -74,7 +74,7 @@ else:
 
 def play_note(note, register, length, tempo):
     """Plays note of type str or int at the given register with length and tempo"""
-    if type(note) == str:
+    if isinstance(note, str):
         note = STEP_DICT[note]
     _ws.Beep(get_hertz(REGS[register], note), int(length * 60 / tempo * LEN_FACTOR))
 

@@ -74,7 +74,8 @@ class Watch(object):
        in the debugging phase of a project."""
 
     def __init__(self, objs=[], module='__main__'):
-        if type(objs) not in (list, tuple) or any(type(obj) != str for obj in objs):
+        if not isinstance(objs, (list, set, tuple)) \
+                or any(not isinstance(obj, str) for obj in objs):
             raise TypeError('objs must be a list of strings')
 
         self.objs = objs
@@ -87,7 +88,7 @@ class Watch(object):
 
     def add(self, var):
         """Adds the given object to this Watch"""
-        if type(var) != str:
+        if not isinstance(var, str):
             raise TypeError('var must be the string name of the object')
         if callable(self.get_dict()[var]):
             raise TypeError('callable types cannot be added to this watch')
@@ -103,11 +104,11 @@ class Watch(object):
 
     def remove(self, var):
         """Removes the given object from this Watch"""
-        if type(var) in (list, tuple):
+        if isinstance(var, (list, set, tuple)):
             for v in var:
-                (self.objs).remove(v)
-        elif type(var) == str:
-            (self.objs).remove(var)
+                self.objs.remove(v)
+        elif isinstance(var, str):
+            self.objs.remove(var)
 
     def start_recording(self, useLocals):
         """Records new objects created after this point until end

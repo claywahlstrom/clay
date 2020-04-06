@@ -359,7 +359,7 @@ class TagFinder(object):
     def __init__(self, page):
         """Initalizes this TagFinder object"""
         self.request = None
-        if type(page) == bytes:
+        if isinstance(page, bytes):
             self.src = page
         elif _os.path.exists(page):
             with open(page, 'rb') as fp:
@@ -396,7 +396,7 @@ class TagFinder(object):
             print('None', file=file)
 
     def store_request(self, filename):
-        assert type(self.src) == bytes
+        assert isinstance(self.src, bytes)
         with open(filename, 'wb') as fp:
             fp.write(self.src)
 
@@ -638,7 +638,7 @@ class WebDocument(object):
 
     def set_query(self, query):
         """Sets the internal query to the given dictionary"""
-        if query is not None and type(query) != dict:
+        if query is not None and not isinstance(query, dict):
             raise TypeError('query must be of type dict or none')
         self.__query = query
 
@@ -646,8 +646,8 @@ class WebDocument(object):
         """Sets the uri to the given string. Raises ValueError
            if the uri scheme is not supported"""
         if uri is not None:
-            if type(uri) != str:
-                raise TypeError('uri must of type str')
+            if not isinstance(uri, str):
+                raise TypeError('uri must be of type str')
             elif not any(uri.startswith(scheme) for scheme in VALID_SCHEMES):
                 raise ValueError('uri must have a file, ftp, or http[s] scheme')
         self.__raw_uri = uri
@@ -829,7 +829,7 @@ class PollenApiClient(object):
         else:
             # updates afternoon forecasts for today only (floor of cos of day)
             day += 0.5 * _math.floor(_math.cos(day)) * _math.floor(_dt.datetime.now().hour / 12)
-            if type(self.db[day]) == str:
+            if isinstance(self.db[day], str):
                 data = self.db[int(day)].title()
             else:
                 data = self.db[day]

@@ -229,7 +229,7 @@ ls = _os.listdir # alias
 def lsgrep(regex, directory=_os.curdir, recurse=False):
     """Finds and returns all files containing `regex` (string or list) using re.findall"""
     import re
-    if type(regex) == str:
+    if isinstance(regex, str):
         regex = [regex]
     results = []
     for root, dirs, files in _os.walk(directory):
@@ -384,7 +384,7 @@ def start(program):
 
 def timeout(seconds, hidden=False):
     """Waits for the specified time in seconds"""
-    if type(seconds) != int:
+    if not isinstance(seconds, int):
         raise TypeError('seconds must be of type int')
     if seconds < 0:
         raise ValueError('seconds must be >= 0')

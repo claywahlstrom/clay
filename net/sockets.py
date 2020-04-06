@@ -84,7 +84,7 @@ class AdvancedSocket:
 
     def send_bin(self, text, charset=UTF_SET):
         """Sends the text through the stream"""
-        if type(text) == str:
+        if isinstance(text, str):
             text = text.encode(charset)
         self.sock.send(text)
 

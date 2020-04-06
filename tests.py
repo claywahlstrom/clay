@@ -28,7 +28,7 @@ def testif(expectation, test_input, test_output, raises=None, transformer=lambda
        given test input to the test output. Test output may either
        be a value or function accepting one argument."""
     if type(test_input).__name__ == 'function' and raises is not None: # lambda expressions
-        if type(raises) != type:
+        if not isinstance(raises, type):
             raise TypeError('raises must be an error type')
         has_raised = False
         is_correct_type = False

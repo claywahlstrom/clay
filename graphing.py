@@ -18,10 +18,10 @@ class Graph(object):
     SHORT_LENGTH = 30
 
     def __init__(self, data, title=None, max_width=SCREEN_WD, sort=True):
-        if type(data) == _SortableDict:
+        if type(data) is _SortableDict:
             sd = data
         else:
-            if type(data) not in (_OrderedDict, dict):
+            if not isinstance(data, dict):
                 raise TypeError('data needs to be in key-value pairs')
 
             sd = _SortableDict()
@@ -124,7 +124,7 @@ class Histogram(Graph):
         if columns is not None and type(columns) not in (tuple, list):
             raise TypeError('columns must be of type tuple')
 
-        if type(data) == bytes:
+        if isinstance(data, bytes):
             data = data.decode('utf8', errors='ignore')
         sd = _SortableDict()
         if columns and data is None:

@@ -11,11 +11,11 @@ class Constant:
 
     def __init__(self, name, value, units=None):
         super().__init__()
-        if type(name) != str:
+        if not isinstance(name, str):
             raise TypeError('name must be of type str')
-        if type(value) not in (complex, float, int):
+        if not isinstance(value, (complex, float, int)):
             raise TypeError('value must be a numerical type')
-        if units is not None and type(units) != str:
+        if units is not None and not isinstance(units, str):
             raise TypeError('units must be of type str')
         self.__name = name
         self.__value = value

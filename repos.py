@@ -9,6 +9,7 @@ import json as _json
 import os as _os
 
 class JsonRepository(object):
+    """Wrapper for working with JSON database files"""
 
     def __init__(self, name, empty):
         """Intializes this JSON repository with the given name
@@ -77,9 +78,9 @@ class JsonRepository(object):
         for entity in self.__db:
             if predicate(entity):
                 print('{}: pruning "{}"...'.format(self.__name, entity))
-                if type(temp) == dict:
+                if isinstance(temp, dict):
                     temp.pop(entity)
-                else: # type(temp) == list
+                else: # isinstance(temp, list)
                     temp.remove(entity)
                 modified = True
         self.__db = temp

@@ -26,7 +26,7 @@ class Search(object):
     """Used to search a file system"""
     def __init__(self, method='name', folder='.', string='', ext=None):
         """Searches files by method, folder, regex string, ext"""
-        if ext is not None and type(ext) != str:
+        if ext is not None and not isinstance(ext, str):
             raise TypeError('extension must be of type string')
         # variable initializing
         self.method = method
@@ -132,7 +132,7 @@ def print_files_containing(string, directories, ext=None):
     """Given a string, directory(ies), and optional extension,
        prints the search results for the files containing the
        string"""
-    if type(directories) == str:
+    if isinstance(directories, str):
         directories = [directories]
 
     for d in directories:

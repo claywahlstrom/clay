@@ -4,6 +4,7 @@ Collection of common and advanced math operations
 
 """
 
+import fractions
 import math
 
 from clay.lists import apply as _apply
@@ -62,7 +63,7 @@ dfdx = differential # alias
 
 def factors(number):
     """Returns a mapping of factors for the given int"""
-    if type(number) != int:
+    if not isinstance(number, int):
         raise TypeError('number must be an int')
     factors = {}
     for num in range(1, number + 1):
@@ -72,7 +73,7 @@ def factors(number):
 
 def print_fraction(fraction):
     """Prints the the given Fraction in a pretty manner"""
-    if type(fraction).__name__ != 'Fraction':
+    if not isinstance(fraction, fractions.Fraction):
         raise TypeError('fraction must be of type Fraction, found %s' % type(fraction).__name__)
     num = fraction.numerator
     den = fraction.denominator
@@ -83,7 +84,7 @@ def print_fraction(fraction):
 def integrate(func, interval=None, rects=100000):
     """Returns the result of the integral from the inclusive
        interval (a, b) using a Riemann sum approximation"""
-    if interval is None or type(interval) != tuple:
+    if interval is None or not isinstance(interval, tuple):
         interval = eval(input('Interval (a, b): '))
     a, b = interval
     if a > b:
@@ -106,7 +107,7 @@ def liminf(func, i=1, step_mag=False, logging=None):
        and divergent funcs"""
 
     if logging is not None:
-        if type(logging) == str:
+        if isinstance(logging, str):
             file = open(logging, 'w')
 
         print('liminf for', func, file=file)
@@ -227,7 +228,7 @@ class Radical(object):
 
     def __init__(self, outside, inside):
         """Initializes this radical using the given inside and outside integers"""
-        if type(outside) != int or type(inside) != int:
+        if not isinstance(outside, int) or not isinstance(inside, int):
             raise TypeError('outside and inside must be of type int')
         self.outside = outside
         self.inside = inside
