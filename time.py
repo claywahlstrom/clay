@@ -22,25 +22,31 @@ class datetime(_dt.datetime):
     """Provides extension methods to the datetime.datetime object"""
 
     def round(self, minutes=0, seconds=0):
-        """Returns the datetime rounded the given number of minutes or seconds"""
+        """Rounds this datetime to the given number of nearest minutes and seconds.
+           Returns self to allow for chaining"""
         if seconds != 0:
+            # if halfway or more
             if self.second % seconds >= seconds / 2:
+                # round up
                 self += _dt.timedelta(seconds=seconds - self.second % seconds)
             else:
+                # round down
                 self -= _dt.timedelta(seconds=self.second)
 
         if minutes != 0:
+            # if halfway or more
             if self.minute % minutes >= minutes / 2:
+                # round up
                 self += _dt.timedelta(seconds=(minutes - self.minute % minutes) * 60)
             else:
+                # round down
                 self -= _dt.timedelta(seconds=self.minute % minutes * 60)
-        
-        return self    
+
+        return self
 
 def get_time_struct():
     """Returns the local time as struct object"""
-    from time import localtime, time
-    return localtime(time())
+    return _time.localtime(_time.time())
 
 def get_time_until(year, month, day):
     """Returns the timedelta object from today until the
@@ -84,7 +90,7 @@ class ReadingTimer(object):
         else:
             total = str(round(total_sec / 60, 2)) + ' TOTAL minutes'
         return total
-        
+
     def is_paused(self):
         return self.__paused
 
@@ -181,7 +187,7 @@ class SunTimes(object):
             cont = ''
             soup = _BS(cont, 'html.parser')
             scraped = ['offline'] * SunTimes.COLS * 2
-            
+
         # parse the data into rows
         data = []
         for i in range(0, len(scraped), SunTimes.COLS):
@@ -242,7 +248,7 @@ class SunTimes(object):
 if __name__ == '__main__':
 
     from clay.tests import testif
-    
+
     testif('datetime rounds seconds down',
        datetime(2000, 1, 1, 0, 0, 2).round(seconds=5),
        _dt.datetime(2000, 1, 1, 0, 0, 0))
@@ -269,7 +275,7 @@ if __name__ == '__main__':
 
     print('birthday', get_time_until(2019, 11, 6))
     print('exams over', get_time_until(2018, 12, 13))
-    
+
     print(get_time_struct())
     sun = SunTimes()
     print('sunset tonight is', sun.get_sunset())
