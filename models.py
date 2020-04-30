@@ -56,9 +56,10 @@ class Anonymous(Serializable):
 
     @property
     def props(self):
-        """Returns the attributes for this Anonymous"""
-        attrs = _inspect.getmembers(self, lambda a:not(_inspect.isroutine(a)))
-        return [a[0] for a in attrs if a[0].count('__') < 2]
+        """Returns the attributes for this Anonymous dynamically"""
+        attrs = _inspect.classify_class_attrs(Anonymous)
+        # return the difference of the instance and class attributes
+        return list(set(dir(self)).difference(set(a.name for a in attrs)))
 
     def update(self, *initial_data, **kwargs):
         """Updates attributes using dictionaries and keyword arguments"""
