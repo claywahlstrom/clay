@@ -5,40 +5,7 @@ Utilities for Python
 """
 
 import collections as _collections
-import inspect as _inspect
 import sys as _sys
-
-class Anonymous(object):
-    """Class Anonymous can be used to initialize attributes
-       using dictionaries and keyword arguments"""
-    def __init__(self, *initial_data, **kwargs):
-        """Initializes this Anonymous"""
-        self.update(*initial_data, **kwargs)
-
-    def __repr__(self):
-        """Returns the string representation for this Anonymous"""
-        return r'Anonymous({})'.format(
-            ', '.join(name + '=' + str(getattr(self, name)) for name in self.get_attributes()))
-
-    def get_attributes(self):
-        """Returns the attributes for this Anonymous"""
-        attrs = _inspect.getmembers(self, lambda a:not(_inspect.isroutine(a)))
-        return [a[0] for a in attrs if a[0].count('__') < 2]
-
-    def to_dict(self):
-        """Returns the attributes as key-value pairs for this Anonymous"""
-        result = {}
-        for attr in self.get_attributes():
-            result[attr] = getattr(self, attr)
-        return result
-
-    def update(self, *initial_data, **kwargs):
-        """Updates attributes using dictionaries and keyword arguments"""
-        for param in initial_data:
-            for key in param.keys():
-                setattr(self, key, param[key])
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
 
 def human_hex(dec):
     """Converts decimal values to human readable hex.
@@ -49,8 +16,6 @@ def map_args(function, iterable, *args, **kwargs):
     """Maps iterable to a function with arguments/keywords.
        Dynamic types can be used"""
     return type(iterable)(function(x, *args, **kwargs) for x in iterable)
-
-Model = Anonymous # alias
 
 def _map_args_test(x, y=2, z=3):
     """A test function for the map_args function. Returns the sum of x, y, z"""
@@ -153,24 +118,6 @@ if __name__ == '__main__':
     testif('map_args returns correct values',
         map_args(_map_args_test, array, z = 4),
         (7, 10, 22, 31))
-
-    testif('Anonymous raises AttributeError for invalid argument types',
-        lambda: Anonymous([1, 2, 3]),
-        None,
-        raises=AttributeError)
-    obj = Anonymous({
-        'one': 1,
-        'two': 2,
-    }, three=3)
-    testif('Anonymous sets attribute correctly (1)', obj.one, 1)
-    testif('Anonymous sets attribute correctly (2)', obj.two, 2)
-    testif('Anonymous sets attribute correctly (3)', obj.three, 3)
-    testif('Anonymous has three attributes set', len(obj.get_attributes()), 3)
-    obj.update({'two': obj.three}, three=obj.two) # swap the values of two and three
-    testif('Anonymous updates attributes correctly',
-        (obj.two, obj.three),
-        (3, 2))
-    testif('Anonymous has three attributes set', len(obj.get_attributes()), 3)
 
     person = {
         'friends': [{'id': 0, 'name': 'Carla James'},

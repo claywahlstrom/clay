@@ -110,7 +110,7 @@ class CrudRepository(JsonRepository):
 
     def _ensure_exists(self, pk):
         if not(self.db is None or pk in self.db):
-            self.db[pk] = self.default_model.to_dict()
+            self.db[pk] = self.default_model.to_json()
 
     def create_if_not_exists(self, pk):
         self._ensure_connected()
@@ -141,7 +141,7 @@ class CrudRepository(JsonRepository):
         self._ensure_connected()
         self._ensure_exists(pk)
 
-        for attr in model.get_attributes():
+        for attr in model.props:
             self.db[pk][attr] = getattr(model, attr)
 
         print('{}: pk "{}" updated'.format(self.name, pk))

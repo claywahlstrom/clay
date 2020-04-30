@@ -190,7 +190,7 @@ if __name__ == '__main__':
         None,
         raises=TypeError)
 
-    from clay.utils import Anonymous
+    from clay.models import Anonymous
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
     expected_default = Anonymous(a=0)
 
