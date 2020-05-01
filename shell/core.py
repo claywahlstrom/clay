@@ -11,42 +11,14 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-def is_dev_env():
-    """Returns true if the script is running within the
-       developer's environment, false otherwise"""
-    return _os.path.exists(r'E:\Docs')
-
-def is_idle():
-    """Returns true if the script is running within IDLE,
-       false otherwise"""
-    return 'idlelib' in _sys.modules
-
-def is_powershell():
-    """Returns true if the script is running within PowerShell,
-       false otherwise"""
-    return not is_idle() and not is_launcher()
-
-def is_launcher():
-    """Returns true if the script is running within the Python launcher (python.exe),
-       false otherwise"""
-    return not is_idle() and (_sys.argv[0] == 'python.exe' or not _sys.argv[0].startswith('.'))
-
-def is_unix():
-    """Returns true if the script is running within a Unix machine,
-       false otherwise"""
-    return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS
-
-FLASK_APP = 'app.py' # a common name for Flask web apps
-
-HOME_DIR = _os.environ['HOME'] if is_unix() else _os.environ['USERPROFILE']
+from clay.env import *
+from clay.settings import *
 
 RUNTIME_ARGS = _sys.argv
 if len(RUNTIME_ARGS[0]) == 0:
     RUNTIME_ARGS[0] = 'python.exe'
 
 TIMEOUT_CMD = 'sleep ' if is_unix() else 'timeout '
-
-TRASH = _os.path.join(HOME_DIR, 'Desktop', 'clay-trash')
 
 cd = _os.chdir # alias
 
@@ -407,7 +379,8 @@ def timeout(seconds, hidden=False):
             print()
 
 if __name__ == '__main__':
-    if is_dev_env():
+
+    if IS_DEVELOPER:
         # only test on developer's machine due to paths
         jc = JavaCompiler(directory=r'E:\Docs\Clay\Tech\Software\java\gravity')
         jc.compile(exclude=['-', 'unused'])

@@ -3,3 +3,4 @@ __pycache__
 *.pyc
 logs/
 test_files/
+settings.py

@@ -27,7 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # for "from clay import *" compatibility
-__all__ = ['files',
+__all__ = ['env',
+           'files',
            'graphing',
            'jobs',
            'libr',
@@ -38,6 +39,7 @@ __all__ = ['files',
            'net',
            'physics',
            'repos',
+           'settings',
            'shell',
            'tests',
            'texteffects',

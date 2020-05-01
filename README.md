@@ -9,3 +9,8 @@ My personal package for doing all things Python 3.
 - bs4
 - requests
 - winsound (Windows only)
+
+## Installation
+
+- Run `install.bat`
+- Run `setup.bat`
