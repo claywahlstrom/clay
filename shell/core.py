@@ -134,7 +134,7 @@ class Compiler(object):
     def __init__(self, compiler_name, src_ext, dst_ext, sources=None, directory=_os.curdir):
         """Initializes the compiler. Default for classes is all in the given
            directory or expects a list or tuple, otherwise and ValueError is thrown"""
-        if sources is not None and type(sources) not in (list, tuple):
+        if sources is not None and not isinstance(sources, (list, set, tuple)):
             raise TypeError('sources must be an iterable')
         self.compiler_name = compiler_name
         self.src_ext = src_ext

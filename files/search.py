@@ -10,7 +10,6 @@ Search tools can be used to search the file system using regular expressions
 from collections import OrderedDict as _OrderedDict
 import os as _os
 from re import findall
-import sys as _sys
 import time as _time
 
 from clay.shell.core import get_docs_folder as _get_docs_folder, is_idle as _is_idle

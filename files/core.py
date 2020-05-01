@@ -5,6 +5,7 @@ Common file operations done easier with Python
 """
 
 import os as _os
+import time
 
 from clay.libr import replace_smart_quotes
 
@@ -174,6 +175,7 @@ class FileSizeReport(object):
                 report[filename] = _os.stat(filename).st_size
         return report
 
+    @staticmethod
     def parse(string):
         """Parses the given string and returns the corresponding report"""
         splt = [x.split(' | ') for x in string.strip().split('\n')]
@@ -195,7 +197,7 @@ def fix_quotes(filename):
     finally:
         fp.close()
 
-def save(text, name='saved_text.txt', append_epoch=True):
+def save(text, name='saved-text.txt', append_epoch=True):
     """Saves the given text to the file with sequential numbering"""
     split_ext = _os.path.splitext(name)
     if append_epoch:
@@ -248,7 +250,7 @@ def _rt_helper(filename, old, new):
         fp.seek(0)
         fp.write(fread.replace(old, new))
         fp.truncate() # add a NULL terminator
-        print('text_replace on "{}" complete'.format(filename))
+        print('replace_text on "{}" complete'.format(filename))
     except Exception as e:
         print('Error:', e)
     finally:

@@ -16,7 +16,6 @@ if _is_unix():
 from collections import OrderedDict as _od
 import itertools as _it
 import os as _os
-import time as _time
 import winsound as _ws
 
 from clay.files.core import save as _save

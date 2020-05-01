@@ -149,7 +149,7 @@ class Attendance(object):
             raise ValueError('attrib must be a column header. Headers are ' + ', '.join(self.headers))
         selection = []
         for row in self.db:
-            if row['date'] == until_date:
+            if until_date is not None and row['date'] >= until_date:
                 break
             selection.append(row[attrib])
         return selection

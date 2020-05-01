@@ -7,7 +7,6 @@ libr: tools for scholars and librarians
 
 
 import re as _re
-import sys as _sys
 import time as _time
 
 from bs4 import BeautifulSoup as _BS
@@ -172,7 +171,7 @@ class Essay(object):
         print('sents', self.get_sentence_count())
         print('words', self.get_word_count())
 
-    def save_topics(self, filename='savedtopics.txt'):
+    def save_topics(self, filename='saved-topics.txt'):
         with open(filename, 'w') as f:
             f.write('\n'.join(self.get_topics()))
         print('Topics written to', filename)
