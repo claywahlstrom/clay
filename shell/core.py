@@ -93,12 +93,13 @@ pwd = _os.getcwd # alias
 
 def file_manager(directory=_os.curdir):
     """Opens the system file manager to the specified directory"""
-    from clay.shell.core import is_unix
     if is_unix():
         fm_name = 'xdg-open' # This should work for most systems
     else:
         fm_name = 'explorer'
     _os.system('{} "{}"'.format(fm_name, directory))
+
+fm = file_manager # alias
 
 def get_disk_drives():
     """Returns a list of drive root paths that are available
