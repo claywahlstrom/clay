@@ -94,14 +94,6 @@ def get_disk_drives():
                 drives.append(letter + ':\\')
     return sorted(drives)
 
-def get_docs_folder():
-    """Returns the location of the documents folder for this computer."""
-    from clay.shell.core import get_disk_drives
-    if 'E:\\' in get_disk_drives():
-        return r'E:\Docs'
-    else:
-        return _os.path.join(HOME_DIR, 'Documents')
-
 class Compiler(object):
 
     def __init__(self, compiler_name, src_ext, dst_ext, sources=None, directory=_os.curdir):

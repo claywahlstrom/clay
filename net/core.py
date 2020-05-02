@@ -22,10 +22,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay.shell.core import \
-    get_docs_folder as _get_docs_folder, \
-    is_idle as _is_idle, \
-    is_unix as _is_unix
+from clay.env import is_idle as _is_idle, is_unix as _is_unix
 
 CHUNK_CAP = int(1e6) # 1MB
 DEFAULT_BROWSER = 'firefox'
@@ -896,6 +893,7 @@ if __name__ == '__main__':
 
     import traceback
 
+    from clay.settings import DOCS_DIR
     from clay.tests import testif
 
     cc = CourseCatalogUW()
@@ -962,7 +960,7 @@ if __name__ == '__main__':
         lambda: WebDocument('test'), None, raises=ValueError)
     print(WebDocument(LINKS['2MB']) \
         .download(
-            destination=_get_docs_folder(),
+            destination=DOCS_DIR,
             return_speed=True),
         'bytes per second')
     print()

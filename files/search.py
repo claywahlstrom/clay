@@ -12,7 +12,7 @@ import os as _os
 from re import findall
 import time as _time
 
-from clay.shell.core import get_docs_folder as _get_docs_folder, is_idle as _is_idle
+from clay.env import is_idle as _is_idle
 
 EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
             '.jmc', '.matplotlib', '.oracle_jre_usage', '.pdfsam', '.phet',
@@ -149,5 +149,7 @@ def search_executables(string, ext='exe'):
 
 if __name__ == '__main__':
     import pprint
-    s = Search('cont', _os.path.join(_get_docs_folder(), r'Clay\Notes'), 'the')
+    from clay.settings import DOCS_DIR
+
+    s = Search('cont', _os.path.join(DOCS_DIR, r'Clay\Notes'), 'the')
     pprint.pprint(search_executables('chrome'))
