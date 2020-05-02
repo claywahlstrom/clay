@@ -13,11 +13,7 @@ from re import findall
 import time as _time
 
 from clay.env import is_idle as _is_idle
-
-EXCLUDED = ['.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
-            '.jmc', '.matplotlib', '.oracle_jre_usage', '.pdfsam', '.phet',
-            '3D Objects', 'AppData', 'Application Data', 'eclipse', 'Android',
-            'NuGet']
+from clay.settings import SEARCH_EXCLUSIONS
 
 STR_LIM = 75 # path printing termination number
 
@@ -61,7 +57,7 @@ class Search(object):
         try:
             time_start = _time.time() # start timer
             for root, dirs, files in walker:
-                if any(excl in root for excl in EXCLUDED): # if excluded
+                if any(excl in root for excl in SEARCH_EXCLUSIONS): # if excluded
                     self.print_path('excluded dir ({})'.format(root[:STR_LIM]))
                 else: # not excluded dirs
                     try:
