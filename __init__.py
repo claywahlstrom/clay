@@ -42,6 +42,6 @@ __all__ = ['env',
            'settings',
            'shell',
            'tests',
-           'texteffects',
+           'text',
            'time',
            'utils']

@@ -1,12 +1,12 @@
 
 """
-texteffects: Outline and align text on screen based on console size.
+text: Outline and align text on screen based on console size.
 
 Default WIDTH is 80 characters for IDLE and 100 for shell.
 
 """
 
-from clay.shell.core import is_idle as _is_idle
+from clay.env import is_idle as _is_idle
 
 if _is_idle():
     WIDTH = 80
