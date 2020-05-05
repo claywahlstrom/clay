@@ -362,9 +362,9 @@ def timeout(seconds, hidden=False):
             print()
     else:
         command = TIMEOUT_CMD + str(seconds)
-        if hidden and not is_unix():
-            command += ' >nul'
-        if not hidden and is_unix():
+        if hidden:
+            command += ' >' + _os.devnull
+        elif is_unix():
             print('Waiting for', seconds, 'seconds...', end='', flush=True)
         _os.system(command)
         if not hidden and is_unix():
