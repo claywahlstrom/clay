@@ -8,9 +8,9 @@ Registers are in ovtaves with the lowest pitch of 55.
 
 """
 
-from clay.shell.core import is_unix as _is_unix
+from clay.env import is_posix as _is_posix
 
-if _is_unix():
+if _is_posix():
     raise NotImplementedError('music can only be used on Windows')
 
 from collections import OrderedDict as _od
@@ -66,7 +66,7 @@ class Note(object):
             return '%s()' % (self.__class__.__name__,)
         return '%s(%s)' % (self.__class__.__name__, '{}, {}'.format(self.name, self.length))
 
-if _is_unix():
+if _is_posix():
     print("<module 'winsound.py'> not available")
 else:
     from winsound import Beep as note # def

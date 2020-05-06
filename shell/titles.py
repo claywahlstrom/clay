@@ -8,9 +8,9 @@ import re as _re
 import time as _time
 import ctypes as _ctypes
 
-from clay.shell.core import is_unix as _is_unix
+from clay.env import is_posix as _is_posix
 
-if _is_unix():
+if _is_posix():
     raise NotImplementedError('titles can only be used on Windows')
 
 _EnumWindows = _ctypes.windll.user32.EnumWindows

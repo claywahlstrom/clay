@@ -18,7 +18,7 @@ RUNTIME_ARGS = _sys.argv
 if len(RUNTIME_ARGS[0]) == 0:
     RUNTIME_ARGS[0] = 'python.exe'
 
-TIMEOUT_CMD = 'sleep ' if is_unix() else 'timeout '
+TIMEOUT_CMD = 'sleep ' if is_posix() else 'timeout '
 
 cd = _os.chdir # alias
 
@@ -26,7 +26,7 @@ def clear():
     """Clears the console window"""
     if is_idle():
         print('\n' * 40)
-    elif is_unix():
+    elif is_posix():
         _os.system('clear')
     else:
         _os.system('cls')
@@ -65,7 +65,7 @@ pwd = _os.getcwd # alias
 
 def file_manager(directory=_os.curdir):
     """Opens the system file manager to the specified directory"""
-    if is_unix():
+    if is_posix():
         fm_name = 'xdg-open' # This should work for most systems
     else:
         fm_name = 'explorer'
@@ -81,7 +81,7 @@ def get_disk_drives():
 
     """
     drives = []
-    if is_unix():
+    if is_posix():
         for folder in _os.listdir('/dev'):
             if folder.startswith('sd'):
                 drives.append(folder)
@@ -207,7 +207,7 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
 
 def lsshell(directory=_os.curdir):
     """Prints the long listing format of the given directory"""
-    if is_unix():
+    if is_posix():
         command = 'ls -al'
     else:
         command = 'dir'
@@ -279,7 +279,7 @@ def rm_target(target):
     else:
         i = 1
 
-    if is_unix():
+    if is_posix():
         key = 'linux'
     else:
         key = 'win32'
@@ -327,11 +327,11 @@ def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
         title += ' ' + ' '.join(RUNTIME_ARGS[1:])
     if len(add) > 0:
         title += ' - '  + add
-    if not(is_unix()):
+    if not is_posix():
         title = title.replace('<', '^<').replace('>', '^>')
     if is_idle():
         print('title -> ' + title)
-    elif is_unix():
+    elif is_posix():
         _sys.stdout.write('\x1b]2;' + title + '\x07')
         _sys.stdout.flush()
     else: # is windows
@@ -341,7 +341,7 @@ def start(program):
     """Starts a given program"""
     try:
         command = ''
-        if not(is_unix()):
+        if not is_posix():
             command += 'start '
         _os.system(command + program)
     except Exception as e:
@@ -364,10 +364,10 @@ def timeout(seconds, hidden=False):
         command = TIMEOUT_CMD + str(seconds)
         if hidden:
             command += ' >' + _os.devnull
-        elif is_unix():
+        elif is_posix():
             print('Waiting for', seconds, 'seconds...', end='', flush=True)
         _os.system(command)
-        if not hidden and is_unix():
+        if not hidden and is_posix():
             print()
 
 if __name__ == '__main__':
@@ -378,7 +378,7 @@ if __name__ == '__main__':
         jc.compile(exclude=['-', 'unused'])
 
     # used to test if pause runs correctly
-    # is_unix = lambda: True
+    # is_posix = lambda: True
     # is_idle = lambda: True
     pause()
     pause(shell_only=True)

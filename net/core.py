@@ -22,7 +22,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
-from clay.env import is_idle as _is_idle, is_unix as _is_unix
+from clay.env import is_idle as _is_idle, is_posix as _is_posix
 
 CHUNK_CAP = int(1e6) # 1MB
 DEFAULT_BROWSER = 'firefox'
@@ -491,7 +491,7 @@ class WebDocument(object):
         url = self.__raw_uri
         errors = False
         if log_name:
-            if _is_unix():
+            if _is_posix():
                 log_path = _os.path.join(r'/home/clay/Desktop', log_name)
             else:
                 log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay\logs', log_name)
@@ -628,7 +628,7 @@ class WebDocument(object):
 
     def launch(self, browser=DEFAULT_BROWSER):
         """Opens this document's `uri` in your favorite browser"""
-        if _is_unix():
+        if _is_posix():
             _call(['google-chrome', self.uri], shell=True)
         else:
             _call(['start', browser, self.__raw_uri.replace('&', '^&')], shell=True)

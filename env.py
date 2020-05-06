@@ -21,7 +21,7 @@ def is_launcher():
        false otherwise"""
     return not is_idle() and (_sys.argv[0] == 'python.exe' or not _sys.argv[0].startswith('.'))
 
-def is_unix():
-    """Returns true if the script is running within a Unix machine,
+def is_posix():
+    """Returns true if the script is running within a Posix machine,
        false otherwise"""
     return any(_sys.platform.startswith(x) for x in ('linux', 'darwin')) # darwin for macOS

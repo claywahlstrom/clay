@@ -12,7 +12,7 @@ IS_DEVELOPER = False
 
 DOCS_DIR = r'path-to-documents-folder'
 FLASK_APP = 'app.py' # a common name for Flask web apps
-HOME_DIR = _os.environ['HOME'] if is_unix() else _os.environ['USERPROFILE']
+HOME_DIR = _os.environ['HOME'] if is_posix() else _os.environ['USERPROFILE']
 TRASH = _os.path.join(HOME_DIR, 'Desktop', 'clay-trash')
 
 SEARCH_EXCLUSIONS = [

@@ -121,20 +121,20 @@ class File(object):
         return _os.path.getsize(self.name)
 
     def switch_lf(self):
-        """Switches the linefeed type from a unix-based machine to
+        """Switches the linefeed type from a Posix machine to
            Windows and vice versa and overwrites this file"""
         with open(self.name, 'rb') as fp:
             fread = fp.read()
-            to_unix = False
+            to_posix = False
             if b'\r' in fread:
-                to_unix = True
+                to_posix = True
         with open(self.name, 'wb') as fp:
-            if to_unix:
+            if to_posix:
                 fwrite = fread.replace(b'\r', b'')
             else:
                 fwrite = fread.replace(b'\n', b'\r\n')
             fp.write(fwrite)
-        if to_unix:
+        if to_posix:
             print('Converted to lf')
         else:
             print('Converted to crlf')

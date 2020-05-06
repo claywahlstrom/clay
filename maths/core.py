@@ -7,10 +7,10 @@ Collection of common and advanced math operations
 import fractions
 import math
 
+from clay.env import is_posix as _is_posix
 from clay.lists import apply as _apply
-from clay.shell.core import is_unix as _is_unix
 
-if _is_unix():
+if _is_posix():
     LIMPATH_FMT = r'/home/clay/Desktop/liminf-{}.log'
 else:
     LIMPATH_FMT = r'C:\Python37\Lib\site-packages\clay\logs\liminf-{}.log'
