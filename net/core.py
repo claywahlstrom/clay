@@ -706,10 +706,10 @@ class PollenApiClient(object):
                                 .build()}}
 
     for url in SOURCE_URLS:
-        SOURCE_URLS[url]['weather text'] = 'https://weather.com/forecast/allergy/l/'
+        # weather text and values use the same endpoint
+        SOURCE_URLS[url]['weather text'] = SOURCE_URLS[url]['weather values']
     del url # remove from scope
     TYPES = ('grass', 'ragweed', 'tree')
-    WEATHER_QUERY_PARAMS = ':4:US'
 
     def __init__(self, source, zipcode, print_sources=True):
         """Initializes this PollenApiClient object using the given source and
@@ -736,22 +736,19 @@ class PollenApiClient(object):
             raise ValueError('source must be one from [{}]'.format(", ".join(PollenApiClient.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):
-        if (self.source != 'weather text' and zipcode not in PollenApiClient.SOURCE_URLS.keys()) or \
-            zipcode not in PollenApiClient.SOURCE_URLS.keys() or zipcode < 0 or zipcode > 99501:
+        if zipcode not in PollenApiClient.SOURCE_URLS.keys() or zipcode < 0 or zipcode > 99501:
             raise ZipCodeNotFoundException(zipcode)
 
     def __get_markup(self, uri):
         """Retrieves the markup with up to 4 max tries. Returns empty
            markup if web requests fail"""
-        if self.source == 'weather text':
-            params = WEB_HDRS
-        else:
-            params = {}
+
         unsuccessful = True
         tries = 0
         while unsuccessful and tries < PollenApiClient.MAX_REQUESTS:
             try:
-                req = _requests.get(uri, params=params)
+                print('Requesting "{}" for zipcode {}...'.format(self.source, self.zipcode))
+                req = _requests.get(uri)
                 unsuccessful = False
             except Exception as e:
                 if tries == 0:
@@ -767,81 +764,60 @@ class PollenApiClient(object):
 
         return req.content
 
-    def build(self, add_weather_query=True):
+    def build(self):
         """Builds and populates the pollen client database"""
-        uri = self.uri
-        if self.source == 'weather text' and add_weather_query:
-            uri += self.WEATHER_QUERY_PARAMS
 
-        markup = self.__get_markup(uri)
+        markup = self.__get_markup(self.uri)
 
         if markup:
-            page = _BS(markup, 'html.parser')
+            self.soup = _BS(markup, 'html.parser')
 
-            if self.source == 'weather text':
-                found = page.select('button > div')
-                db = _collections.OrderedDict()
-                if len(found) > 0:
-                    for elm in found:
-                        divs = elm.select('div')
-                        db[divs[0].get_text()] = divs[-1].get_text()
-            elif self.source == 'weather values':
+            if self.source.startswith('weather'):
                 js = _json.loads(markup.decode('latin-1'))
                 base = js['pollenForecast12hour']
-                stored = list(base[layer + 'PollenIndex'] for layer in PollenApiClient.TYPES)
+                # weather report type is Index for values and Category for text
+                report_type = 'Index' if self.source == 'weather values' else 'Category'
+                stored = list(base[layer + 'Pollen' + report_type] for layer in PollenApiClient.TYPES)
                 lzt = list(zip(*stored)) # zips each layer to their corresponding value
                 db = _collections.OrderedDict()
                 for i in range(len(lzt)):
                     db[i / 2] = lzt[i]
             else: # self.source == 'wu poll'
-                j = page.select('.count') # or class .status
+                j = self.soup.select('.count') # or class .status
                 db = _collections.OrderedDict()
                 for i in range(PollenApiClient.SOURCE_SPAN[self.source]):
                     db[i] = j[i].get_text()
             if len(db) == 0:
-                if self.source == 'weather text':
-                    self.build(add_weather_query=not add_weather_query) # retry using the alternate query
-                else:
-                    db = _collections.OrderedDict({i: 'null' for i in range(PollenApiClient.SOURCE_SPAN[self.source])})
-            src = page
+                # populate database with empty values
+                db = _collections.OrderedDict({i: 'null' for i in range(PollenApiClient.SOURCE_SPAN[self.source])})
         else:
             # populate the database with the most general structure of data
             # current generalization: weather values [0.0, 0.5, ...]
             db = {i / 2: 'null' for i in range(2 * PollenApiClient.SOURCE_SPAN[self.source])}
-            src = None
-        self.src = src
+            self.soup = None
+
         self.db = db
         self.__has_built = True
 
     def get_day(self, day):
         """Returns the value in the database for the given day"""
         self.__check_built()
+
         data = None
-        if self.source == 'weather text':
-            date = str((_dt.date.today() + _dt.timedelta(days=day)).day)
-            for dong in self.db:
-                if dong.endswith(' ' + date):
-                    data = self.db[dong]
-                    break # not the best style but saves runtime
+        # updates afternoon forecasts for today only (floor of cos of day)
+        day += 0.5 * _math.floor(_math.cos(day)) * _math.floor(_dt.datetime.now().hour / 12)
+        if isinstance(self.db[day], str):
+            data = self.db[int(day)].title()
         else:
-            # updates afternoon forecasts for today only (floor of cos of day)
-            day += 0.5 * _math.floor(_math.cos(day)) * _math.floor(_dt.datetime.now().hour / 12)
-            if isinstance(self.db[day], str):
-                data = self.db[int(day)].title()
-            else:
-                data = self.db[day]
+            data = self.db[day]
+
         if data is not None and self.print_sources:
             print('{{source={}, day={}}}'.format(self.source, day))
+
         return data
 
     def get_today(self):
         """Returns the pollen data for today"""
-        self.__check_built()
-        if self.source == 'weather text':
-            if 'Tonight' in self.db:
-                return self.db['Tonight']
-            elif 'Today' in self.db:
-                return self.db['Today']
         return self.get_day(0)
 
     def get_tomorrow(self):
@@ -853,14 +829,12 @@ class PollenApiClient(object):
         self.__check_built()
         print('Pollen data for', self.zipcode, file=file)
         for i, j in self.db.items():
-            print('{:>{}}: {}'.format(i, len('Tonight'), j), file=file)
+            print('{:>4}: {}'.format(i, j), file=file)
 
     def set_source(self, source):
         """Sets the source for this PollenApiClient object. Requires `build` to be called to update data"""
         self.__verify_source(source)
         self.uri = PollenApiClient.SOURCE_URLS[self.zipcode][source]
-        if source == 'weather text':
-            self.uri += str(self.zipcode)
         self.source = source
         self.__has_built = False
 
