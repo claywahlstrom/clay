@@ -796,7 +796,7 @@ class PollenApiClient(object):
             db = {i / 2: 'null' for i in range(2 * PollenApiClient.SOURCE_SPAN[self.source])}
             self.soup = None
 
-        self.db = db
+        self.__db = db
         self.__has_built = True
 
     def get_day(self, day):
@@ -843,6 +843,11 @@ class PollenApiClient(object):
         self.__verify_zipcode(zipcode)
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
+
+    @property
+    def db(self):
+        """This PollenApiClient's database"""
+        return self.__db
 
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
