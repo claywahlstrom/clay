@@ -805,7 +805,7 @@ class PollenApiClient(object):
 
         data = None
 
-        if isinstance(self.db[day], str):
+        if self.source == 'wu poll':
             data = self.db[int(day)].title()
         else:
             data = self.db[day]
