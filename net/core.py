@@ -718,7 +718,7 @@ class PollenApiClient(object):
         self.source = source
         self.set_zipcode(zipcode)
         self.print_sources = print_sources
-        self.__has_built = False
+        self.__date_built = None
         self.build()
 
     def __repr__(self):
@@ -728,7 +728,7 @@ class PollenApiClient(object):
 
     def __check_built(self):
         """Throws a RuntimeError if this PollenApiClient instance has not been built"""
-        if not self.__has_built:
+        if not self.has_built:
             raise RuntimeError('PollenApiClient must be built after zipcode or source has been changed')
 
     def __verify_source(self, source):
@@ -797,15 +797,14 @@ class PollenApiClient(object):
             self.soup = None
 
         self.__db = db
-        self.__has_built = True
+        self.__date_built = _dt.datetime.today()
 
     def get_day(self, day):
         """Returns the value in the database for the given day"""
         self.__check_built()
 
         data = None
-        # updates afternoon forecasts for today only (floor of cos of day)
-        day += 0.5 * _math.floor(_math.cos(day)) * _math.floor(_dt.datetime.now().hour / 12)
+
         if isinstance(self.db[day], str):
             data = self.db[int(day)].title()
         else:
@@ -818,7 +817,14 @@ class PollenApiClient(object):
 
     def get_today(self):
         """Returns the pollen data for today"""
-        return self.get_day(0)
+        # if built before noon and is currently afternoon
+        if self.has_built and self.date_built.hour < 12 \
+                and _dt.datetime.today().hour >= 12:
+            # report the afternoon data
+            return self.get_day(0.5)
+        else:
+            # report the current data
+            return self.get_day(0)
 
     def get_tomorrow(self):
         """Returns the pollen data forecasted for tomorrow"""
@@ -836,7 +842,7 @@ class PollenApiClient(object):
         self.__verify_source(source)
         self.uri = PollenApiClient.SOURCE_URLS[self.zipcode][source]
         self.source = source
-        self.__has_built = False
+        self.__date_built = None
 
     def set_zipcode(self, zipcode):
         """Sets the zipcode for this PollenApiClient object. Requires `build` to be called to update data"""
@@ -848,6 +854,16 @@ class PollenApiClient(object):
     def db(self):
         """This PollenApiClient's database"""
         return self.__db
+
+    @property
+    def date_built(self):
+        """Returns the last date the database is built"""
+        return self.__date_built
+
+    @property
+    def has_built(self):
+        """Returns True if this client has built the database, otherwise False"""
+        return self.date_built is not None
 
 class ZipCodeNotFoundException(Exception):
     def __init__(self, zipcode, *args, **kwargs):
