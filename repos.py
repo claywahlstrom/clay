@@ -8,6 +8,8 @@ import datetime as _dt
 import json as _json
 import os as _os
 
+from clay.models import Anonymous as _Anonymous, Serializable as _Serializable
+
 class JsonRepository(object):
     """Wrapper for working with JSON database files"""
 
@@ -106,7 +108,7 @@ class CrudRepository(JsonRepository):
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
         super(CrudRepository, self).__init__(name, {})
-        self.__default_model = {}
+        self.__default_model = _Anonymous()
 
     def _ensure_exists(self, pk):
         if not(self.db is None or pk in self.db):
@@ -124,6 +126,8 @@ class CrudRepository(JsonRepository):
     @default_model.setter
     def default_model(self, model):
         """Sets the default model for this repository"""
+        if not isinstance(model, _Serializable):
+            raise TypeError('model must be of base type Serializable')
         self.__default_model = model
 
     def delete(self, pk):
@@ -220,6 +224,15 @@ if __name__ == '__main__':
     testif('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
     testif('creates new json repo if not exists and not forced', js2.create(write=False), True)
     testif('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
+
+    def crud_repository_default_model_setter_test():
+        repo = CrudRepository('README.md')
+        repo.default_model = {}
+
+    testif('CrudRepository.default_model setter raises TypeError for invalid base type',
+        crud_repository_default_model_setter_test,
+        None,
+        raises=TypeError)
 
     whitelist = UserWhitelist(['abe', 'bob', 'caty', '# becky'])
     whitelist.read()
