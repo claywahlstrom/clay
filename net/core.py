@@ -311,11 +311,18 @@ class HtmlBuilder(object):
     def __init__(self):
         self.indent = 0
         self.__html = ''
-        self.add_tag('html')
-        self.add_tag('head')
+
+    def init(self):
+        """Initiates this builder with the doctype and opening html tag"""
+        self.add_doctype()
+        self.add_tag('html', attrs={'lang': 'en'})
 
     def add_raw(self, raw_html):
         self.__html += raw_html
+
+    def add_doctype(self):
+        """Adds the doctype declaration to this builder"""
+        self.__html += '<!doctype html>\n'
 
     def add_nl(self):
         self.__html += '\n'
