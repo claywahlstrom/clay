@@ -324,6 +324,10 @@ class HtmlBuilder(object):
         """Adds the doctype declaration to this builder"""
         self.__html += '<!doctype html>\n'
 
+    def add_charset(self, charset='utf-8'):
+        """Adds the meta charset tag to this builder"""
+        self.add_tag('meta', self_closing=True, attrs={'charset': charset})
+
     def add_nl(self):
         self.__html += '\n'
 
