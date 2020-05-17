@@ -310,44 +310,47 @@ class HtmlBuilder(object):
 
     def __init__(self):
         self.indent = 0
-        self.builder = ''
+        self.__html = ''
         self.add_tag('html')
         self.add_tag('head')
 
+    def add_raw(self, raw_html):
+        self.__html += raw_html
+
     def add_nl(self):
-        self.builder += '\n'
+        self.__html += '\n'
 
     def add_tag(self, tag, text='', self_closing=False, attrs={}):
         print('processing', tag, 'indent', self.indent)
-        self.builder += HtmlBuilder.INDENT * self.indent + '<' + tag
+        self.__html += HtmlBuilder.INDENT * self.indent + '<' + tag
 
         for attr in attrs:
-            self.builder += ' ' + attr + '="' + attrs[attr] + '"'
+            self.__html += ' ' + attr + '="' + attrs[attr] + '"'
 
         if self_closing:
-            self.builder += ' /'
+            self.__html += ' /'
         else:
             self.indent += 1
 
-        self.builder += '>'
+        self.__html += '>'
         if text:
-            self.builder += text
+            self.__html += text
             self.close_tag(tag, has_text=True)
         self.add_nl()
 
     def close_tag(self, tag, has_text=False):
         self.indent -= 1
         if not has_text:
-            self.builder += HtmlBuilder.INDENT * self.indent
+            self.__html += HtmlBuilder.INDENT * self.indent
 
-        self.builder += '</' + tag + '>'
+        self.__html += '</' + tag + '>'
         if not has_text:
             self.add_nl()
 
         print('build', tag, 'now', self.indent)
 
-    def to_string(self):
-        return self.builder
+    def build(self):
+        return self.__html
 
 class TagFinder(object):
     """Class TagFinder can be used to find and store elements
