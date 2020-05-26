@@ -11,22 +11,22 @@ import subprocess as _subprocess
 import sys as _sys
 import time as _time
 
-from clay.env import *
-from clay.settings import *
+from clay import env
+from clay import settings
 
 RUNTIME_ARGS = _sys.argv
 if len(RUNTIME_ARGS[0]) == 0:
     RUNTIME_ARGS[0] = 'python.exe'
 
-TIMEOUT_CMD = 'sleep ' if is_posix() else 'timeout '
+TIMEOUT_CMD = 'sleep ' if env.is_posix() else 'timeout '
 
 cd = _os.chdir # alias
 
 def clear():
     """Clears the console window"""
-    if is_idle():
+    if env.is_idle():
         print('\n' * 40)
-    elif is_posix():
+    elif env.is_posix():
         _os.system('clear')
     else:
         _os.system('cls')
@@ -51,7 +51,7 @@ def copy(src, dst):
     except Exception as e:
         print(e)
         succeed = False
-    if is_idle():
+    if env.is_idle():
         if succeed:
             print('Complete')
         else:
@@ -65,7 +65,7 @@ pwd = _os.getcwd # alias
 
 def file_manager(directory=_os.curdir):
     """Opens the system file manager to the specified directory"""
-    if is_posix():
+    if env.is_posix():
         fm_name = 'xdg-open' # This should work for most systems
     else:
         fm_name = 'explorer'
@@ -81,7 +81,7 @@ def get_disk_drives():
 
     """
     drives = []
-    if is_posix():
+    if env.is_posix():
         for folder in _os.listdir('/dev'):
             if folder.startswith('sd'):
                 drives.append(folder)
@@ -207,7 +207,7 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
 
 def lsshell(directory=_os.curdir):
     """Prints the long listing format of the given directory"""
-    if is_posix():
+    if env.is_posix():
         command = 'ls -al'
     else:
         command = 'dir'
@@ -225,7 +225,7 @@ def notify(message, seconds=2.25):
 
 def pause(shell_only=False):
     """Pauses the console execution and prompts the user to continue"""
-    if shell_only and is_idle():
+    if shell_only and env.is_idle():
         return
     print()
     input('Press enter to continue . . . ')
@@ -279,7 +279,7 @@ def rm_target(target):
     else:
         i = 1
 
-    if is_posix():
+    if env.is_posix():
         key = 'linux'
     else:
         key = 'win32'
@@ -297,8 +297,8 @@ def rm(target):
 
     MAX_FILE_NAME_LENGTH = 230
 
-    if not _os.path.exists(TRASH):
-        _os.mkdir(TRASH)
+    if not _os.path.exists(settings.TRASH):
+        _os.mkdir(settings.TRASH)
 
     src_dir = _os.path.dirname(target)
     dir_info = src_dir.lower().replace('\\', '.').replace(':', '.') # make path safe
@@ -312,7 +312,7 @@ def rm(target):
         dir_info = dir_info[len(new_name) - MAX_FILE_NAME_LENGTH:].strip('.')
         new_name = '{} {} ({}){}'.format(str(uuid.uuid4()), item_name, dir_info, item_ext)
 
-    dst_path = _os.path.join(TRASH, new_name)
+    dst_path = _os.path.join(settings.TRASH, new_name)
     move(target, dst_path) # move the item to the trash
     print('Deleted "{}"'.format(target))
 
@@ -321,17 +321,17 @@ def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
     """Sets the title of the current shell instance. Default is
        the modules name. You can use your own additional text or
        use the command-line arguments"""
-    if title == FLASK_APP:
+    if title == settings.FLASK_APP:
         add = _os.path.split(_os.path.dirname(_os.path.abspath(RUNTIME_ARGS[0])))[-1]
     if args and len(RUNTIME_ARGS) > 1:
         title += ' ' + ' '.join(RUNTIME_ARGS[1:])
     if len(add) > 0:
         title += ' - '  + add
-    if not is_posix():
+    if not env.is_posix():
         title = title.replace('<', '^<').replace('>', '^>')
-    if is_idle():
+    if env.is_idle():
         print('title -> ' + title)
-    elif is_posix():
+    elif env.is_posix():
         _sys.stdout.write('\x1b]2;' + title + '\x07')
         _sys.stdout.flush()
     else: # is windows
@@ -341,7 +341,7 @@ def start(program):
     """Starts a given program"""
     try:
         command = ''
-        if not is_posix():
+        if not env.is_posix():
             command += 'start '
         _os.system(command + program)
     except Exception as e:
@@ -354,7 +354,7 @@ def timeout(seconds, hidden=False):
     if seconds < 0:
         raise ValueError('seconds must be >= 0')
 
-    if is_idle() or seconds > 99999:
+    if env.is_idle() or seconds > 99999:
         if not(hidden):
             print('Waiting for', seconds, 'seconds...', end='')
         _time.sleep(seconds)
@@ -364,21 +364,21 @@ def timeout(seconds, hidden=False):
         command = TIMEOUT_CMD + str(seconds)
         if hidden:
             command += ' >' + _os.devnull
-        elif is_posix():
+        elif env.is_posix():
             print('Waiting for', seconds, 'seconds...', end='', flush=True)
         _os.system(command)
-        if not hidden and is_posix():
+        if not hidden and env.is_posix():
             print()
 
 if __name__ == '__main__':
 
-    if IS_DEVELOPER:
+    if settings.IS_DEVELOPER:
         # only test on developer's machine due to paths
         jc = JavaCompiler(directory=r'E:\Docs\Clay\Tech\Software\java\gravity')
         jc.compile(exclude=['-', 'unused'])
 
     # used to test if pause runs correctly
-    # is_posix = lambda: True
-    # is_idle = lambda: True
+    # env.is_posix = lambda: True
+    # env.is_idle = lambda: True
     pause()
     pause(shell_only=True)
