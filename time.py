@@ -124,8 +124,8 @@ class ReadingTimer(object):
         else:
             self.current_page -= 1
 
-class SunTimes(object):
-    """A class for storing sun data collected from timeanddate.com (c)
+class SunTimesApiClient(object):
+    """An API for collecting sun times information from timeanddate.com (c)
        in the following form:
 
            Rise/Set     |     Daylength       |   Solar Noon
@@ -179,19 +179,19 @@ class SunTimes(object):
                 print(message)
                 scraped = scraped[1:]
         except Exception as e:
-            print('A SunTimes instance made a request to:')
+            print('A SunTimesApiClient instance made a request to:')
             print(' ' * 4 + url)
             print('which caused the folloing error:')
             print(_textwrap.indent(_textwrap.fill(str(e)), ' ' * 4))
             req = object()
             cont = ''
             soup = _BS(cont, 'html.parser')
-            scraped = ['offline'] * SunTimes.COLS * 2
+            scraped = ['offline'] * SunTimesApiClient.COLS * 2
 
         # parse the data into rows
         data = []
-        for i in range(0, len(scraped), SunTimes.COLS):
-            data.append(scraped[i: i + SunTimes.COLS])
+        for i in range(0, len(scraped), SunTimesApiClient.COLS):
+            data.append(scraped[i: i + SunTimesApiClient.COLS])
 
         # store relevant fields
         self.url     = url
@@ -277,6 +277,6 @@ if __name__ == '__main__':
     print('exams over', get_time_until(2018, 12, 13))
 
     print(get_time_struct())
-    sun = SunTimes()
+    sun = SunTimesApiClient()
     print('sunset tonight is', sun.get_sunset())
 
