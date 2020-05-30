@@ -21,6 +21,20 @@ def _map_args_test(x, y=2, z=3):
     """A test function for the map_args function. Returns the sum of x, y, z"""
     return x + y + z
 
+def qualify(obj) -> str:
+    """Returns the qualified name of this object"""
+    # if a function or bound method
+    if hasattr(obj, '__qualname__'):
+        name = obj.__qualname__
+    # if not an instance of an object
+    elif hasattr(obj, '__name__'):
+        name = obj.__name__
+    # if an instance of an object
+    else:
+        name = obj.__class__.__name__
+
+    return name
+
 class SortableDict(_collections.OrderedDict):
     """Sortable dict, child of collections.OrderedDict"""
     def sort(self, key=None, reverse=False, debug=False):
@@ -118,6 +132,35 @@ if __name__ == '__main__':
     testif('map_args returns correct values',
         map_args(_map_args_test, array, z = 4),
         (7, 10, 22, 31))
+
+    from tkinter import Button, _test
+
+    class A:
+        def B(self):
+            pass
+
+    qualify_tests = {
+        'imported': [
+            (Button, 'Button'),
+            (Button.invoke, 'Button.invoke'),
+            (Button(), 'Button'),
+            (Button().invoke, 'Button.invoke'),
+            (_test, '_test')
+        ],
+        'local': [
+            (A, 'A'),
+            (A.B, 'A.B'),
+            (A(), 'A'),
+            (A().B, 'A.B'),
+            (qualify, 'qualify')
+        ]
+    }
+
+    for locality, tests in qualify_tests.items():
+        for test in tests:
+            testif('qualify returns correct string ({} {})'.format(locality, test[1]),
+                qualify(test[0]),
+                test[1])
 
     person = {
         'friends': [{'id': 0, 'name': 'Carla James'},
