@@ -23,10 +23,20 @@ def _show_failure(expectation, expected, actual):
     print('Failed: {}. Expected {} but found {}' \
         .format(expectation, expected, actual))
 
-def testif(expectation, test_input, test_output, raises=None, transformer=lambda x: x):
+def testif(expectation, test_input, test_output, name=None, raises=None, transformer=lambda x: x):
     """Tests whether the expectation is valid by comparing the
        given test input to the test output. Test output may either
        be a value or function accepting one argument."""
+    if name is not None:
+        if not isinstance(name, str):
+            raise TypeError('names must be of type str')
+        else:
+            # if the expectation is capitalized
+            if len(expectation) >= 2 and expectation[0].isupper():
+                # uncapitalize it
+                expectation = expectation[0].lower() + expectation[1:]
+            expectation = '{} {}'.format(name, expectation)
+
     if type(test_input).__name__ == 'function' and raises is not None: # lambda expressions
         if not isinstance(raises, type):
             raise TypeError('raises must be an error type')
@@ -55,11 +65,16 @@ def testif(expectation, test_input, test_output, raises=None, transformer=lambda
 
 if __name__ == '__main__':
 
+    testif('testif raises TypeError when name is not of type str',
+        lambda: testif('should pass', 0, 0, name=testif),
+        None,
+        raises=TypeError)
+    testif('Formats capitalized expectation with name correctly', 0, 0, name='testif')
     testif('testif passes test for equal values', 0, 0)
     print('The next test should fail')
     testif('testif passes test for unequal values', 0, 1)
     print('The next test should fail')
-    testif('testif passes test after applying transformer', [], 0, len)
+    testif('testif passes test after applying transformer', [], 0, transformer=len)
     try:
         testif('testif passes test for raising division error', lambda: 0 / 0, None)
     except ZeroDivisionError: # pseudo branch
