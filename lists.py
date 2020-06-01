@@ -85,7 +85,7 @@ def extend(iterable=()):
                     _traceback.print_exc()
                     raise ex
                 projection.append(new_form)
-            return list(projection)
+            return Enumerable(projection)
 
         def where(self, predicate):
             """Filters items based on the given predicate"""
