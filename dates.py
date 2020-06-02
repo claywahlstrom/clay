@@ -6,6 +6,10 @@ Dates
 
 import datetime as dt
 
+# date formats
+MDY_FMT = '%m/%d/%Y'
+YMD_FMT = '%Y/%m/%d'
+
 # days of the week
 MONDAY = dt.date(2019, 4, 22)
 TUESDAY = dt.date(2019, 4, 23)
