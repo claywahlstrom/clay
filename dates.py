@@ -18,10 +18,10 @@ class Date(dt.date):
         """Returns the given date converted to a datetime"""
         return dt.datetime(date.year, date.month, date.day)
 
-    #region Previous
+    #region Last
 
-    def previous_year(self) -> 'Date':
-        """Returns the previous year's date given a date or datetime"""
+    def last_year(self) -> 'Date':
+        """Returns the last year's date given a date or datetime"""
         return Date(self.year - 1, 1, 1)
 
     #endregion
@@ -168,10 +168,10 @@ if __name__ == '__main__':
         dt.datetime(2019, 4, 22),
         name=qualify(Date.todatetime))
 
-    testif('Returns correct date for previous year',
-        extend_date(dt.date(2019, 4, 22)).previous_year(),
+    testif('Returns correct date for last year',
+        extend_date(dt.date(2019, 4, 22)).last_year(),
         dt.date(2018, 1, 1),
-        name=qualify(Date.previous_year))
+        name=qualify(Date.last_year))
 
     testif('Returns correct date for this year',
         extend_date(dt.date(2019, 4, 22)).this_year(),
