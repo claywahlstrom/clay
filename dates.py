@@ -6,6 +6,15 @@ Dates
 
 import datetime as dt
 
+# days of the week
+MONDAY = dt.date(2019, 4, 22)
+TUESDAY = dt.date(2019, 4, 23)
+WEDNESDAY = dt.date(2019, 4, 24)
+THURSDAY = dt.date(2019, 4, 25)
+FRIDAY = dt.date(2019, 4, 26)
+SATURDAY = dt.date(2019, 4, 27)
+SUNDAY = dt.date(2019, 4, 28)
+
 class Date(dt.date):
 
     """
