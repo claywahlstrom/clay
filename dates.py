@@ -155,6 +155,22 @@ class Date(dt.date):
 
     #endregion
 
+def days_to_mail(weekday: int) -> int:
+    """Returns the number of days to send an item through priority
+    mail within the U.S. given the weekday (Monday: 0 - Sunday: 6)
+
+    """
+    if weekday < 0 or weekday > 6:
+        raise ValueError('weekday must be from 0 to 6')
+    usually = 2 # days for priority mail within the U.S.
+    # if approaching Sunday when no mail is delivered
+    if weekday >= 4:
+        # return the usual incremented one day
+        return usually + 1
+    else:
+        # return the usual
+        return usually
+
 def extend_date(date) -> Date:
     """Extends the given date using the `Date` type"""
     if not isinstance(date, dt.date):
@@ -165,6 +181,28 @@ if __name__ == '__main__':
 
     from clay.tests import testif
     from clay.utils import qualify
+
+    for weekday in (-1, 7):
+        testif('Raises ValueError if weekday invalid (weekday = {})'.format(weekday),
+            lambda: days_to_mail(weekday),
+            None,
+            raises=ValueError)
+
+    days_to_mail_tests = [
+        (0, 2),
+        (1, 2),
+        (2, 2),
+        (3, 2),
+        (4, 3),
+        (5, 3),
+        (6, 3)
+    ]
+
+    for test in days_to_mail_tests:
+        testif('Returns correct days for weekday {}'.format(test[0]),
+            days_to_mail(test[0]),
+            test[1],
+            name=qualify(days_to_mail))
 
     testif('Raises TypeError when extending invalid type',
         lambda: extend_date(None),
