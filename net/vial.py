@@ -4,7 +4,10 @@ Helpers for the Pallets Flask(c) web framework
 
 """
 
+import flask
+
 import clay.models
+import clay.text
 
 class Html(clay.models.Static):
 
@@ -42,6 +45,14 @@ class Html(clay.models.Static):
             anchored = '<a target="_blank" href="{}">{}~^</a>'.format(link, text)
             anchor_str = anchor_str.replace(reconstructed, anchored)
         return anchor_str
+
+def print_request_args():
+    """Prints the incoming request arguments data"""
+    clay.text.pretty_print('Incoming request args data', flask.request.args)
+
+def print_request_form():
+    """Prints the incoming request form data"""
+    clay.text.pretty_print('Incoming request form data', flask.request.form)
 
 if __name__ == '__main__':
 
