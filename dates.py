@@ -8,7 +8,9 @@ import datetime as dt
 
 # date formats
 MDY_FMT = '%m/%d/%Y'
+MDY_DASH_FMT = '%m-%d-%Y'
 YMD_FMT = '%Y/%m/%d'
+YMD_DASH_FMT = '%Y-%m-%d'
 
 # days of the week
 MONDAY = dt.date(2019, 4, 22)
