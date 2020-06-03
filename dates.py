@@ -159,6 +159,55 @@ class Date(dt.date):
 
     #endregion
 
+class DateRange:
+
+    """Stores a range of dates for easy comparison"""
+
+    def __init__(self, start: dt.date=None, end: dt.date=None):
+        """Initializes this DateRange"""
+        if start is not None and end is not None and start > end:
+            raise ValueError('start must be <= end')
+        self.__start = start
+        self.__end = end
+
+    def __repr__(self, today=dt.date.today()) -> str:
+        """Returns the string representation for this DateRange"""
+        if self.start is None and self.end is None:
+            return 'All Time'
+
+        if self.start is None:
+            string = 'Beginning'
+        elif self.start == today:
+            string = 'Today'
+        else:
+            string = self.start.strftime(YMD_FMT)
+
+        if self.end == today:
+            if self.start == today:
+                return string
+            else:
+                return string + ' - Today'
+        elif self.end is None:
+            string += ' - Continuous'
+        else:
+            string += ' - ' + self.end.strftime(YMD_FMT)
+        return string
+
+    @property
+    def start(self) -> dt.date:
+        """The start date"""
+        return self.__start
+
+    @property
+    def end(self) -> dt.date:
+        """The end date"""
+        return self.__end
+
+    def contains(self, date: dt.date) -> bool:
+        """Returns True if the date is within this range, False otherwise"""
+        return (self.start is None or self.start <= date) \
+            and (self.end is None or date <= self.end)
+
 def days_to_mail(weekday: int) -> int:
     """Returns the number of days to send an item through priority
     mail within the U.S. given the weekday (Monday: 0 - Sunday: 6)
@@ -185,6 +234,30 @@ if __name__ == '__main__':
 
     from clay.tests import testif
     from clay.utils import qualify
+
+    testif('Raises ValueError when start date is after end date',
+        lambda: DateRange(dt.date(2020, 6, 3), dt.date(2020, 6, 2)),
+        None,
+        raises=ValueError,
+        name=qualify(DateRange.__init__))
+
+    date_range_repr_tests = [
+        # start, end, expected repr
+        (None, None, 'All Time'),
+        (None, dt.date(2020, 6, 1), 'Beginning - 2020/06/01'),
+        (None, dt.date(2020, 6, 2), 'Beginning - Today'),
+        (dt.date(2020, 6, 2), None, 'Today - Continuous'),
+        (dt.date(2020, 6, 2), dt.date(2020, 6, 2), 'Today'),
+        (dt.date(2020, 6, 2), dt.date(2020, 6, 3), 'Today - 2020/06/03'),
+        (dt.date(2020, 6, 1), dt.date(2020, 6, 2), '2020/06/01 - Today'),
+        (dt.date(2020, 6, 1), dt.date(2020, 6, 3), '2020/06/01 - 2020/06/03')
+    ]
+
+    for test in date_range_repr_tests:
+        testif('Returns correct string representation for (start: {}, end: {})'.format(test[0], test[1]),
+            DateRange(test[0], test[1]).__repr__(today=dt.date(2020, 6, 2)),
+            test[2],
+            name=qualify(DateRange.__repr__))
 
     for weekday in (-1, 7):
         testif('Raises ValueError if weekday invalid (weekday = {})'.format(weekday),
