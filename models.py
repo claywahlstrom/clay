@@ -4,16 +4,24 @@ Models for working with objects.
 
 """
 
+import abc as _abc
 import inspect as _inspect
 
-class Serializable:
+class Abstract:
 
-    """Abstract class used to convert between Python and JSON types"""
+    """Used to disable instantiation of this type"""
 
+    @_abc.abstractmethod
     def __init__(self):
         """Initializes this object"""
-        if type(self) is Serializable:
-            raise NotImplementedError('abstract class Serializable cannot be instantiated')
+        if isinstance(self, Abstract):
+            raise NotImplementedError('Cannot instantiate {} because it is abstract'.format(type(self)))
+
+Static = Abstract # alias
+
+class Serializable(Abstract):
+
+    """Abstract class used to convert between Python and JSON types"""
 
     def __repr__(self):
         """Returns the string representation of this object"""
@@ -74,14 +82,23 @@ Model = Anonymous # alias
 if __name__ == '__main__':
 
     from clay.tests import testif
+    from clay.utils import qualify
 
-    testif('Serializable initializer raises NotImplementedError for Serializable type',
+    testif('Raises NotImplementedError because it is abstract',
+        lambda: Abstract(),
+        None,
+        raises=NotImplementedError,
+        name=qualify(Abstract.__init__))
+
+    testif('Raises NotImplementedError for subclass types without __init__ implementation',
         lambda: Serializable(),
         None,
-        raises=NotImplementedError)
+        raises=NotImplementedError,
+        name=qualify(Abstract.__init__))
 
     class Serious(Serializable):
-        pass
+        def __init__(self):
+            pass
 
     testif('Serializable.verfiy_props raises RuntimeError when props missing',
         lambda: Serious().verify_props(),
@@ -89,6 +106,9 @@ if __name__ == '__main__':
         raises=RuntimeError)
 
     class Serious(Serializable):
+        def __init__(self):
+            pass
+
         props = ['int', 'string', 'list', 'implicit']
 
         @property
