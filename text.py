@@ -6,6 +6,8 @@ Default WIDTH is 80 characters for IDLE and 100 for shell.
 
 """
 
+import pprint
+
 from clay.env import is_idle as _is_idle
 
 if _is_idle():
@@ -79,6 +81,11 @@ def right(text):
 def underline(text, char='-'):
     """Returns the given text underlined with char"""
     return text + '\n' + char * len(text)
+
+def pretty_print(heading, data):
+    """Pretty prints the heading and data"""
+    print(underline(heading))
+    pprint.pprint(data)
 
 if __name__ == '__main__':
     print('Box Art Examples:')
