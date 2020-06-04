@@ -368,6 +368,18 @@ class HtmlBuilder(object):
     def build(self):
         return self.__html
 
+def parse_raw_headers(raw_headers: str) -> dict:
+    """Parses the given headers string and returns the corresponding
+    headers dictionary. Useful when working with developer tools in
+    the browser
+
+    """
+    headers = {}
+    for header in raw_headers.strip().split('\n'):
+        key, value = header.split(': ')
+        headers[key] = value
+    return headers
+
 class TagFinder(object):
     """Class TagFinder can be used to find and store elements
        from a given web page or markup"""
@@ -909,6 +921,7 @@ if __name__ == '__main__':
 
     from clay.settings import DOCS_DIR
     from clay.tests import testif
+    from clay.utils import qualify
 
     cc = CourseCatalogUW()
     testif('UW course catalog queries general course correctly',
@@ -938,6 +951,19 @@ if __name__ == '__main__':
     with open('logs/net-core-find-anchors.log', 'w') as fa_log:
         print('ANCHORS', file=fa_log)
         print(find_anchors(TEST_LINK, internal=False), file=fa_log)
+
+    testif('Parses headers correctly',
+        parse_raw_headers("""Host: example.com
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive"""),
+        {
+            'Host': 'example.com',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive'
+        },
+        name=qualify(parse_raw_headers))
 
     we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
     testif('best music school list contains 21 elements', len(we1.find('h3')), 21)
