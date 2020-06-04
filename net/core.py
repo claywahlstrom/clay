@@ -257,6 +257,11 @@ class CourseCatalogUW(object):
                 'results': {'course_list': course_list,
                             'header': header}}
 
+def encode_json(data) -> str:
+    """Returns the JSON string representation of the given data"""
+    encoder = _json.JSONEncoder()
+    return encoder.encode(data)
+
 def file2uri(path):
     """Returns the web file URI for the given file path"""
     return 'file:///' + path.replace('\\', '/')
