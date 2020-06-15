@@ -4,8 +4,6 @@ Basic operations for lines, lists, and files
 
 """
 
-# possible: rmdup could use "set" object to remove duplicates
-
 import io as _io
 import traceback as _traceback
 
@@ -133,14 +131,17 @@ def printlines(content, lines=0, numbered=True):
             print(str(num).rjust(len(str(lines))), end=' ')
         print(line)
 
-def rmdup(lizt):
+def rmdup(lizt, show_output=False):
     """Returns a non-duplicated version of the given list with order in tact"""
     len_before = len(lizt)
     new = []
     for n in lizt:
         if n not in new:
             new.append(n)
-    print(len_before - len(new), 'duplicate(s) removed')
+
+    if show_output:
+        print(len_before - len(new), 'duplicate(s) removed')
+
     return new
 
 if __name__ == '__main__':
