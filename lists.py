@@ -140,7 +140,8 @@ def rmdup(lizt, show_output=False):
             new.append(n)
 
     if show_output:
-        print(len_before - len(new), 'duplicate(s) removed')
+        print(len_before - len(new), 'duplicate(s) removed from {}'
+            .format(str(lizt)[:30] + '...'))
 
     return new
 
