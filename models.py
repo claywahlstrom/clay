@@ -6,6 +6,7 @@ Models for working with objects.
 
 import abc as _abc
 import inspect as _inspect
+import uuid as _uuid
 
 class Abstract:
 
@@ -77,7 +78,34 @@ class Anonymous(Serializable):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-Model = Anonymous # alias
+class Model(Anonymous):
+
+    """Used to work with database models"""
+
+    def __init__(self, *initial_data, **kwargs):
+        """Initializes this Model"""
+
+        # set an initial ID value
+        self.__id = None
+
+        super().__init__(*initial_data, **kwargs)
+
+        # if the ID is not set, use a GUID by default
+        if self.id is None:
+            self.id = str(_uuid.uuid4())
+
+    @property
+    def id(self) -> str:
+        """Gets the ID of this Model"""
+        return self.__id
+
+    @id.setter
+    def id(self, value: str) -> str:
+        """Sets the ID of this Model. Read-only once set"""
+        if not isinstance(value, str):
+            raise TypeError('value must be of type str')
+
+        self.__id = value
 
 if __name__ == '__main__':
 
@@ -154,3 +182,15 @@ if __name__ == '__main__':
         (obj.two, obj.three),
         (3, 2))
     testif('Anonymous has three attributes set', len(obj.props), 3)
+
+    testif('Model.id uses UUID if no ID specified',
+        type(_uuid.UUID(Model({}).id)),
+        _uuid.UUID)
+    testif('Model.id uses given ID if specified',
+        Model({'id': '0000'}).id,
+        '0000')
+
+    testif('Model.id raises TypeError for invalid ID type',
+        lambda: Model({'id': bytes()}),
+        None,
+        raises=TypeError)

@@ -8,7 +8,7 @@ import datetime as _dt
 import json as _json
 import os as _os
 
-from clay.models import Anonymous as _Anonymous, Serializable as _Serializable
+from clay.models import Model as _Model, Serializable as _Serializable
 
 class JsonRepository(object):
     """Wrapper for working with JSON database files"""
@@ -114,7 +114,7 @@ class CrudRepository(JsonRepository):
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
         super(CrudRepository, self).__init__(name, {})
-        self.__default_model = _Anonymous()
+        self.__default_model = _Model()
 
     def _ensure_exists(self, pk):
         if not(self.db is None or pk in self.db):
