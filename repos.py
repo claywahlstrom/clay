@@ -90,9 +90,15 @@ class JsonRepository(object):
             self.write()
 
     def read(self):
-        """Reads data from the disk into the database"""
-        with open(self.__name) as fp:
-            self.__db = _json.load(fp)
+        """Reads data from the disk into the database.
+        Creates the database if it doesn't already exist.
+        """
+        if self.exists():
+            with open(self.get_name()) as fp:
+                self.__db = _json.load(fp)
+        else:
+            self.create()
+
         self.__has_read = True
 
     def write(self):
