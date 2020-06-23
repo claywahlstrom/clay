@@ -140,10 +140,9 @@ class CrudRepository(JsonRepository):
 
     def _ensure_exists(self, pk):
         if isinstance(self.db, list) and self.get(pk) is None:
+            model = self.default_model.to_json()
             # make sure the model exists
-            self.db.append(self.default_model.to_json())
-            # add the model to the index
-            self.__index[pk] = self.db[-1]
+            self._insert_model(model)
 
     def get(self, pk):
         """Gets the model with the given primary key"""
@@ -172,6 +171,20 @@ class CrudRepository(JsonRepository):
             raise TypeError('model must be of base type Serializable')
         self.__default_model = model
 
+    def _insert_model(self, model):
+        """Inserts this model into the repository and the index"""
+        # insert the model
+        self.db.append(model)
+        # insert the model into the index
+        self.__index[model['id']]
+
+    def _remove_model(self, model):
+        """Removes this model from the repository and the index"""
+        # remove the model
+        self.db.remove(model)
+        # remove the model from the index
+        del self.__index[model['id']]
+
     def insert(self, model):
         """Inserts the given model into this repository"""
         self._ensure_connected()
@@ -185,9 +198,7 @@ class CrudRepository(JsonRepository):
             raise RuntimeError('A model with primary key "{}" already exists'.format(pk))
 
         # append the model
-        self.db.append(model)
-        # add the model to the index
-        self.__index[pk] = model
+        self._insert_model(model)
 
     def delete(self, pk):
         """Deletes the given primary key from this repository"""
@@ -196,10 +207,7 @@ class CrudRepository(JsonRepository):
         model = self.get(pk)
 
         if model is not None:
-            # remove the model
-            self.db.remove(model)
-            # remove the model from the index
-            del self.__index[pk]
+            self._remove_model(model)
             self.write()
             print('{}: pk "{}" deleted'.format(self.name, pk))
         else:
@@ -254,8 +262,7 @@ class UserRepository(CrudRepository):
             if _dt.datetime.strptime(model[date_prop], date_format) <= days_ago:
                 modified = True
                 print('{}: pruning {}...'.format(self.name, pk))
-                self.db.remove(model)
-                del self.__index[pk]
+                self._remove_model(model)
 
         if modified:
             self.write()
