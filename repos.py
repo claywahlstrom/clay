@@ -297,8 +297,8 @@ if __name__ == '__main__':
     from clay.utils import qualify
 
     test_repo_name = r'test_files\test-repo.json'
-    repo = CrudRepository(test_repo_name)
-    repo.create()
+    test_repo = CrudRepository(test_repo_name)
+    test_repo.read()
 
     js1 = JsonRepository('README.md', {})
     js2 = JsonRepository('README.mda', [])
@@ -310,11 +310,9 @@ if __name__ == '__main__':
     testif('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
 
     def crud_repository_insert_duplicate_model_test():
-        repo = CrudRepository(test_repo_name)
-        repo.read()
-
-        repo.db = [{'id': 0, 'name': 'docs'}]
-        repo.insert({'id': 0, 'name': 'readme'})
+        test_repo.read()
+        test_repo.db = [{'id': 0, 'name': 'docs'}]
+        test_repo.insert({'id': 0, 'name': 'readme'})
 
     testif('Raises RuntimeError for duplicate model IDs',
         crud_repository_insert_duplicate_model_test,
@@ -323,19 +321,17 @@ if __name__ == '__main__':
         name=qualify(CrudRepository.insert))
 
     def crud_repository_insert_test():
-        repo.db.append({'id': 0, 'name': 'docs'})
+        test_repo.read()
+        test_repo.db.append({'id': 0, 'name': 'docs'})
 
-    repo = CrudRepository(test_repo_name)
-    repo.read()
     crud_repository_insert_test()
     testif('Inserts model correctly',
-        repo.db,
+        test_repo.db,
         [{'id': 0, 'name': 'docs'}],
         name=qualify(CrudRepository.insert))
 
     def crud_repository_default_model_setter_test():
-        repo = CrudRepository('README.md')
-        repo.default_model = {}
+        test_repo.default_model = {}
 
     testif('CrudRepository.default_model setter raises TypeError for invalid base type',
         crud_repository_default_model_setter_test,
@@ -348,5 +344,3 @@ if __name__ == '__main__':
     testif('whitelist reads correct users', whitelist.users, ['abe', 'bob', 'caty'])
     testif('whitelist authorizes caty', whitelist.is_authorized('caty'), True)
     testif('whitelist rejects becky', whitelist.is_authorized('becky'), False)
-
-
