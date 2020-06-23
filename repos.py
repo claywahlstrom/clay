@@ -237,7 +237,6 @@ class CrudRepository(JsonRepository):
         model[prop] = value
 
     def write(self):
-        self._ensure_connected()
         super(CrudRepository, self).write()
         print('{}: database written'.format(self.name))
 
