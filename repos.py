@@ -8,6 +8,7 @@ import datetime as _dt
 import json as _json
 import os as _os
 
+from clay.lists import extend as _extend
 from clay.models import Model as _Model, Serializable as _Serializable
 
 class JsonRepository(object):
@@ -113,12 +114,47 @@ class CrudRepository(JsonRepository):
 
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
-        super(CrudRepository, self).__init__(name, {})
+        super().__init__(name, [])
         self.__default_model = _Model()
+        self.__index = self.build_index()
+
+    def build_index(self):
+        """Builds the index for this CrudRepository to speed up access times"""
+
+        index = {}
+
+        for model in self.db:
+            if model.id is not None:
+                if model.id in self.__index:
+                    print('Warning: Model with ID {} already exists in index'
+                        .format(model.id))
+                    continue
+
+                index[model.id] = model
+
+        return index
+
+    def __pk_not_found(self, pk):
+        """Prints a generic message for an unknown primary key"""
+        print('{}: pk "{}" not found'.format(self.name, pk))
 
     def _ensure_exists(self, pk):
-        if not(self.db is None or pk in self.db):
-            self.db[pk] = self.default_model.to_json()
+        if isinstance(self.db, list) and self.get(pk) is None:
+            # make sure the model exists
+            self.db.append(self.default_model.to_json())
+            # add the model to the index
+            self.__index[pk] = self.db[-1]
+
+    def get(self, pk):
+        """Gets the model with the given primary key"""
+        if pk in self.__index:
+            return self.__index[pk]
+
+        model = _extend(self.db) \
+            .where(lambda a: a['id'] == pk) \
+            .first_or_default()
+
+        return model
 
     def create_if_not_exists(self, pk):
         self._ensure_connected()
@@ -136,23 +172,53 @@ class CrudRepository(JsonRepository):
             raise TypeError('model must be of base type Serializable')
         self.__default_model = model
 
+    def insert(self, model):
+        """Inserts the given model into this repository"""
+        self._ensure_connected()
+
+        pk = model['id']
+
+        model = self.get(pk)
+
+        # if the model already exists, raise an exception
+        if model is not None:
+            raise RuntimeError('A model with primary key "{}" already exists'.format(pk))
+
+        # append the model
+        self.db.append(model)
+        # add the model to the index
+        self.__index[pk] = model
+
     def delete(self, pk):
         """Deletes the given primary key from this repository"""
         self._ensure_connected()
-        if pk in self.db:
-            self.db.pop(pk)
+
+        model = self.get(pk)
+
+        if model is not None:
+            # remove the model
+            self.db.remove(model)
+            # remove the model from the index
+            del self.__index[pk]
             self.write()
             print('{}: pk "{}" deleted'.format(self.name, pk))
         else:
-            print('{}: pk "{}" not found'.format(self.name, pk))
+            self.__pk_not_found(pk)
 
     def update(self, pk, model):
-        """Updates the given primary key within this repository"""
+        """Updates the model with the given primary key"""
+
         self._ensure_connected()
         self._ensure_exists(pk)
 
+        original = self.get(pk)
+
+        if original is None:
+            self.__pk_not_found(pk)
+            return
+
         for attr in model.props:
-            self.db[pk][attr] = getattr(model, attr)
+            original[attr] = getattr(model, attr)
 
         print('{}: pk "{}" updated'.format(self.name, pk))
 
@@ -161,7 +227,14 @@ class CrudRepository(JsonRepository):
            key within this repository"""
         self._ensure_connected()
         self._ensure_exists(pk)
-        self.db[pk][prop] = value
+
+        model = self.get(pk)
+
+        if model is None:
+            self.__pk_not_found(pk)
+            return
+
+        model[prop] = value
 
     def write(self):
         self._ensure_connected()
@@ -176,14 +249,15 @@ class UserRepository(CrudRepository):
     def prune(self, date_prop, date_format, days=30):
         """Prunes users based on the database date if the date is days old"""
         modified = False
-        temp = self.db.copy() # prevents concurrent modification errors
-        for pk in self.db:
+        for model in self.db:
+            pk = model['id']
             days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
-            if _dt.datetime.strptime(temp[pk][date_prop], date_format) <= days_ago:
+            if _dt.datetime.strptime(model[date_prop], date_format) <= days_ago:
                 modified = True
                 print('{}: pruning {}...'.format(self.name, pk))
-                temp.pop(pk)
-        self.db = temp
+                self.db.remove(model)
+                del self.__index[pk]
+
         if modified:
             self.write()
 
@@ -221,6 +295,11 @@ class UserWhitelist(object):
 if __name__ == '__main__':
 
     from clay.tests import testif
+    from clay.utils import qualify
+
+    test_repo_name = r'test_files\test-repo.json'
+    repo = CrudRepository(test_repo_name)
+    repo.create()
 
     js1 = JsonRepository('README.md', {})
     js2 = JsonRepository('README.mda', [])
@@ -230,6 +309,30 @@ if __name__ == '__main__':
     testif('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
     testif('creates new json repo if not exists and not forced', js2.create(write=False), True)
     testif('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
+
+    def crud_repository_insert_duplicate_model_test():
+        repo = CrudRepository(test_repo_name)
+        repo.read()
+
+        repo.db = [{'id': 0, 'name': 'docs'}]
+        repo.insert({'id': 0, 'name': 'readme'})
+
+    testif('Raises RuntimeError for duplicate model IDs',
+        crud_repository_insert_duplicate_model_test,
+        None,
+        raises=RuntimeError,
+        name=qualify(CrudRepository.insert))
+
+    def crud_repository_insert_test():
+        repo.db.append({'id': 0, 'name': 'docs'})
+
+    repo = CrudRepository(test_repo_name)
+    repo.read()
+    crud_repository_insert_test()
+    testif('Inserts model correctly',
+        repo.db,
+        [{'id': 0, 'name': 'docs'}],
+        name=qualify(CrudRepository.insert))
 
     def crud_repository_default_model_setter_test():
         repo = CrudRepository('README.md')
