@@ -78,8 +78,8 @@ if __name__ == '__main__':
         name=qualify(Html.get_newlines_string))
 
     html_get_newlines_string_tests = [
-        (b'Fist line\r\nSecond line', b'Fist line<br />Second line'),
-        ('Fist line\r\nSecond line', 'Fist line<br />Second line')
+        (b'First line\r\nSecond line', b'First line<br />Second line'),
+        ('First line\r\nSecond line', 'First line<br />Second line')
     ]
 
     for test in html_get_newlines_string_tests:
@@ -90,7 +90,7 @@ if __name__ == '__main__':
             name=qualify(Html.get_newlines_string))
 
     testif('Returns correct HTML newlines string',
-        Html.get_newlines_string('Fist line\nSecond line'),
+        Html.get_newlines_string('First line\nSecond line'),
         'First line<br />Second line',
         name=qualify(Html.get_newlines_string))
 
