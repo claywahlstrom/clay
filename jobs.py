@@ -13,10 +13,8 @@ import pprint
 from statistics import median, mean as average
 
 from clay.graphing import Histogram
+from clay.settings import JOBS_BREAK_SCHEDULES
 from clay.utils import SortableDict
-
-BREAK_SCHEDULES = {'WA': {'hours': 6, 'length': 0.5},
-                   'OR': {'hours': 5, 'length': 1.0}}
 
 DAYS_OF_THE_WEEK = ('Monday',
                     'Tuesday',
@@ -40,8 +38,8 @@ class Attendance(object):
     def __init__(self, take_home_ratio, perhour, state, offset=0):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is for Monday."""
         import os
-        if state not in BREAK_SCHEDULES:
-            raise ValueError('state must be in [{}]'.format(", ".join(BREAK_SCHEDULES)))
+        if state not in JOBS_BREAK_SCHEDULES:
+            raise ValueError('state must be in [{}]'.format(", ".join(JOBS_BREAK_SCHEDULES)))
         if not(os.path.exists('attendance.csv')):
             raise FileNotFoundError('attendance.csv doesn\'t exist')
         with open('attendance.csv') as fp:
@@ -130,19 +128,19 @@ class Attendance(object):
     def remove_breaks(self, lunches=False):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
         print('Removing breaks using the rules for', self.state)
-        print('break length is', BREAK_SCHEDULES[self.state]['length'], 'hr')
+        print('break length is', JOBS_BREAK_SCHEDULES[self.state]['length'], 'hr')
         print('count', end='\t')
         print('date', end='\t\t')
         print('hours (before deduction)')
 
         for i, row in enumerate(self.db):
-            print(math.floor(self.db[i]['hours'] / BREAK_SCHEDULES[self.state]['hours']), end='\t')
+            print(math.floor(self.db[i]['hours'] / JOBS_BREAK_SCHEDULES[self.state]['hours']), end='\t')
             print(self.db[i]['date'], end='\t')
             print(self.db[i]['hours'])
             # remove lunch breaks from hours
             self.db[i]['hours'] -= math.floor(self.db[i]['hours'] / \
-                                   BREAK_SCHEDULES[self.state]['hours']) * \
-                                   BREAK_SCHEDULES[self.state]['length']
+                JOBS_BREAK_SCHEDULES[self.state]['hours']) * \
+                JOBS_BREAK_SCHEDULES[self.state]['length']
 
     def select(self, attrib, until_date=None):
         if attrib not in self.headers:
@@ -224,4 +222,3 @@ if __name__ == '__main__':
     att = Attendance(0.75, 11.0, 'OR', offset=3)
     att.remove_breaks(lunches=True)
     att.print_report()
-
