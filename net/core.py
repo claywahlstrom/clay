@@ -1014,9 +1014,9 @@ Connection: keep-alive"""),
     testif('webdoc returns correct website html title',
         WebDocument(EXAMPLE_URL).get_title(),
         'Example Domain')
-    testif('webdoc returns correct YouTube html title',
-        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
-        'I tracked every minute of my life for 3 months. - YouTube')
+    # testif('webdoc returns correct YouTube html title',
+    #     WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
+    #     'I tracked every minute of my life for 3 months. - YouTube')
     testif('webdoc get_html ignores user-agent and accept-encoding headers',
         WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(headers=WEB_HDRS),
         'I tracked every minute of my life for 3 months. - YouTube')
