@@ -9,15 +9,14 @@ from collections import OrderedDict as _OrderedDict
 import operator as _operator
 import sys as _sys
 
+from clay.settings import CONSOLE_WIDTH
 from clay.utils import SortableDict as _SortableDict
-
-SCREEN_WD = 80
 
 class Graph(object):
 
     SHORT_LENGTH = 30
 
-    def __init__(self, data, title=None, max_width=SCREEN_WD, sort=True):
+    def __init__(self, data, title=None, max_width=CONSOLE_WIDTH, sort=True):
         if type(data) is _SortableDict:
             sd = data
         else:
@@ -120,7 +119,7 @@ class Histogram(Graph):
     """
 
     def __init__(self, columns=None, data=None, title=None,
-                 max_width=SCREEN_WD, sort=True):
+            max_width=CONSOLE_WIDTH, sort=True):
         if columns is not None and type(columns) not in (tuple, list):
             raise TypeError('columns must be of type tuple')
 

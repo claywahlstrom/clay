@@ -13,9 +13,9 @@ from re import findall
 import time as _time
 
 from clay.env import is_idle as _is_idle
-from clay.settings import SEARCH_EXCLUSIONS
+from clay.settings import CONSOLE_WIDTH, SEARCH_EXCLUSIONS
 
-STR_LIM = 75 # path printing termination number
+STR_LIM = CONSOLE_WIDTH - 5 # path printing termination number
 
 class Search(object):
     """Used to search a file system"""
