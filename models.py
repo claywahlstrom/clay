@@ -101,7 +101,7 @@ class Model(Anonymous):
 
     @id.setter
     def id(self, value: str) -> str:
-        """Sets the ID of this Model. Read-only once set"""
+        """Sets the ID of this Model"""
         if not isinstance(value, str):
             raise TypeError('value must be of type str')
 
