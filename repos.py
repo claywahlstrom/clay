@@ -141,6 +141,8 @@ class CrudRepository(JsonRepository):
     def _ensure_exists(self, pk):
         if isinstance(self.db, list) and self.get(pk) is None:
             model = self.default_model.to_json()
+            # set the ID of the model
+            model['id'] = pk
             # make sure the model exists
             self._insert_model(model)
 
@@ -176,7 +178,7 @@ class CrudRepository(JsonRepository):
         # insert the model
         self.db.append(model)
         # insert the model into the index
-        self.__index[model['id']]
+        self.__index[model['id']] = model
 
     def _remove_model(self, model):
         """Removes this model from the repository and the index"""
