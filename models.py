@@ -68,7 +68,9 @@ class Anonymous(Serializable):
         """Returns the attributes for this Anonymous dynamically"""
         attrs = _inspect.classify_class_attrs(Anonymous)
         # return the difference of the instance and class attributes
-        return list(set(dir(self)).difference(set(a.name for a in attrs)))
+        diff = set(dir(self)).difference(set(a.name for a in attrs))
+        # exclude protected/private properties
+        return list(prop for prop in diff if not prop.startswith('_'))
 
     def update(self, *initial_data, **kwargs):
         """Updates attributes using dictionaries and keyword arguments"""
