@@ -51,7 +51,7 @@ def json_code_result(status_code, message=''):
     return flask.jsonify(hasMessage=bool(message),
         message=message,
         status_code=status_code,
-        success=status_code == 200 or status_code == 202), status_code
+        success=status_code >= 200 and status_code < 300), status_code
 
 def print_request_args():
     """Prints the incoming request arguments data"""
