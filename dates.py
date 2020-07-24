@@ -146,14 +146,8 @@ class Date(dt.date):
         return extend_date(Date.todatetime(self) + dt.timedelta(days=7))
 
     def next_week2(self, reference) -> 'Date':
-        """Returns the next occurrence of the reference date"""
-        next_week = self.this_week(self)
-        # if next week is predicted before or on today
-        if next_week <= self:
-            # push it out a week
-            next_week = extend_date(next_week).next_week()
-
-        return next_week
+        """Returns the next week's occurrence of the reference date"""
+        return extend_date(self.this_week(reference)).next_week()
 
     def next_day(self) -> 'Date':
         """Returns midnight of the next day"""
@@ -397,8 +391,8 @@ if __name__ == '__main__':
 
     next_week2_tests = [
         (dt.date(2020, 5, 31), dt.date(2020, 6, 7)),
-        (dt.date(2020, 6, 1), dt.date(2020, 6, 7)),
-        (dt.date(2020, 6, 6), dt.date(2020, 6, 7)),
+        (dt.date(2020, 6, 1), dt.date(2020, 6, 8)),
+        (dt.date(2020, 6, 6), dt.date(2020, 6, 13)),
         (dt.date(2020, 6, 7), dt.date(2020, 6, 7))
     ]
 
