@@ -193,10 +193,8 @@ class CrudRepository(JsonRepository):
 
         pk = model['id']
 
-        model = self.get(pk)
-
         # if the model already exists, raise an exception
-        if model is not None:
+        if self.get(pk) is not None:
             raise RuntimeError('A model with primary key "{}" already exists'.format(pk))
 
         # append the model
