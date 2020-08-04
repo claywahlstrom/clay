@@ -8,6 +8,8 @@ import abc as _abc
 import inspect as _inspect
 import uuid as _uuid
 
+from clay.dates import YMD_FMT
+
 class Abstract:
 
     """Used to disable instantiation of this type"""
@@ -70,15 +72,30 @@ class Anonymous(Serializable):
         # return the difference of the instance and class attributes
         diff = set(dir(self)).difference(set(a.name for a in attrs))
         # exclude protected/private properties
-        return list(prop for prop in diff if not prop.startswith('_'))
+        return {prop: object for prop in diff if not prop.startswith('_')}
 
     def update(self, *initial_data, **kwargs):
         """Updates attributes using dictionaries and keyword arguments"""
         for param in initial_data:
-            for key in param.keys():
-                setattr(self, key, param[key])
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
+            if not isinstance(param, dict):
+                raise TypeError('initial_data must be of type dict')
+            # set props using dictionaries
+            self.__convert_data(param)
+        # set props using kwargs
+        self.__convert_data(kwargs)
+
+    def __convert_data(self, lookup):
+        """ dfs"""
+        import datetime as dt
+        for key in lookup:
+            value = lookup[key]
+            if key in self.props and self.props[key] == dt.datetime:
+                try:
+                    # attempt to read as date value
+                    value = dt.datetime.strptime(value, YMD_FMT)
+                except:
+                    pass
+            setattr(self, key, value)
 
 class Model(Anonymous):
 
