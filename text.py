@@ -78,6 +78,19 @@ def right(text):
     """Justifies the given text to the right"""
     return text.rjust(WIDTH)
 
+def is_capitalized(text):
+    """Returns True if the given text is capitalized, False otherwise"""
+    if not text: return False
+    return text[0].isupper()
+
+def uncapitalize(text):
+    """Returns the given text uncapitalized"""
+    if not text: return ''
+    elif len(text) == 1:
+        return text[0].lower()
+    else:
+        return text[0].lower() + text[1:]
+
 def underline(text, char='-'):
     """Returns the given text underlined with char"""
     return text + '\n' + char * len(text)
@@ -88,6 +101,9 @@ def pretty_print(heading, data):
     pprint.pprint(data)
 
 if __name__ == '__main__':
+
+    from clay.tests import testif
+
     print('Box Art Examples:')
     fullbox('Hello full', 2, 1)
     print('')
@@ -100,3 +116,19 @@ if __name__ == '__main__':
     print(underline('underlined text (-)'))
     print(underline('underlined text (*)', '*'))
 
+    testif('Returns False if text less than two characters',
+        is_capitalized(''),
+        False)
+    testif('Returns True if first character capitalized',
+        is_capitalized('Hi'),
+        True)
+
+    testif('Returns empty string if text empty',
+        uncapitalize(''),
+        '')
+    testif('Returns uncapitalized text (1 character)',
+        uncapitalize('H'),
+        'h')
+    testif('Returns uncapitalized text (>1 character)',
+        uncapitalize('Hello'),
+        'hello')
