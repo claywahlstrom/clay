@@ -1,6 +1,9 @@
 
 import inspect as _inspect
 
+from clay.text import is_capitalized as _is_cap, \
+    uncapitalize as _uncap
+
 _stack = _inspect.stack()
 
 if _stack[-1].code_context is None:
@@ -32,9 +35,9 @@ def testif(expectation, test_input, test_output, name=None, raises=None, transfo
             raise TypeError('names must be of type str')
         else:
             # if the expectation is capitalized
-            if len(expectation) >= 2 and expectation[0].isupper():
+            if _is_cap(expectation):
                 # uncapitalize it
-                expectation = expectation[0].lower() + expectation[1:]
+                expectation = _uncap(expectation)
             expectation = '{} {}'.format(name, expectation)
 
     if type(test_input).__name__ == 'function' and raises is not None: # lambda expressions
@@ -62,6 +65,24 @@ def testif(expectation, test_input, test_output, name=None, raises=None, transfo
             _show_success(expectation)
         else:
             _show_failure(expectation, test_output, result)
+
+def testraises(raise_condition,
+        test_expression,
+        exception,
+        name=None,
+        transformer=lambda x: x):
+
+    # if the raise condition is capitalized
+    if _is_cap(raise_condition):
+        # uncapitalize it
+        raise_condition = _uncap(raise_condition)
+
+    testif('Raises {} if {}'.format(exception.__name__, raise_condition),
+        test_expression,
+        None,
+        name=name,
+        raises=exception,
+        transformer=transformer)
 
 if __name__ == '__main__':
 
