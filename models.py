@@ -44,19 +44,6 @@ class Serializable(Abstract):
         self.verify_props()
         return {prop: getattr(self, prop, None) for prop in self.props}
 
-    @staticmethod
-    def from_json(cls, data):
-        """Deserializes the given data to an object"""
-        obj = cls()
-        if not isinstance(obj, Serializable):
-            raise TypeError('cls must be of base type Serializable')
-        obj.verify_props()
-        for key, value in data.items():
-            if key not in obj.props:
-                print('Warning: Property {} may not serialize because it is not listed in props'.format(key))
-            setattr(obj, key, value)
-        return obj
-
 class Anonymous(Serializable):
 
     """Used to initialize attributes using dictionaries and keyword arguments"""
@@ -96,6 +83,22 @@ class Anonymous(Serializable):
                 except:
                     pass
             setattr(self, key, value)
+
+def json2model(data, model):
+    """Deserializes the given data to an object of type model"""
+
+    obj = model()
+
+    if not isinstance(obj, Serializable):
+        raise TypeError('model must be of base type Serializable')
+
+    obj.verify_props()
+    for key, value in data.items():
+        if key not in obj.props:
+            print('Warning: Property {} may not serialize because it is ' +
+                'not listed in props'.format(key))
+        setattr(obj, key, value)
+    return obj
 
 class Model(Anonymous):
 
@@ -147,10 +150,11 @@ if __name__ == '__main__':
         def __init__(self):
             pass
 
-    testif('Serializable.verfiy_props raises RuntimeError when props missing',
+    testif('Raises RuntimeError when props missing',
         lambda: Serious().verify_props(),
         None,
-        raises=RuntimeError)
+        raises=RuntimeError,
+        name=qualify(Serializable.verify_props))
 
     class Serious(Serializable):
         def __init__(self):
@@ -176,18 +180,21 @@ if __name__ == '__main__':
     testif('Serializable.to_json returns correct converted object',
         Serious().to_json(),
         {'int': 42, 'string': 'Hello', 'list': ['Example', 'list'], 'implicit': None})
-    testif('Serializable.from_json raises TypeError for incorrect subtype',
-        lambda: Serializable.from_json(object, {}),
+    testif('Raises TypeError for incorrect subtype',
+        lambda: json2model({}, object),
         None,
-        raises=TypeError)
-    testif('Serializable.from_json sets attributes correctly',
-        Serializable.from_json(Serious, {'implicit': 0}).implicit,
-        0)
+        raises=TypeError,
+        name=qualify(json2model))
+    testif('Sets attributes correctly',
+        json2model({'implicit': 0}, Serious).implicit,
+        0,
+        name=qualify(json2model))
 
-    testif('Anonymous raises AttributeError for invalid argument types',
-        lambda: Anonymous([1, 2, 3]),
+    testif('Raises AttributeError for invalid argument types',
+        lambda: Anonymous().update([1, 2, 3]),
         None,
-        raises=AttributeError)
+        raises=TypeError,
+        name=qualify(Anonymous.update))
     obj = Anonymous({
         'one': 1,
         'two': 2,
