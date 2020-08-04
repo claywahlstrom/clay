@@ -32,7 +32,7 @@ def testif(expectation, test_input, test_output, name=None, raises=None, transfo
        be a value or function accepting one argument."""
     if name is not None:
         if not isinstance(name, str):
-            raise TypeError('names must be of type str')
+            raise TypeError('name must be of type str')
         else:
             # if the expectation is capitalized
             if _is_cap(expectation):
