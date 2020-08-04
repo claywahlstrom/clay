@@ -56,6 +56,11 @@ def extend(iterable=()):
                the default if this Enumerable is empty"""
             return next(iter(self), default)
 
+        def last_or_default(self, default=None):
+            """Returns the last item in this Enumerable or
+               the default if this Enumerable is empty"""
+            return next(iter(self[::-1]), default)
+
         def group_by(self, property):
             """Returns items grouped by the given property"""
             grouped = {}
@@ -200,6 +205,12 @@ if __name__ == '__main__':
         extend(objs).where(lambda x: x.a == 2).first_or_default(),
         objs[1])
     testif('Enumerable "first or default" selects default when no element found',
+        extend(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
+        expected_default)
+    testif('Enumerable "last or default" selects correct element',
+        extend(objs).where(lambda x: x.a == 2).last_or_default(),
+        objs[2])
+    testif('Enumerable "last or default" selects default when no element found',
         extend(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
         expected_default)
     testif('Enumerable "select" raises KeyError when key missing',
