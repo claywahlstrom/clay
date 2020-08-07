@@ -98,7 +98,7 @@ class BaseRepository(IRepository):
         self._db = value
 
 class JsonRepository(BaseRepository):
-    """Wrapper for working with JSON database files"""
+    """Wrapper for working with JSON databases"""
 
     def prune(self, predicate):
         """Prunes entities from the database based on the given predicate
@@ -123,6 +123,7 @@ class JsonRepository(BaseRepository):
             _json.dump(self.db, fd)
 
 class CrudRepository(BaseRepository):
+    """Wrapper for working with CRUD databases"""
 
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
@@ -257,15 +258,18 @@ class CrudRepository(BaseRepository):
 
         model[prop] = value
 
-    def read(self):
+    def read(self, fetch_if_read=False):
         """Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
         """
-        super().read()
+        if not self.has_read or fetch_if_read:
+            super().read()
 
         if self.is_model_based:
             self.db = _extend(self.db) \
                 .select(lambda x: _json2model(x, self.model))
+
+        return self.db
 
     def write(self):
         """Writes this database to the disk"""
