@@ -11,13 +11,21 @@ import os as _os
 from clay.lists import extend as _extend
 from clay.models import Model as _Model, \
     Serializable as _Serializable, \
-    json2model as _json2model
+    json2model as _json2model, \
+    Abstract as _Abstract
 
-class JsonRepository(object):
-    """Wrapper for working with JSON database files"""
+class IRepository(_Abstract):
+
+    def read(self):
+        raise NotImplementedError('read')
+
+    def write(self):
+        raise NotImplementedError('write')
+
+class BaseRepository(IRepository):
 
     def __init__(self, name, empty):
-        """Intializes this JSON repository with the given name
+        """Intializes this repository with the given name
            and empty database structure"""
         self.__name = name
         self.__empty = empty
@@ -29,8 +37,8 @@ class JsonRepository(object):
             raise RuntimeError('database has not been read')
 
     def clear(self):
-        """Sets this database to the empty structure"""
-        self.__db = self.__empty
+        """Sets the database to the empty structure"""
+        self._db = self.__empty
 
     def create(self, force=False, write=True):
         """Creates this database if it does not exist and returns
@@ -46,28 +54,30 @@ class JsonRepository(object):
         return True
 
     def exists(self):
-        """Returns True if this database exists, False otherwise"""
+        """Returns True if the database exists, False otherwise"""
         return _os.path.exists(self.__name)
 
-    def get_name(self):
-        """Returns the name of this database"""
-        return self.__name
+    def read(self):
+        """Reads data from the disk into the database.
+        Creates the database if it doesn't already exist.
+        """
+        if self.exists():
+            with open(self.name) as fp:
+                self._db = _json.load(fp)
+        else:
+            self.create()
 
-    def get_empty(self):
-        """Returns the empty structure for this database"""
-        return self.__empty
+        self.__has_read = True
 
     @property
-    def db(self):
-        """Returns this database"""
-        return self.__db
+    def name(self):
+        """The name of this repository"""
+        return self.__name
 
-    @db.setter
-    def db(self, value):
-        """Sets this database to the given value"""
-        if not isinstance(value, (dict, list)):
-            raise TypeError('db must be a JSON serializable of base type dict or list')
-        self.__db = value
+    @property
+    def empty(self):
+        """An empty structure for this repository"""
+        return self.__empty
 
     @property
     def has_read(self):
@@ -75,44 +85,44 @@ class JsonRepository(object):
            False otherwise"""
         return self.__has_read
 
+    @property
+    def db(self):
+        """Returns the database for this repository"""
+        return self._db
+
+    @db.setter
+    def db(self, value):
+        """Sets this database to the given value"""
+        if not isinstance(value, (dict, list)):
+            raise TypeError('db must be a JSON serializable of base type dict or list')
+        self._db = value
+
+class JsonRepository(BaseRepository):
+    """Wrapper for working with JSON database files"""
+
     def prune(self, predicate):
         """Prunes entities from the database based on the given predicate
            function"""
         modified = False
-        temp = self.__db.copy() # prevents concurrent modification errors
-        for entity in self.__db:
+        temp = self.db.copy() # prevents concurrent modification errors
+        for entity in self.db:
             if predicate(entity):
-                print('{}: pruning "{}"...'.format(self.__name, entity))
+                print('{}: pruning "{}"...'.format(self.name, entity))
                 if isinstance(temp, dict):
                     temp.pop(entity)
                 else: # isinstance(temp, list)
                     temp.remove(entity)
                 modified = True
-        self.__db = temp
+        self._db = temp
         if modified:
             self.write()
 
-    def read(self):
-        """Reads data from the disk into the database.
-        Creates the database if it doesn't already exist.
-        """
-        if self.exists():
-            with open(self.get_name()) as fp:
-                self.__db = _json.load(fp)
-        else:
-            self.create()
-
-        self.__has_read = True
-
     def write(self):
         """Writes this database to the disk"""
-        with open(self.__name, 'w') as fd:
-            _json.dump(self.__db, fd)
+        with open(self.name, 'w') as fd:
+            _json.dump(self.db, fd)
 
-    name = property(get_name)
-    empty = property(get_empty)
-
-class CrudRepository(JsonRepository):
+class CrudRepository(BaseRepository):
 
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
