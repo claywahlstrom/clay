@@ -95,8 +95,8 @@ def json2model(data, model):
     obj.verify_props()
     for key, value in data.items():
         if key not in obj.props:
-            print('Warning: Property {} may not serialize because it is ' +
-                'not listed in props'.format(key))
+            print('Warning: Property {} may not serialize because '.format(key) +
+                'it is not listed in props')
         setattr(obj, key, value)
     return obj
 
