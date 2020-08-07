@@ -9,7 +9,9 @@ import json as _json
 import os as _os
 
 from clay.lists import extend as _extend
-from clay.models import Model as _Model, Serializable as _Serializable
+from clay.models import Model as _Model, \
+    Serializable as _Serializable, \
+    json2model as _json2model
 
 class JsonRepository(object):
     """Wrapper for working with JSON database files"""
@@ -117,6 +119,7 @@ class CrudRepository(JsonRepository):
         super().__init__(name, [])
         self.__default_model = _Model()
         self.__index = self.build_index()
+        self.__model = object
 
     def build_index(self):
         """Builds the index for this CrudRepository to speed up access times"""
@@ -244,9 +247,47 @@ class CrudRepository(JsonRepository):
 
         model[prop] = value
 
+    def read(self):
+        """Reads data from the disk into the database.
+        Creates the database if it doesn't already exist.
+        """
+        super().read()
+
+        if self.is_model_based:
+            self.db = _extend(self.db) \
+                .select(lambda x: _json2model(x, self.model))
+
     def write(self):
-        super(CrudRepository, self).write()
+        """Writes this database to the disk"""
+        # create a copy of the repo
+        models = self.db[:]
+
+        # check if this repo is model-based
+        if self.is_model_based:
+            # serialize the models
+            models = _extend(models) \
+                .select(lambda x: x.to_json())
+
+        with open(self.name, 'w') as fd:
+            _json.dump(models, fd)
+
         print('{}: database written'.format(self.name))
+
+    def set_model(self, model: _Model):
+        """Sets the model type for this repository"""
+        if not issubclass(model, _Model):
+            raise TypeError('model must of base type clay.models.Model')
+        self.__model = model
+
+    @property
+    def model(self) -> type:
+        """Returns the model type for this repository"""
+        return self.__model
+
+    @property
+    def is_model_based(self):
+        """Returns True if this repository is model-based, False otherwise"""
+        return self.model != object
 
 class UserRepository(CrudRepository):
 
