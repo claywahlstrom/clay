@@ -52,6 +52,10 @@ class Anonymous(Serializable):
         """Initializes this Anonymous"""
         self.update(*initial_data, **kwargs)
 
+    def __getitem__(self, name):
+        """Returns the attribute with the given name"""
+        return getattr(self, name)
+
     @property
     def props(self):
         """Returns the attributes for this Anonymous dynamically"""
@@ -76,7 +80,7 @@ class Anonymous(Serializable):
         import datetime as dt
         for key in lookup:
             value = lookup[key]
-            if key in self.props and self.props[key] == dt.datetime:
+            if key in self.props and self.props.get(key) == dt.datetime:
                 try:
                     # attempt to read as date value
                     value = dt.datetime.strptime(value, YMD_FMT)
