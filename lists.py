@@ -7,6 +7,9 @@ Basic operations for lines, lists, and files
 import io as _io
 import traceback as _traceback
 
+from clay.models import Abstract as _Abstract
+from clay.utils import qualify as _qualify
+
 def apply(function, vector):
     """Applies the function to the given vector and returns the result
        of the same type"""
@@ -33,6 +36,35 @@ def join_lines(file, join_sep=', '):
         fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
 
+class IEnumerable(_Abstract):
+
+    """Interface for enumerable objects"""
+
+    def copy(self):
+        raise NotImplementedError(_qualify(self.copy))
+
+    def first_or_default(self):
+        raise NotImplementedError(_qualify(self.first_or_default))
+
+    def last_or_default(self):
+        raise NotImplementedError(_qualify(self.last_or_default))
+
+    def group_by(self):
+        raise NotImplementedError(_qualify(self.group_by))
+
+    def select(self):
+        raise NotImplementedError(_qualify(self.select))
+
+    def where(self):
+        raise NotImplementedError(_qualify(self.where))
+
+    def whereif(self):
+        raise NotImplementedError(_qualify(self.whereif))
+
+    @property
+    def base(self):
+        raise NotImplementedError('IEnumerable.base')
+
 def extend(iterable=()):
     """Returns an instance of Enumerable using the given iterable"""
 
@@ -41,7 +73,7 @@ def extend(iterable=()):
 
     base = type(iterable)
 
-    class Enumerable(base):
+    class Enumerable(base, IEnumerable):
 
         """Class Enumerable contains extension methods that can be
            used to query and filter data like Microsoft's (c) LINQ
@@ -50,6 +82,14 @@ def extend(iterable=()):
         def __repr__(self):
             """Returns the string representation of this Enumerable"""
             return '{}({})'.format(self.__class__.__name__, base(self))
+
+        def copy(self):
+            """Returns a shallow copy of this Enumerable"""
+            if base is tuple:
+                to_copy = base(list(self).copy())
+            else:
+                to_copy = base(self).copy()
+            return Enumerable(to_copy)
 
         def first_or_default(self, default=None):
             """Returns the first item in this Enumerable or
