@@ -22,11 +22,13 @@ class IRepository(_Abstract):
     def write(self):
         raise NotImplementedError('write')
 
-class BaseRepository(IRepository):
+class BaseRepository(_Abstract):
 
     def __init__(self, name, empty):
         """Intializes this repository with the given name
            and empty database structure"""
+        if type(self) is BaseRepository:
+            super().__init__()
         self.__name = name
         self.__empty = empty
         self.__has_read = False
@@ -85,19 +87,7 @@ class BaseRepository(IRepository):
            False otherwise"""
         return self.__has_read
 
-    @property
-    def db(self):
-        """Returns the database for this repository"""
-        return self._db
-
-    @db.setter
-    def db(self, value):
-        """Sets this database to the given value"""
-        if not isinstance(value, (dict, list)):
-            raise TypeError('db must be a JSON serializable of base type dict or list')
-        self._db = value
-
-class JsonRepository(BaseRepository):
+class JsonRepository(BaseRepository, IRepository):
     """Wrapper for working with JSON databases"""
 
     def prune(self, predicate):
@@ -122,38 +112,45 @@ class JsonRepository(BaseRepository):
         with open(self.name, 'w') as fd:
             _json.dump(self.db, fd)
 
-class CrudRepository(BaseRepository):
+    @property
+    def db(self):
+        """Returns the database for this repository"""
+        return self._db
+
+    @db.setter
+    def db(self, value):
+        """Sets this database to the given value"""
+        if not isinstance(value, (dict, list)):
+            raise TypeError('db must be a JSON serializable of base type dict or list')
+        self._db = value
+
+class CrudRepository(BaseRepository, IRepository):
     """Wrapper for working with CRUD databases"""
 
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
         super().__init__(name, [])
         self.__default_model = _Model()
-        self.__index = self.build_index()
         self.__model = object
+        self.__index = {}
 
     def build_index(self):
         """Builds the index for this CrudRepository to speed up access times"""
-
-        index = {}
-
-        for model in self.db:
-            if model.id is not None:
-                if model.id in self.__index:
+        for model in self._db:
+            if model['id'] is not None:
+                if model['id'] in self.__index:
                     print('Warning: Model with ID {} already exists in index'
-                        .format(model.id))
+                        .format(model['id']))
                     continue
 
-                index[model.id] = model
-
-        return index
+                self.__index[model['id']] = model
 
     def __pk_not_found(self, pk):
         """Prints a generic message for an unknown primary key"""
         print('{}: pk "{}" not found'.format(self.name, pk))
 
     def _ensure_exists(self, pk):
-        if isinstance(self.db, list) and self.get(pk) is None:
+        if isinstance(self.read(), list) and self.get(pk) is None:
             model = self.default_model.to_json()
             # set the ID of the model
             model['id'] = pk
@@ -165,7 +162,7 @@ class CrudRepository(BaseRepository):
         if pk in self.__index:
             return self.__index[pk]
 
-        model = _extend(self.db) \
+        model = self.read() \
             .where(lambda a: a['id'] == pk) \
             .first_or_default()
 
@@ -190,14 +187,14 @@ class CrudRepository(BaseRepository):
     def _insert_model(self, model):
         """Inserts this model into the repository and the index"""
         # insert the model
-        self.db.append(model)
+        self._db.append(model)
         # insert the model into the index
         self.__index[model['id']] = model
 
     def _remove_model(self, model):
         """Removes this model from the repository and the index"""
         # remove the model
-        self.db.remove(model)
+        self._db.remove(model)
         # remove the model from the index
         del self.__index[model['id']]
 
@@ -265,22 +262,25 @@ class CrudRepository(BaseRepository):
         if not self.has_read or fetch_if_read:
             super().read()
 
-        if self.is_model_based:
-            self.db = _extend(self.db) \
-                .select(lambda x: _json2model(x, self.model))
+            # convert the database to an enumerable
+            self._db = _extend(self._db)
 
-        return self.db
+            if self.is_model_based:
+                self._db = self._db.select(lambda x: _json2model(x, self.model))
+
+            self.build_index()
+
+        return self._db
 
     def write(self):
         """Writes this database to the disk"""
         # create a copy of the repo
-        models = self.db[:]
+        models = self._db.copy()
 
         # check if this repo is model-based
         if self.is_model_based:
             # serialize the models
-            models = _extend(models) \
-                .select(lambda x: x.to_json())
+            models = models.select(lambda x: x.to_json())
 
         with open(self.name, 'w') as fd:
             _json.dump(models, fd)
@@ -311,7 +311,7 @@ class UserRepository(CrudRepository):
     def prune(self, date_prop, date_format, days=30):
         """Prunes users based on the database date if the date is days old"""
         modified = False
-        for model in self.db:
+        for model in self.read():
             pk = model['id']
             days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
             if _dt.datetime.strptime(model[date_prop], date_format) <= days_ago:
