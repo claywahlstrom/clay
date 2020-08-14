@@ -7,7 +7,6 @@ Basic operations for lines, lists, and files
 import io as _io
 import traceback as _traceback
 
-from clay.models import Abstract as _Abstract
 from clay.utils import qualify as _qualify
 
 def apply(function, vector):
@@ -36,7 +35,7 @@ def join_lines(file, join_sep=', '):
         fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
 
-class IEnumerable(_Abstract):
+class IEnumerable:
 
     """Interface for enumerable objects"""
 
@@ -128,7 +127,7 @@ def extend(iterable=()):
                     _traceback.print_exc()
                     raise ex
                 projection.append(new_form)
-            return Enumerable(projection)
+            return Enumerable(base(projection))
 
         def where(self, predicate):
             """Filters items based on the given predicate"""
