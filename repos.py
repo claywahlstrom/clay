@@ -278,7 +278,8 @@ class CrudRepository(BaseRepository, IRepository):
         models = self._db.copy()
 
         # check if this repo is model-based
-        if self.is_model_based:
+        # only convert if this database is not being created
+        if self.has_read and self.is_model_based:
             # serialize the models
             models = models.select(lambda x: x.to_json())
 
