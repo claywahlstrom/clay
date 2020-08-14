@@ -35,7 +35,7 @@ class BaseRepository(_Abstract):
         self.clear()
 
     def _ensure_connected(self):
-        if not self.__has_read:
+        if not self.has_read:
             raise RuntimeError('database has not been read')
 
     def clear(self):
@@ -236,7 +236,9 @@ class CrudRepository(BaseRepository, IRepository):
             self.__pk_not_found(pk)
             return
 
-        for attr in model.props:
+        props = model.props if model.is_model_based else model.keys()
+
+        for attr in props:
             original[attr] = getattr(model, attr)
 
         print('{}: pk "{}" updated'.format(self.name, pk))

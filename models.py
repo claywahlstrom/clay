@@ -53,8 +53,12 @@ class Anonymous(Serializable):
         self.update(*initial_data, **kwargs)
 
     def __getitem__(self, name):
-        """Returns the attribute with the given name"""
+        """Gets the attribute with the given name"""
         return getattr(self, name)
+
+    def __setitem__(self, name, value):
+        """Sets the attribute with the given name to value"""
+        return setattr(self, name, value)
 
     @property
     def props(self):
