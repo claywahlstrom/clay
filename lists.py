@@ -106,7 +106,7 @@ def extend(iterable=()):
             for each in self:
                 if property in each:
                     if each[property] not in grouped:
-                        grouped[each[property]] = []
+                        grouped[each[property]] = Enumerable([])
                     grouped[each[property]].append(each)
                 else:
                     print('Could not group by {}: {}'.format(property, each))
