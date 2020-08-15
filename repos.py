@@ -137,12 +137,7 @@ class CrudRepository(BaseRepository, IRepository):
     def build_index(self):
         """Builds the index for this CrudRepository to speed up access times"""
         for model in self._db:
-            if model['id'] is not None:
-                if model['id'] in self.__index:
-                    print('Warning: Model with ID {} already exists in index'
-                        .format(model['id']))
-                    continue
-
+            if model['id'] is not None and model['id'] not in self.__index:
                 self.__index[model['id']] = model
 
     def __pk_not_found(self, pk):
