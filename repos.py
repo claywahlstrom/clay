@@ -269,7 +269,7 @@ class CrudRepository(BaseRepository, IRepository):
 
         return self._db
 
-    def write(self):
+    def write(self, name=None):
         """Writes this database to the disk"""
         # create a copy of the repo
         models = self._db.copy()
@@ -278,12 +278,15 @@ class CrudRepository(BaseRepository, IRepository):
         # only convert if this database is not being created
         if self.has_read and self.is_model_based:
             # serialize the models
+
             models = models.select(lambda x: x.to_json())
 
-        with open(self.name, 'w') as fd:
+        filename = name or self.name
+
+        with open(filename, 'w') as fd:
             _json.dump(models, fd)
 
-        print('{}: database written'.format(self.name))
+        print('{}: database written'.format(filename))
 
     def set_model(self, model: _Model):
         """Sets the model type for this repository"""
