@@ -220,7 +220,6 @@ class CrudRepository(BaseRepository, IRepository):
 
         if model is not None:
             self._remove_model(model)
-            self.write()
             print('{}: pk "{}" deleted'.format(self.name, pk))
         else:
             self.__pk_not_found(pk)
