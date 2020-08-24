@@ -130,13 +130,13 @@ class CrudRepository(BaseRepository, IRepository):
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
         super().__init__(name, [])
-        self.__default_model = _Model()
         self.__model = object
-        self.__index = {}
+        self.clear_index()
 
     def clear(self):
-        """Sets the database to the empty structure"""
+        """Sets the database to the empty structure and clears the index"""
         self._db = _extend(self.empty)
+        self.clear_index()
 
     def build_index(self):
         """Builds the index for this CrudRepository to speed up access times"""
@@ -144,17 +144,24 @@ class CrudRepository(BaseRepository, IRepository):
             if model['id'] is not None and model['id'] not in self.__index:
                 self.__index[model['id']] = model
 
+    def clear_index(self):
+        """Clears the index for this CrudRepository"""
+        self.__index = {}
+
     def __pk_not_found(self, pk):
         """Prints a generic message for an unknown primary key"""
         print('{}: pk "{}" not found'.format(self.name, pk))
 
     def _ensure_exists(self, pk):
         if isinstance(self.read(), list) and self.get(pk) is None:
-            model = self.default_model.to_json()
+            model = self.model()
+            if not self.is_model_based:
+                model = model.to_json()
+
             # set the ID of the model
             model['id'] = pk
             # make sure the model exists
-            self._insert_model(model)
+            self.insert(model)
 
     def get(self, pk):
         """Gets the model with the given primary key"""
@@ -170,20 +177,7 @@ class CrudRepository(BaseRepository, IRepository):
         return model
 
     def create_if_not_exists(self, pk):
-        self._ensure_connected()
         self._ensure_exists(pk)
-
-    @property
-    def default_model(self):
-        """Returns the default model for this repository"""
-        return self.__default_model
-
-    @default_model.setter
-    def default_model(self, model):
-        """Sets the default model for this repository"""
-        if not isinstance(model, _Serializable):
-            raise TypeError('model must be of base type Serializable')
-        self.__default_model = model
 
     def _insert_model(self, model):
         """Inserts this model into the repository and the index"""
@@ -227,7 +221,6 @@ class CrudRepository(BaseRepository, IRepository):
     def update(self, pk, model):
         """Updates the model with the given primary key"""
 
-        self._ensure_connected()
         self._ensure_exists(pk)
 
         original = self.get(pk)
@@ -246,7 +239,6 @@ class CrudRepository(BaseRepository, IRepository):
     def update_prop(self, pk, prop, value):
         """Updates the value of the property for the given primary
            key within this repository"""
-        self._ensure_connected()
         self._ensure_exists(pk)
 
         model = self.get(pk)
@@ -379,7 +371,7 @@ if __name__ == '__main__':
 
     def crud_repository_insert_duplicate_model_test():
         test_repo.read()
-        test_repo.db = [{'id': 0, 'name': 'docs'}]
+        test_repo._db = _extend([{'id': 0, 'name': 'docs'}])
         test_repo.insert({'id': 0, 'name': 'readme'})
 
     testif('Raises RuntimeError for duplicate model IDs',
@@ -390,21 +382,23 @@ if __name__ == '__main__':
 
     def crud_repository_insert_test():
         test_repo.read()
-        test_repo.db.append({'id': 0, 'name': 'docs'})
+        test_repo.clear()
+        test_repo.insert({'id': 0, 'name': 'docs'})
 
     crud_repository_insert_test()
     testif('Inserts model correctly',
-        test_repo.db,
+        test_repo.read(),
         [{'id': 0, 'name': 'docs'}],
         name=qualify(CrudRepository.insert))
 
-    def crud_repository_default_model_setter_test():
-        test_repo.default_model = {}
+    def crud_repository_set_model_test():
+        test_repo.set_model({})
 
-    testif('CrudRepository.default_model setter raises TypeError for invalid base type',
-        crud_repository_default_model_setter_test,
+    testif('Raises TypeError for invalid base type',
+        crud_repository_set_model_test,
         None,
-        raises=TypeError)
+        raises=TypeError,
+        name=qualify(CrudRepository.set_model))
 
     whitelist = UserWhitelist(['abe', 'bob', 'caty', '# becky'])
     whitelist.read()
