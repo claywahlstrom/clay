@@ -134,6 +134,10 @@ class CrudRepository(BaseRepository, IRepository):
         self.__model = object
         self.__index = {}
 
+    def clear(self):
+        """Sets the database to the empty structure"""
+        self._db = _extend(self.empty)
+
     def build_index(self):
         """Builds the index for this CrudRepository to speed up access times"""
         for model in self._db:
