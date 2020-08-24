@@ -60,9 +60,13 @@ class Anonymous(Serializable):
         """Sets the attribute with the given name to value"""
         return setattr(self, name, value)
 
-    def __contains__(self, value):
-        """Returns True if the value is in this Anonymous, False otherwise"""
-        return self[value] is not None
+    def __eq__(self, other):
+        """Returns True if this Anonymous is equal to other, False otherwise"""
+        assert self.props == other.props
+        for prop in self.props:
+            if self[prop] != other[prop]:
+                return False
+        return True
 
     @property
     def props(self):
