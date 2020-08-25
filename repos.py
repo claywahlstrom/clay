@@ -35,8 +35,9 @@ class BaseRepository(_Abstract):
         self.clear()
 
     def _ensure_connected(self):
+        """Ensures the database has been read from the disk"""
         if not self.has_read:
-            raise RuntimeError('database has not been read')
+            _ = self.read()
 
     def clear(self):
         """Sets the database to the empty structure"""
@@ -165,6 +166,8 @@ class CrudRepository(BaseRepository, IRepository):
 
     def get(self, pk):
         """Gets the model with the given primary key"""
+        self._ensure_connected()
+
         if pk in self.__index:
             return self.__index[pk]
 
@@ -275,7 +278,6 @@ class CrudRepository(BaseRepository, IRepository):
         # only convert if this database is not being created
         if self.has_read and self.is_model_based:
             # serialize the models
-
             models = models.select(lambda x: x.to_json())
 
         filename = name or self.name
