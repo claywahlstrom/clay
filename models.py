@@ -52,6 +52,10 @@ class Anonymous(Serializable):
         """Initializes this Anonymous"""
         self.update(*initial_data, **kwargs)
 
+    def __contains__(self, key):
+        """Returns True if key is a property of this Anonymous, False otherwise"""
+        return key in self.props
+
     def __getitem__(self, name):
         """Gets the attribute with the given name"""
         return getattr(self, name)
@@ -215,6 +219,9 @@ if __name__ == '__main__':
         'one': 1,
         'two': 2,
     }, three=3)
+    testif('Contains "one"', 'one' in obj, True, name=qualify(Anonymous))
+    testif('Contains "three"', 'three' in obj, True, name=qualify(Anonymous))
+    testif('Contains "three"', 'four' in obj, False, name=qualify(Anonymous))
     testif('Anonymous sets attribute correctly (1)', obj.one, 1)
     testif('Anonymous sets attribute correctly (2)', obj.two, 2)
     testif('Anonymous sets attribute correctly (3)', obj.three, 3)
