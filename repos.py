@@ -175,7 +175,8 @@ class CrudRepository(BaseRepository, IRepository):
             .where(lambda a: a['id'] == pk) \
             .first_or_default()
 
-        self.__index[pk] = model
+        if model:
+            self.__index[pk] = model
 
         return model
 
