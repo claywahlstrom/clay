@@ -115,19 +115,7 @@ def extend(iterable=()):
         def select(self, selector):
             """Returns a list of items projected into
                a new form using the selector function"""
-            projection = []
-            for each in self:
-                new_form = None # default form
-                try:
-                    new_form = selector(each)
-                except (KeyError, IndexError, TypeError) as ex:
-                    print('{}.select errored on {}'.format(
-                        self.__class__.__name__,
-                        each))
-                    _traceback.print_exc()
-                    raise ex
-                projection.append(new_form)
-            return Enumerable(base(projection))
+            return Enumerable(base(map(selector, self)))
 
         def where(self, predicate):
             """Filters items based on the given predicate"""
