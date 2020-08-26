@@ -8,6 +8,8 @@ import datetime as _dt
 from statistics import mean as _mean
 import time as _time
 
+from clay.time.base import BaseDateTimeRange
+
 DEF_COUNTRY = 'usa'
 DEF_CITY    = 'vancouver'
 
@@ -244,6 +246,33 @@ class SunTimesApiClient(object):
     def rebuild(self):
         """An alias for building the relevant information. See `build`"""
         self.build()
+
+class TimeRange(BaseDateTimeRange):
+
+    """Stores a range of dates for easy comparison"""
+
+    def __repr__(self, now=_dt.time()) -> str:
+        """Returns the string representation for this DateRange"""
+        if self.start is None and self.end is None:
+            return 'All Time'
+
+        if self.start is None:
+            string = 'Beginning'
+        elif self.start == now:
+            string = 'Now'
+        else:
+            string = str(self.start)
+
+        if self.end == now:
+            if self.start == now:
+                return string
+            else:
+                return string + ' - Now'
+        elif self.end is None:
+            string += ' - Continuous'
+        else:
+            string += ' - ' + str(self.end)
+        return string
 
 if __name__ == '__main__':
 

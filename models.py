@@ -8,7 +8,7 @@ import abc as _abc
 import inspect as _inspect
 import uuid as _uuid
 
-from clay.dates import YMD_FMT
+from clay.time.dates import YMD_FMT
 
 class Abstract:
 

@@ -6,6 +6,8 @@ Dates
 
 import datetime as dt
 
+from clay.time.base import BaseDateTimeRange
+
 # date formats
 MDY_FMT = '%m/%d/%Y'
 MDY_DASH_FMT = '%m-%d-%Y'
@@ -155,16 +157,9 @@ class Date(dt.date):
 
     #endregion
 
-class DateRange:
+class DateRange(BaseDateTimeRange):
 
     """Stores a range of dates for easy comparison"""
-
-    def __init__(self, start: dt.date=None, end: dt.date=None):
-        """Initializes this DateRange"""
-        if start is not None and end is not None and start > end:
-            raise ValueError('start must be <= end')
-        self.__start = start
-        self.__end = end
 
     def __repr__(self, today=dt.date.today()) -> str:
         """Returns the string representation for this DateRange"""
@@ -188,21 +183,6 @@ class DateRange:
         else:
             string += ' - ' + self.end.strftime(YMD_FMT)
         return string
-
-    @property
-    def start(self) -> dt.date:
-        """The start date"""
-        return self.__start
-
-    @property
-    def end(self) -> dt.date:
-        """The end date"""
-        return self.__end
-
-    def contains(self, date: dt.date) -> bool:
-        """Returns True if the date is within this range, False otherwise"""
-        return (self.start is None or self.start <= date) \
-            and (self.end is None or date <= self.end)
 
 def days_to_mail(weekday: int) -> int:
     """Returns the number of days to send an item through priority
@@ -230,12 +210,6 @@ if __name__ == '__main__':
 
     from clay.tests import testif
     from clay.utils import qualify
-
-    testif('Raises ValueError when start date is after end date',
-        lambda: DateRange(dt.date(2020, 6, 3), dt.date(2020, 6, 2)),
-        None,
-        raises=ValueError,
-        name=qualify(DateRange.__init__))
 
     date_range_repr_tests = [
         # start, end, expected repr
