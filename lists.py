@@ -98,7 +98,7 @@ def extend(iterable=()):
         def last_or_default(self, default=None):
             """Returns the last item in this Enumerable or
                the default if this Enumerable is empty"""
-            return next(iter(self[::-1]), default)
+            return self[-1] if self else default
 
         def group_by(self, property):
             """Returns items grouped by the given property"""
