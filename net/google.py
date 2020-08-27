@@ -8,7 +8,8 @@ import json as _json
 import os as _os
 from urllib.parse import urlencode as _urlencode
 
-from clay.net.core import DEFAULT_BROWSER, WebDocument
+from clay import settings
+from clay.net.core import WebDocument
 
 _gs_web_doc = WebDocument()
 
@@ -22,7 +23,7 @@ class GoogleSuite(object):
 
     SEARCH_URL = 'https://www.google.com/?gws_rd=ssl#newwindow=1&{}'
 
-    def __init__(self, browser=DEFAULT_BROWSER):
+    def __init__(self, browser=settings.DEFAULT_BROWSER):
         self.browser = browser
 
     def calendar(self):

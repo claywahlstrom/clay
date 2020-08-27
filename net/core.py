@@ -23,9 +23,9 @@ import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
 from clay.env import is_idle as _is_idle, is_posix as _is_posix
+from clay import settings
 
 CHUNK_CAP = int(1e6) # 1MB
-DEFAULT_BROWSER = 'firefox'
 
 # download links for testing
 LINKS = {}
@@ -657,7 +657,7 @@ class WebDocument(object):
     def raw_uri(self):
         return self.__raw_uri
 
-    def launch(self, browser=DEFAULT_BROWSER):
+    def launch(self, browser=settings.DEFAULT_BROWSER):
         """Opens this document's `uri` in your favorite browser"""
         if _is_posix():
             _call(['google-chrome', self.uri], shell=True)

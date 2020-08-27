@@ -10,6 +10,8 @@ from clay import env
 
 IS_DEVELOPER = False
 
+DEFAULT_BROWSER = 'firefox'
+
 DOCS_DIR = r'path-to-documents-folder'
 FLASK_APP = 'app.py' # a common name for Flask web apps
 HOME_DIR = _os.environ['HOME'] if env.is_posix() else _os.environ['USERPROFILE']
