@@ -11,6 +11,7 @@ from clay import env
 IS_DEVELOPER = False
 
 DEFAULT_BROWSER = 'firefox'
+DOWNLOAD_CHUNK_SIZE = int(1e6) # bytes
 
 DOCS_DIR = r'path-to-documents-folder'
 FLASK_APP = 'app.py' # a common name for Flask web apps

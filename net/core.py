@@ -25,8 +25,6 @@ from bs4 import BeautifulSoup as _BS
 from clay.env import is_idle as _is_idle, is_posix as _is_posix
 from clay import settings
 
-CHUNK_CAP = int(1e6) # 1MB
-
 # download links for testing
 LINKS = {}
 LINK_SIZES = list(str(n) + 'MB' for n in [1, 2, 5, 10, 20, 50, 100, 200, 512])
@@ -510,8 +508,8 @@ class WebDocument(object):
         return 'WebDocument(uri=%s)' % self.__raw_uri
 
     def download(self, title='', full_title=False, destination='.',
-                 log_name='webdoc-dl.log', return_speed=False,
-                 headers=WEB_HDRS):
+            log_name='webdoc-dl.log', return_speed=False,
+            headers=WEB_HDRS):
         """Downloads data from the document uri and logs revelant
            information in this directory"""
 
@@ -555,15 +553,21 @@ class WebDocument(object):
                 print(size, 'bytes')
                 fp.write(response.text.encode('utf-8'))
                 fp.close()
-            else: # larger file types
+            else:
+                # handle larger file types
                 response = _requests.get(url, params=query, headers=headers, stream=True)
                 if response.status_code != 200:
                     raise _requests.exceptions.InvalidURL('{}, status code {}'.format(response.reason, response.status_code))
-                before = _time.time() # start timer
+
+                # start timer
+                before = _time.time()
                 size = int(response.headers.get('content-length'))
                 chunk = size // 100
-                if chunk > CHUNK_CAP: # place chunk cap on files >1MB
-                    chunk = CHUNK_CAP # 1MB
+
+                # place chunk cap on files
+                if chunk > settings.DOWNLOAD_CHUNK_SIZE:
+                    chunk = settings.DOWNLOAD_CHUNK_SIZE
+
                 print(size, 'bytes')
                 print('Writing to file in chunks of {} bytes...'.format(chunk))
                 actual = 0
