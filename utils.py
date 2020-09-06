@@ -101,7 +101,7 @@ class Watch(object):
             self.add(var)
 
     def view(self, transformer=lambda x: x, useLocals=None, sort=False):
-        """Prints out the key, value pairs for this Watch"""
+        """Prints out the key-value pairs for this Watch"""
         groupdict = self.get_dict()
         if useLocals:
             groupdict.update(useLocals)
@@ -111,7 +111,8 @@ class Watch(object):
             objs = sorted(objs, key=lambda x: x.lower())
 
         for ob in objs:
-            print(ob, '->', transformer(groupdict[ob]))
+            value = transformer(groupdict[ob])
+            print('{}: {} = {}'.format(ob, type(value).__name__, value))
 
     def write_file(self, filename):
         """Writes this Watch to the given file"""
