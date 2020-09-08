@@ -316,25 +316,29 @@ def rm(target):
     move(target, dst_path) # move the item to the trash
     print('Deleted "{}"'.format(target))
 
-def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), add='', args=False,
-              flask_default_name=True):
-    """Sets the title of the current shell instance. Default is
-       the modules name. You can use your own additional text or
-       use the command-line arguments"""
+def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), include_args=False, add=''):
+    """Sets the title of the current shell instance. Defaults to the name
+    of the current module. Optionally include command-line arguments and
+    add additional text at the end of the title.
+
+    """
+
     if title == settings.FLASK_APP:
         add = _os.path.split(_os.path.dirname(_os.path.abspath(RUNTIME_ARGS[0])))[-1]
-    if args and len(RUNTIME_ARGS) > 1:
+
+    if include_args and len(RUNTIME_ARGS) > 1:
         title += ' ' + ' '.join(RUNTIME_ARGS[1:])
     if len(add) > 0:
-        title += ' - '  + add
+        title += ' - ' + add
     if not env.is_posix():
         title = title.replace('<', '^<').replace('>', '^>')
+
     if env.is_idle():
         print('title -> ' + title)
     elif env.is_posix():
         _sys.stdout.write('\x1b]2;' + title + '\x07')
         _sys.stdout.flush()
-    else: # is windows
+    else: # env is windows
         _os.system('title ' + title)
 
 def start(program):
