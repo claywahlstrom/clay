@@ -46,6 +46,12 @@ class Html(clay.models.Static):
             anchor_str = anchor_str.replace(reconstructed, anchored)
         return anchor_str
 
+    @staticmethod
+    def label(name, text=None):
+        """Returns markup for the label element `name`, `text` defaults to `name`"""
+        text = text if text is not None else name
+        return '<label for="{}">{}</label>'.format(name, text)
+
 def json_code_result(status_code, message=''):
     """Returns a `flask.Response` object with the given status code and message"""
     return flask.jsonify(hasMessage=bool(message),
