@@ -51,6 +51,9 @@ class IEnumerable:
     def group_by(self):
         raise NotImplementedError(_qualify(self.group_by))
 
+    def order_by(self):
+        raise NotImplementedError(_qualify(self.order_by))
+
     def select(self):
         raise NotImplementedError(_qualify(self.select))
 
@@ -111,6 +114,10 @@ def extend(iterable=()):
                 else:
                     print('Could not group by {}: {}'.format(property, each))
             return grouped
+
+        def order_by(self, key=None, reverse=False):
+            """Returns items ordered by the given key selector"""
+            return Enumerable(base(sorted(self, key=key, reverse=reverse)))
 
         def select(self, selector):
             """Returns a list of items projected into
