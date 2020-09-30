@@ -523,7 +523,7 @@ class WebDocument(object):
             if _is_posix():
                 log_path = _os.path.join(r'/home/clay/Desktop', log_name)
             else:
-                log_path = _os.path.join(r'C:\Python37\Lib\site-packages\clay\logs', log_name)
+                log_path = _os.path.join(settings.PACKAGE_DIR, 'logs', log_name)
         current = _os.getcwd()
         _os.chdir(destination) # better file handling
         print('CWD:', _os.getcwd())
