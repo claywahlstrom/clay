@@ -6,14 +6,16 @@ Collection of common and advanced math operations
 
 import fractions
 import math
+import os
 
 from clay.env import is_posix as _is_posix
 from clay.lists import apply as _apply
+from clay import settings
 
 if _is_posix():
     LIMPATH_FMT = r'/home/clay/Desktop/liminf-{}.log'
 else:
-    LIMPATH_FMT = r'C:\Python37\Lib\site-packages\clay\logs\liminf-{}.log'
+    LIMPATH_FMT = os.path.join(settings.PACKAGE_DIR, 'logs', 'liminf-{}.log')
 
 TESTS = {
     'alternating': lambda n: (-1) ** n * (1 / n ** 2),
