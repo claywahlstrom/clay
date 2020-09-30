@@ -1,4 +1,4 @@
-set %destination%=C:\Python37\Lib\site-packages\clay
+set %destination%=C:\Python38\Lib\site-packages\clay
 
 robocopy . %destination% /mir
 if exist %destination%\README.md (
