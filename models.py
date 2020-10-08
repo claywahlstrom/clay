@@ -5,6 +5,7 @@ Models for working with objects.
 """
 
 import abc as _abc
+import collections as _collections
 import inspect as _inspect
 import uuid as _uuid
 
@@ -50,6 +51,7 @@ class Anonymous(Serializable):
 
     def __init__(self, *initial_data, **kwargs):
         """Initializes this Anonymous"""
+        self._props = _collections.OrderedDict()
         self.update(*initial_data, **kwargs)
 
     def __contains__(self, key):
@@ -62,7 +64,15 @@ class Anonymous(Serializable):
 
     def __setitem__(self, name, value):
         """Sets the attribute with the given name to value"""
-        return setattr(self, name, value)
+        setattr(self, name, value)
+
+    def __setattr__(self, name, value):
+        """Sets the attribute with the given name to value"""
+        super().__setattr__(name, value)
+
+        # track only public properties
+        if not name.startswith('_'):
+            self._props[name] = type(value)
 
     def __eq__(self, other):
         """Returns True if this Anonymous is equal to other, False otherwise"""
@@ -74,12 +84,8 @@ class Anonymous(Serializable):
 
     @property
     def props(self):
-        """Returns the attributes for this Anonymous dynamically"""
-        attrs = _inspect.classify_class_attrs(Anonymous)
-        # return the difference of the instance and class attributes
-        diff = set(dir(self)).difference(set(a.name for a in attrs))
-        # exclude protected/private properties
-        return {prop: object for prop in diff if not prop.startswith('_')}
+        """Returns the attributes for this Anonymous"""
+        return self._props.copy()
 
     def update(self, *initial_data, **kwargs):
         """Updates attributes using dictionaries and keyword arguments"""
@@ -102,7 +108,7 @@ class Anonymous(Serializable):
                     value = dt.datetime.strptime(value, YMD_FMT)
                 except:
                     pass
-            setattr(self, key, value)
+            self[key] = value
 
 def json2model(data, model):
     """Deserializes the given data to an object of type model"""
