@@ -33,7 +33,8 @@ class Serializable(Abstract):
 
         return r'{}({})'.format(
             self.__class__.__name__,
-            ', '.join(prop + '=' + repr(getattr(self, prop, None)) for prop in self.props))
+            ', '.join(prop + '=' + repr(getattr(self, prop, None))
+                for prop in sorted(self.props)))
 
     def verify_props(self):
         """Verifies properties exist. Raises a runtime error if not found"""
@@ -202,7 +203,7 @@ if __name__ == '__main__':
 
     testif('Serializable.__repr__ returns correct string representation',
         repr(Serious()),
-        "Serious(int=42, string='Hello', list=['Example', 'list'], implicit=None)")
+        "Serious(implicit=None, int=42, list=['Example', 'list'], string='Hello')")
     testif('Serializable.to_json returns correct converted object',
         Serious().to_json(),
         {'int': 42, 'string': 'Hello', 'list': ['Example', 'list'], 'implicit': None})
