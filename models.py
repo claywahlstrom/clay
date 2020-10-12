@@ -143,6 +143,15 @@ class Model(Anonymous):
         if self.id is None:
             self.id = str(_uuid.uuid4())
 
+    def __repr__(self):
+        """Returns the string representation of this model"""
+        self.verify_props()
+
+        return r'{}({})'.format(
+            self.__class__.__name__,
+            ', '.join(prop + '=' + repr(getattr(self, prop, None))
+                for prop in sorted(self.props, key=lambda x: (x != 'id', x))))
+
     @property
     def id(self) -> str:
         """Gets the ID of this Model"""
@@ -245,8 +254,11 @@ if __name__ == '__main__':
     testif('Model.id uses given ID if specified',
         Model({'id': '0000'}).id,
         '0000')
-
     testif('Model.id raises TypeError for invalid ID type',
         lambda: Model({'id': bytes()}),
         None,
         raises=TypeError)
+    testif('Returns correct string representation with ID first',
+        repr(Model({'nj': 'no-joke', 'jk': 'joke', 'id': '0000'})),
+        "Model(id='0000', jk='joke', nj='no-joke')",
+        qualify(Model.__repr__))
