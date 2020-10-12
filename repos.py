@@ -193,7 +193,16 @@ class CrudRepository(BaseRepository, IRepository):
     def _remove_model(self, model):
         """Removes this model from the repository and the index"""
         # remove the model
-        self._db.remove(model)
+        try:
+            # try ordinary list removal
+            self._db.remove(model)
+        except ValueError:
+            # remove the model based on ID as object equality did not work
+            for i, j in enumerate(self._db):
+                if j['id'] == model['id']:
+                    del self._db[i]
+                    break
+
         # remove the model from the index
         del self.__index[model['id']]
 
