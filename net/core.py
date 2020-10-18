@@ -311,9 +311,10 @@ class HtmlBuilder(object):
 
     INDENT = '    ' # 4 spaces
 
-    def __init__(self):
+    def __init__(self, debug=False):
         self.indent = 0
         self.__html = ''
+        self.__debug = debug
 
     def init(self):
         """Initiates this builder with the doctype and opening html tag"""
@@ -335,7 +336,8 @@ class HtmlBuilder(object):
         self.__html += '\n'
 
     def add_tag(self, tag, text='', self_closing=False, attrs={}):
-        print('processing', tag, 'indent', self.indent)
+        if self.debug:
+            print('processing', tag, 'indent', self.indent)
         self.__html += HtmlBuilder.INDENT * self.indent + '<' + tag
 
         for attr in attrs:
@@ -361,10 +363,16 @@ class HtmlBuilder(object):
         if not has_text:
             self.add_nl()
 
-        print('build', tag, 'now', self.indent)
+        if self.debug:
+            print('build', tag, 'now', self.indent)
 
     def build(self):
         return self.__html
+
+    @property
+    def debug(self):
+        """Returns the debug setting for this HtmlBuilder"""
+        return self.__debug
 
 def parse_raw_headers(raw_headers: str) -> dict:
     """Parses the given headers string and returns the corresponding
