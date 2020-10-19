@@ -36,6 +36,7 @@ __all__ = [
    'jobs',
    'libr',
    'lists',
+   'logging',
    'maths',
    'models',
    'music',
