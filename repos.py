@@ -313,6 +313,31 @@ class CrudRepository(BaseRepository, IRepository):
         """Returns True if this repository is model-based, False otherwise"""
         return self.model != object
 
+class CrudRepositoryMigrator:
+
+    """Used to migrate CRUD repositories"""
+
+    def __init__(self, name):
+        """Initializes this CRUD repository migrator"""
+        self.repo = CrudRepository(name)
+
+    def add_column(self, name, default_value=None):
+        """Adds a column with the given name and default value"""
+        for entity in self.repo.read():
+            if name in entity:
+                raise RuntimeWarning('column "{}" already exists'.format(name))
+            entity[name] = default_value
+
+    def drop_column(self, name):
+        """Drops a column with the given name"""
+        for entity in self.repo.read():
+            if name in entity:
+                del entity[name]
+
+    def commit(self):
+        """Commits pending CRUD repository changes"""
+        self.repo.write()
+
 class UserRepository(CrudRepository):
 
     def __init__(self, file='users.json'):
