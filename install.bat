@@ -4,7 +4,7 @@ robocopy . %destination% /mir
 if exist %destination%\README.md (
     title Install complete
     title Installing dependencies...
-    pip install bs4 requests
+    pip install bs4 matplotlib requests
     title Done
     cd %destination%
 ) else (

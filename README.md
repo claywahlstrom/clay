@@ -8,6 +8,7 @@ My personal package for doing all things Python 3.
 
 - bs4
 - requests
+- matplotlib
 - winsound (Windows only)
 
 ## Installation

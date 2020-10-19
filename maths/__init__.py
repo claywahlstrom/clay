@@ -1,2 +1,2 @@
 
-__all__ = ['core', 'stats', 'vectors']
+__all__ = ['core', 'matlab', 'stats', 'vectors']
