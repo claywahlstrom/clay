@@ -126,6 +126,12 @@ class ReadingTimer(object):
         else:
             self.current_page -= 1
 
+def round_nearest(hours, interval=0.5):
+    """Rounds the given hours to the nearest interval-hour"""
+    if interval <= 0:
+        raise ValueError('interval must be greater than zero')
+    return round(hours / interval) * interval
+
 class SunTimesApiClient(object):
     """An API for collecting sun times information from timeanddate.com (c)
        in the following form:
@@ -276,7 +282,8 @@ class TimeRange(BaseDateTimeRange):
 
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
+    from clay.utils import qualify
 
     testif('datetime rounds seconds down',
        datetime(2000, 1, 1, 0, 0, 2).round(seconds=5),
@@ -306,6 +313,37 @@ if __name__ == '__main__':
     print('exams over', get_time_until(2018, 12, 13))
 
     print(get_time_struct())
+
+    testraises('interval is zero',
+        lambda: round_nearest(1, 0),
+        ValueError,
+        name=qualify(round_nearest))
+    testraises('interval is less than zero',
+        lambda: round_nearest(1, -1),
+        ValueError,
+        name=qualify(round_nearest))
+
+    for quarter_hour_test in [(0.1, 0.1), (0.2, 0.25), (0.3, 0.25), (0.4, 0.5)]:
+        testif('rounds to nearest interval (interval: 0.25, datarow: {})'.format(quarter_hour_test[0]),
+            round_nearest(quarter_hour_test[0], quarter_hour_test[1]),
+            quarter_hour_test[1],
+            name=qualify(round_nearest))
+
+    nearest_half_hour_tests = [
+        (0.2, 0),
+        (0.3, 0.5),
+        (0.5, 0.5),
+        (0.7, 0.5),
+        (0.8, 1.0),
+        (1.62, 1.5)
+    ]
+
+    for half_hour_test in nearest_half_hour_tests:
+        testif('rounds to nearest interval (interval: 0.5, datarow: {})'.format(half_hour_test[0]),
+            round_nearest(half_hour_test[0]),
+            half_hour_test[1],
+            name=qualify(round_nearest))
+
     sun = SunTimesApiClient()
     print('sunset tonight is', sun.get_sunset())
 
