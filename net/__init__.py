@@ -1,2 +1,2 @@
 
-__all__ = ['core', 'google', 'sockets', 'vial']
+__all__ = ['core', 'google', 'helpers', 'sockets', 'vial']

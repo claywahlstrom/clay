@@ -1,6 +1,6 @@
 
 """
-web module
+Net module
 
 TODO (web-header): fix the web header to fix google.com rendering JS problem using
                        alternate accept-char types
@@ -23,7 +23,6 @@ import requests as _requests
 from bs4 import BeautifulSoup as _BS
 
 from clay.env import is_idle as _is_idle, is_posix as _is_posix
-from clay.files.core import File as _File
 from clay import settings
 
 # download links for testing
@@ -374,19 +373,6 @@ class HtmlBuilder(object):
     def debug(self):
         """Returns the debug setting for this HtmlBuilder"""
         return self.__debug
-
-def launch_links(filename, browser=settings.DEFAULT_BROWSER):
-    """Launches links from a line-based text file"""
-    doc = WebDocument()
-    file = _File(filename)
-    links = filter(lambda x: x, file.parse(strip=True))
-    for link in links:
-        try:
-            doc.set_uri(link)
-            print('Launching "{}"...'.format(link))
-            doc.launch(browser=browser)
-        except ValueError:
-            print('URI "{}" is not a valid'.format(link))
 
 def parse_raw_headers(raw_headers: str) -> dict:
     """Parses the given headers string and returns the corresponding
