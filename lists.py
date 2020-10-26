@@ -174,6 +174,95 @@ def printlines(content, lines=0, numbered=True):
             print(str(num).rjust(len(str(lines))), end=' ')
         print(line)
 
+class Queryable:
+
+    """Used to delay iterable evaluation to improve performance"""
+
+    def __init__(self, iterable):
+        """Initializes this queryable using the given iterable"""
+        self._expr = iter(iterable)
+        self._type = type(iterable)
+
+    def copy(self):
+        """Returns a shallow copy of this queryable"""
+        to_copy = list(self).copy()
+        return Queryable(to_copy)
+
+    def first_or_default(self, default=None):
+        """Returns the first item in this queryable or
+        the default if this queryable is empty"""
+        return next(self._expr, default)
+
+    def last_or_default(self, default=None):
+        """Returns the last item in this queryable or
+        the default if this queryable is empty"""
+        data = self.to_list()
+        return data[-1] if data else default
+
+    def group_by(self, property):
+        """Groups items by the given property"""
+        grouped = {}
+        for each in self:
+            if property in each:
+                if each[property] not in grouped:
+                    grouped[each[property]] = []
+                grouped[each[property]].append(each)
+            else:
+                print('Could not group by {}: {}'.format(property, each))
+
+        # convert the groups to queryables
+        for group in grouped:
+            grouped[group] = Queryable(grouped[group])
+
+        return grouped
+
+    def order_by(self, key=None, reverse=False):
+        """Orders items by the given key selector"""
+        self._expr = iter(sorted(self._expr, key=key, reverse=reverse))
+        return self
+
+    def select(self, selector):
+        """Projects items into a new form using the selector function"""
+        self._expr = map(selector, self._expr)
+        return self
+
+    def where(self, predicate):
+        """Filters items based on the given predicate"""
+        self._expr = filter(predicate, self._expr)
+        return self
+
+    def whereif(self, condition, predicate):
+        """Filters items based on the given condition and predicate"""
+        if condition:
+            return self.where(predicate)
+        else:
+            return self
+
+    def to_list(self):
+        """Reduces the queryable expression to a list"""
+        return list(self._expr)
+
+    def to_set(self):
+        """Reduces the queryable expression to a set"""
+        return set(self._expr)
+
+    def to_tuple(self):
+        """Reduces the queryable expression to a tuple"""
+        return tuple(self._expr)
+
+    def to_type(self):
+        """Reduces the queryable expression to its type"""
+        return self.type(self._expr)
+
+    @property
+    def type(self):
+        """Iterable type for this queryable"""
+        return self._type
+
+def query(iterable=()):
+    """Returns an instance of Queryable using the given iterable"""
+    return Queryable(iterable)
+
 def rmdup(lizt, show_output=False):
     """Returns a non-duplicated version of the given list with order in tact"""
     len_before = len(lizt)
@@ -190,7 +279,8 @@ def rmdup(lizt, show_output=False):
 
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
+    from clay.utils import qualify
 
     TEST_FILE = _io.StringIO('h\ne\nl\nl\no')
     TEST_LIST = ['h', 'e', 'l', 'l', 'o']
@@ -249,7 +339,7 @@ if __name__ == '__main__':
         extend(objs).where(lambda x: x.a == 2).last_or_default(),
         objs[2])
     testif('Enumerable "last or default" selects default when no element found',
-        extend(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
+        extend(objs).where(lambda x: x.a == 3).last_or_default(default=expected_default),
         expected_default)
     testif('Enumerable "select" raises KeyError when key missing',
         lambda: extend([{'key': 'value'}]).select(lambda x: x[0]),
@@ -272,6 +362,56 @@ if __name__ == '__main__':
     testif('Enumerable where-select selects property correctly',
         extend(test_iterable).where(lambda x: x['num'] == 2).select(lambda x: x['num']),
         [2, 2])
+
+    testif('selects correct element',
+        query(objs).where(lambda x: x.a == 2).first_or_default(),
+        objs[1],
+        name=qualify(Queryable.first_or_default))
+    testif('selects default when no element found',
+        query(objs).where(lambda x: x.a == 3).first_or_default(),
+        None,
+        name=qualify(Queryable.first_or_default))
+    testif('selects default when no element found',
+        query(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
+        expected_default,
+        name=qualify(Queryable.first_or_default))
+    testif('selects correct element',
+        query(objs).where(lambda x: x.a == 2).last_or_default(),
+        objs[2],
+        name=qualify(Queryable.last_or_default))
+    testif('selects default when no element found',
+        query(objs).where(lambda x: x.a == 3).last_or_default(),
+        None,
+        name=qualify(Queryable.last_or_default))
+    testif('selects default when no element found',
+        query(objs).where(lambda x: x.a == 3).last_or_default(default=expected_default),
+        expected_default,
+        name=qualify(Queryable.last_or_default))
+    testraises('key missing',
+        lambda: query([{'key': 'value'}]).select(lambda x: x[0]).to_list(),
+        KeyError,
+        name=qualify(Queryable.select))
+    testraises('index out of bounds',
+        lambda: query([[0]]).select(lambda x: x[1]).to_list(),
+        IndexError,
+        name=qualify(Queryable.select))
+    testraises('list indices are of incorrect type',
+        lambda: query([[0]]).select(lambda x: x['key']).to_list(),
+        TypeError,
+        name=qualify(Queryable.select))
+    testif('selects data from indices',
+        query([['John', 'Smith', '1/1/2000']]) \
+            .select(lambda x: [x[0], x[2]]) \
+            .to_list(),
+        [['John', '1/1/2000']],
+        name=qualify(Queryable.select))
+    testif('where-select selects property correctly',
+        query(test_iterable) \
+            .where(lambda x: x['num'] == 2) \
+            .select(lambda x: x['num']) \
+            .to_list(),
+        [2, 2],
+        name=qualify(Queryable.select))
 
     printall(TEST_LIST)
     printlines(r'test_files\essay.txt', 4)
