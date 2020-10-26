@@ -21,11 +21,20 @@ class Abstract:
         if isinstance(self, Abstract):
             raise NotImplementedError('Cannot instantiate {} because it is abstract'.format(type(self)))
 
+    def raise_if_base(self, base):
+        """Raises NotImplementedError if the type of this object matches the base type"""
+        if type(self) == base:
+            raise NotImplementedError('Cannot instantiate {} because it is abstract'.format(type(self)))
+
 Static = Abstract # alias
 
 class Serializable(Abstract):
 
     """Abstract class used to convert between Python and JSON types"""
+
+    def __init__(self):
+        """Always throws NotImplementedError because this class is abstract"""
+        self.raise_if_base(Serializable)
 
     def __repr__(self):
         """Returns the string representation of this object"""
@@ -167,20 +176,39 @@ class Model(Anonymous):
 
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
     from clay.utils import qualify
 
-    testif('Raises NotImplementedError because it is abstract',
+    class BaseClassWithoutInitializer(Abstract):
+        pass
+
+    class BaseClass(Abstract):
+        def __init__(self):
+            self.raise_if_base(BaseClass)
+
+    class Implementation(BaseClass):
+        def __init__(self):
+            super().__init__()
+
+    testraises('class is abstract',
         lambda: Abstract(),
-        None,
-        raises=NotImplementedError,
+        NotImplementedError,
         name=qualify(Abstract.__init__))
 
-    testif('Raises NotImplementedError for subclass types without __init__ implementation',
-        lambda: Serializable(),
-        None,
-        raises=NotImplementedError,
-        name=qualify(Abstract.__init__))
+    testraises('base class does not implement initializer',
+        lambda: BaseClassWithoutInitializer(),
+        NotImplementedError,
+        name=qualify(BaseClassWithoutInitializer.__init__))
+
+    testraises('instantiating abstract class',
+        lambda: BaseClass(),
+        NotImplementedError,
+        name=qualify(BaseClass.__init__))
+
+    testif('instantiates with no errors',
+        type(Implementation()) is Implementation,
+        True,
+        name=qualify(Implementation.__init__))
 
     class Serious(Serializable):
         def __init__(self):
