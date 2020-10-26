@@ -14,6 +14,10 @@ from clay.models import Model as _Model, \
     json2model as _json2model, \
     Abstract as _Abstract
 
+class RecordNotFoundError(Exception):
+    """Error type for when a record is not found"""
+    pass
+
 class IRepository(_Abstract):
 
     def read(self):
@@ -150,8 +154,8 @@ class CrudRepository(BaseRepository, IRepository):
         self.__index = {}
 
     def __pk_not_found(self, pk):
-        """Prints a generic message for an unknown primary key"""
-        print('{}: pk "{}" not found'.format(self.name, pk))
+        """Raises a RecordNotFoundError for a primary key"""
+        raise RecordNotFoundError('{}: pk "{}" not found'.format(self.name, pk))
 
     def _ensure_exists(self, pk):
         if isinstance(self.read(), list) and self.get(pk) is None:
@@ -390,7 +394,7 @@ class UserWhitelist(object):
 
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
     from clay.utils import qualify
 
     test_repo_name = r'test_files\test-repo.json'
@@ -427,6 +431,16 @@ if __name__ == '__main__':
         test_repo.read(),
         [{'id': 0, 'name': 'docs'}],
         name=qualify(CrudRepository.insert))
+
+    def crud_repository_delete_raises_test():
+        test_repo.read()
+        test_repo.clear()
+        test_repo.delete('non-existent-id')
+
+    testraises('record not found',
+        lambda: crud_repository_delete_raises_test(),
+        RecordNotFoundError,
+        name=qualify(CrudRepository.delete))
 
     def crud_repository_set_model_test():
         test_repo.set_model({})
