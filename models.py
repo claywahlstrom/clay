@@ -26,6 +26,7 @@ class Abstract:
         if type(self) == base:
             raise NotImplementedError('Cannot instantiate {} because it is abstract'.format(type(self)))
 
+Interface = Abstract # alias
 Static = Abstract # alias
 
 class Serializable(Abstract):

@@ -7,6 +7,7 @@ Basic operations for lines, lists, and files
 import io as _io
 import traceback as _traceback
 
+from clay.models import Interface as _Interface
 from clay.utils import qualify as _qualify
 
 def apply(function, vector):
@@ -35,9 +36,12 @@ def join_lines(file, join_sep=', '):
         fp = open(file, 'r')
     return fp.read().replace('\n', join_sep)
 
-class IEnumerable:
+class IEnumerable(_Interface):
 
     """Interface for enumerable objects"""
+
+    def __init__(self):
+        self.raise_if_base(IEnumerable)
 
     def copy(self):
         raise NotImplementedError(_qualify(self.copy))
