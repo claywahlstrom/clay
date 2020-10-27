@@ -309,11 +309,11 @@ def rm(target):
     ctime = _time.strftime('%Y-%m-%d %H-%M')
     guid = str(uuid.uuid4())
 
-    new_name = '{} {} {} ({}){}'.format(ctime, guid, item_name, dir_info, item_ext)
+    new_name = '{} {} ({}) {}{}'.format(ctime, item_name, dir_info, guid, item_ext)
     # prevent file name overflow errors by shrinking the dir name
     while len(new_name) > MAX_FILE_NAME_LENGTH:
         dir_info = dir_info[len(new_name) - MAX_FILE_NAME_LENGTH:].strip('.')
-        new_name = '{} {} {} ({}){}'.format(ctime, guid, item_name, dir_info, item_ext)
+        new_name = '{} {} ({}) {}{}'.format(ctime, item_name, dir_info, guid, item_ext)
 
     dst_path = _os.path.join(settings.TRASH, new_name)
     move(target, dst_path) # move the item to the trash
