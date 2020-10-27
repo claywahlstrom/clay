@@ -285,93 +285,114 @@ if __name__ == '__main__':
     TEST_FILE = _io.StringIO('h\ne\nl\nl\no')
     TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
-    testif('apply returns correct type (list)',
+    testif('returns correct type (list)',
         type(apply(lambda x: x, [0, 0])),
-        list)
-    testif('apply returns correct type (tuple)',
+        list,
+        name=qualify(apply))
+    testif('returns correct type (tuple)',
         type(apply(lambda x: x, (0, 0))),
-        tuple)
-    testif('apply returns correct values (floats => ints)',
+        tuple,
+        name=qualify(apply))
+    testif('returns correct values (floats => ints)',
         apply(int, [0.0, 9.9]),
-        [0, 9])
-    testif('frange returns correct values',
+        [0, 9],
+        name=qualify(apply))
+    testif('returns correct values',
         list(frange(0, 0.6, 0.1)),
-        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
-    testif('frange returns correct values',
+        [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+        name=qualify(frange))
+    testif('returns correct values',
         list(frange(1, 0, -0.25)),
-        [1.0, 0.75, 0.5, 0.25])
-    testif('frange returns correct values',
+        [1.0, 0.75, 0.5, 0.25],
+        name=qualify(frange))
+    testif('returns correct values',
         list(frange(0.9, 1.0, 0.1)),
-        [0.9])
-    testif('frange raises AssertionError when start > stop && step > 0',
+        [0.9],
+        name=qualify(frange))
+    testraises('start > stop && step > 0',
         lambda: list(frange(1, 0, 0.25)),
-        None,
-        raises=AssertionError)
-    testif('frange raises AssertionError when stop > start && step < 0',
+        AssertionError,
+        name=qualify(frange))
+    testraises('stop > start && step < 0',
         lambda: list(frange(0, 1, -0.25)),
-        None,
-        raises=AssertionError)
+        AssertionError,
+        name=qualify(frange))
 
-    testif('join_lines returns correct string',
+    testif('returns correct string',
         join_lines(TEST_FILE),
-        'h, e, l, l, o')
+        'h, e, l, l, o',
+        name=qualify(join_lines))
 
-    testif('extend raises TypeError for invalid iterable (str)',
+    testraises('invalid iterable (str)',
         lambda: extend('string'),
-        None,
-        raises=TypeError)
-    testif('extend raises TypeError for invalid iterable (dict)',
+        TypeError,
+        name=qualify(extend))
+    testraises('invalid iterable (dict)',
         lambda: extend({}),
-        None,
-        raises=TypeError)
+        TypeError,
+        name=qualify(extend))
 
     from clay.models import Anonymous
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
     expected_default = Anonymous(a=0)
 
-    testif('Enumerable "first or default" selects correct element',
+    testif('selects correct element',
         extend(objs).where(lambda x: x.a == 2).first_or_default(),
-        objs[1])
-    testif('Enumerable "first or default" selects default when no element found',
+        objs[1],
+        name=qualify(IEnumerable.first_or_default))
+    testif('selects default when no element found (default not specified)',
+        extend(objs).where(lambda x: x.a == 3).first_or_default(),
+        None,
+        name=qualify(IEnumerable.first_or_default))
+    testif('selects default when no element found (default specified)',
         extend(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
-        expected_default)
-    testif('Enumerable "last or default" selects correct element',
+        expected_default,
+        name=qualify(IEnumerable.first_or_default))
+    testif('selects correct element',
         extend(objs).where(lambda x: x.a == 2).last_or_default(),
-        objs[2])
-    testif('Enumerable "last or default" selects default when no element found',
+        objs[2],
+        name=qualify(IEnumerable.last_or_default))
+    testif('selects default when no element found (default not specified)',
+        extend(objs).where(lambda x: x.a == 3).last_or_default(),
+        None,
+        name=qualify(IEnumerable.last_or_default))
+    testif('selects default when no element found (default specified)',
         extend(objs).where(lambda x: x.a == 3).last_or_default(default=expected_default),
-        expected_default)
-    testif('Enumerable "select" raises KeyError when key missing',
+        expected_default,
+        name=qualify(IEnumerable.last_or_default))
+    testraises('key missing',
         lambda: extend([{'key': 'value'}]).select(lambda x: x[0]),
-        None,
-        raises=KeyError)
-    testif('Enumerable "select" raises IndexError when index out of bounds',
+        KeyError,
+        name=qualify(IEnumerable.select))
+    testraises('index out of bounds',
         lambda: extend([[0]]).select(lambda x: x[1]),
-        None,
-        raises=IndexError)
-    testif('Enumerable "select" raises TypeError when list indices are of incorrect type',
+        IndexError,
+        name=qualify(IEnumerable.select))
+    testraises('list indices are of incorrect type',
         lambda: extend([[0]]).select(lambda x: x['key']),
-        None,
-        raises=TypeError)
-    testif('Enumerable "select" selects data from indices',
+        TypeError,
+        name=qualify(IEnumerable.select))
+    testif('selects data from indices',
         extend([['John', 'Smith', '1/1/2000']]).select(lambda x: [x[0], x[2]]),
-        [['John', '1/1/2000']])
+        [['John', '1/1/2000']],
+        name=qualify(IEnumerable.select))
 
     test_iterable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
 
-    testif('Enumerable where-select selects property correctly',
+    testif('where-select selects property correctly',
         extend(test_iterable).where(lambda x: x['num'] == 2).select(lambda x: x['num']),
-        [2, 2])
+        [2, 2],
+        name=qualify(IEnumerable.select))
 
     testif('selects correct element',
         query(objs).where(lambda x: x.a == 2).first_or_default(),
         objs[1],
         name=qualify(Queryable.first_or_default))
-    testif('selects default when no element found',
+    testif('selects default when no element found (default not specified)',
         query(objs).where(lambda x: x.a == 3).first_or_default(),
         None,
         name=qualify(Queryable.first_or_default))
-    testif('selects default when no element found',
+    testif('selects default when no element found (default specified)',
         query(objs).where(lambda x: x.a == 3).first_or_default(default=expected_default),
         expected_default,
         name=qualify(Queryable.first_or_default))
@@ -379,11 +400,11 @@ if __name__ == '__main__':
         query(objs).where(lambda x: x.a == 2).last_or_default(),
         objs[2],
         name=qualify(Queryable.last_or_default))
-    testif('selects default when no element found',
+    testif('selects default when no element found (default not specified)',
         query(objs).where(lambda x: x.a == 3).last_or_default(),
         None,
         name=qualify(Queryable.last_or_default))
-    testif('selects default when no element found',
+    testif('selects default when no element found (default specified)',
         query(objs).where(lambda x: x.a == 3).last_or_default(default=expected_default),
         expected_default,
         name=qualify(Queryable.last_or_default))
