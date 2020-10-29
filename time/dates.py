@@ -23,6 +23,12 @@ FRIDAY = dt.date(2019, 4, 26)
 SATURDAY = dt.date(2019, 4, 27)
 SUNDAY = dt.date(2019, 4, 28)
 
+WEEKDAYS = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+    'Friday', 'Saturday', 'Sunday'
+]
+WEEKDAYS_SHORT = ['M', 'TU', 'W', 'TH', 'F', 'SA', 'SU']
+
 class Date(dt.date):
 
     """
