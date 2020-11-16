@@ -246,23 +246,23 @@ class Radical(object):
         return (len(str(outside)) + 2) * ' ' + len(str(self.inside)) * '_' \
                 + '\n' + '{}-/{}'.format(outside, self.inside)
 
-    def __greatest_square(self):
+    def __greatest_power(self, n):
         """Returns the greatest sqaure the inside can be divided by"""
         squares = []
         for i in range(1, self.inside):
-            if (self.inside / i ** 2).is_integer():
-                squares.append(i ** 2)
+            if (self.inside / i ** n).is_integer():
+                squares.append(i ** n)
         return squares[-1]
 
     def __set_parent(self):
         """Sets the parent of this radical"""
         self._parent = Radical(self.outside, self.inside)
 
-    def simplify(self):
+    def simplify(self, n=2):
         """Simplifies this radical"""
         self.__set_parent()
-        out = self.__greatest_square()
-        self.outside *= int(math.sqrt(out))
+        out = self.__greatest_power(n)
+        self.outside *= int(out ** (1 / n))
         self.inside = int(self.inside / out)
 
     @property
@@ -424,8 +424,12 @@ if __name__ == '__main__':
     testif('radical with outside prints correct string',
         rad.__str__(), '   __\n2-/20')
     rad.simplify()
-    testif('simplified radical with outside prints correct string',
+    testif('simplified radical with outside prints correct string (n=2)',
         rad.__str__(), '   _\n4-/5')
+    rad3 = Radical(4, 27)
+    rad3.simplify(n=3)
+    testif('simplified radical with outside prints correct string (n=3)',
+        rad3.__str__(), '    _\n12-/1')
     irreducible_radical = Radical(1, 5)
     irreducible_radical.simplify()
     testif('simplified radical with no outside prints correct string',
