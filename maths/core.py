@@ -52,9 +52,12 @@ def cubrt(x):
     return round(x ** (1/3), 12)
 
 def differential(f, x, deltax=1e-12):
-    """Returns the slope of the given function at the point x
-       using the midpoint method. A deltax of 1e-12 or 1e-11
-       works best."""
+    """
+    Returns the slope of the given function at the point x
+    using the midpoint method. A deltax of 1e-12 or 1e-11
+    works best.
+
+    """
 
     # the following formula is the average between the slopes using
     # the right limit [(f(x + deltax) - f(x)) / deltax] and
@@ -84,8 +87,11 @@ def print_fraction(fraction):
     print(den)
 
 def integrate(func, interval=None, rects=100000):
-    """Returns the result of the integral from the inclusive
-       interval (a, b) using a Riemann sum approximation"""
+    """
+    Returns the result of the integral from the inclusive
+    interval (a, b) using a Riemann sum approximation
+
+    """
     if interval is None or not isinstance(interval, tuple):
         interval = eval(input('Interval (a, b): '))
     a, b = interval
@@ -105,8 +111,11 @@ def integrate(func, interval=None, rects=100000):
     return area
 
 def liminf(func, i=1, step_mag=False, logging=None):
-    """Returns the limit to +infinity. Handles division by zero
-       and divergent funcs"""
+    """
+    Returns the limit to +infinity. Handles division by zero
+    and divergent funcs
+
+    """
 
     if logging is not None:
         if isinstance(logging, str):
@@ -160,8 +169,11 @@ def liminf(func, i=1, step_mag=False, logging=None):
     return round(now, 10)
 
 def limit(func, num=0, side=None, step=0.1, dist=1):
-    """Returns list of limit values "step" distance apart,
-       starting "dist" from num"""
+    """
+    Returns list of limit values "step" distance apart,
+    starting "dist" from num
+
+    """
     from collections import OrderedDict
     lims = OrderedDict()
     if side == 'right':
@@ -207,19 +219,23 @@ class Polar(object):
 
     @property
     def x(self):
+        """The Cartesian x-value"""
         return round(self.radius * math.sin(self.phi) * math.cos(self.theta), 12)
 
     @property
     def y(self):
+        """The Cartesian y-value"""
         return round(self.radius * math.sin(self.phi) * math.sin(self.theta), 12)
 
     @property
     def z(self):
+        """The Cartesian z-value"""
         return round(self.radius * math.cos(self.phi), 12)
 
 class Radical(object):
 
-    """Class Radical can be used to simplify radicals
+    """
+    Class Radical can be used to simplify radicals
 
     Properties:
         outside = integer outside the radical
@@ -271,8 +287,11 @@ class Radical(object):
         return self._parent
 
 def roots(a=0, b=0, c=0):
-    """Returns a tuple of roots (intersections with the x-axis)
-       for conic equations"""
+    """
+    Returns a tuple of roots (intersections with the x-axis)
+    for conic equations
+
+    """
     if not(a and b and c):
         raise Exception('please enter some values')
     discriminant = b ** 2 - 4 * a * c
@@ -285,20 +304,24 @@ def roots(a=0, b=0, c=0):
     return root1, root2
 
 def roots_approx(positive, initial_guess, dp=0, isclose_dp=9):
-    """Retuns roots for the given polynomial function positive
-       using successive approximation to find the roots to the
-       polynomial function.
+    """
+    Retuns roots for the given polynomial function positive
+    using successive approximation to find the roots to the
+    polynomial function.
 
-       Parameters:
-           initial_guess = initial guess for a root
-           dp            = decimals to round roots to (no rounding if 0)
-           isclose_dp    = isclose decimal points for comparison
+    Parameters:
+        initial_guess = initial guess for a root
+        dp            = decimals to round roots to (no rounding if 0)
+        isclose_dp    = isclose decimal points for comparison
 
     """
 
     def negative(x):
-        """Returns the complementing negative value for the polynomial
-           function"""
+        """
+        Returns the complementing negative value for the polynomial
+        function
+
+        """
         return -positive(x)
 
     # math.isclose is introduced in Python 3.5 and thus is not widely
@@ -306,8 +329,11 @@ def roots_approx(positive, initial_guess, dp=0, isclose_dp=9):
     # this gap by rounding the two given digits to the specified number
     # of decimal places
     def isclose(x, y, isclose_dp):
-        """Returns True if x and y are close up to isclose_dp decimal places,
-           False otherwise"""
+        """
+        Returns True if x and y are close up to isclose_dp decimal places,
+        False otherwise
+
+        """
         return round(x, isclose_dp) == round(y, isclose_dp)
 
     roots = []
@@ -327,30 +353,42 @@ def roots_approx(positive, initial_guess, dp=0, isclose_dp=9):
     return [root if dp == 0 else round(root, dp) for root in roots]
 
 def roots_newtons_method(f, x):
-    """Given a function and float guess, returns the roots using
-       Newton's Method"""
+    """
+    Given a function and float guess, returns the roots using
+    Newton's Method
+
+    """
     return _roots_newtons_method_helper(f, x, 0)
 
 def _roots_newtons_method_helper(f, x, n):
-    """Given expected input and call n, returns expected and throws
-       an exception if not"""
+    """
+    Given expected input and call n, returns expected and throws
+    an exception if not
+
+    """
     if math.isclose(f(x), 0, rel_tol=1e-9, abs_tol=1e-9):
         return round(x, 9)
-    elif n > 200: # max recursion depth
+    elif n > 200: # if reached max recursion depth
         raise RuntimeError('no roots for {}'.format(f))
     return _roots_newtons_method_helper(f, x - f(x) / differential(f, x), n + 1)
 
 def round_qty(obj, digits=4):
-    """Rounds the given quantity (iterable or other quantity that
-       round can be applied to) to the given number of digits"""
+    """
+    Rounds the given quantity (iterable or other quantity that
+    round can be applied to) to the given number of digits
+
+    """
     if type(obj) in (list, tuple):
         return _apply(round_qty, obj)
     else:
         return round(obj, digits)
 
 def series_sum(f, a=1, b=None, logging=True):
-    """Returns sum for the given series f starting at a.
-       Partial sum if b is supplied"""
+    """
+    Returns sum for the given series f starting at a.
+    Partial sum if b is supplied
+
+    """
     if b == None:
         b = 10 ** 4
 
@@ -363,7 +401,6 @@ def series_sum(f, a=1, b=None, logging=True):
     if f(b) == 0 or liminf(f, i=a, logging=logging) == 0:
         tot = 0
         for i in range(a, b + 1):
-            # print(i, f(i))
             try:
                 tot += f(i)
             except Exception as e:
