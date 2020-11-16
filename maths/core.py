@@ -221,10 +221,10 @@ class Radical(object):
 
     """Class Radical can be used to simplify radicals
 
-       Properties:
-           outside = integer outside the radical
-           inside  = integer inside the radical
-           parent  = a copy of the radical before simplification
+    Properties:
+        outside = integer outside the radical
+        inside  = integer inside the radical
+        parent  = a copy of the radical before simplification
 
     """
 
@@ -234,7 +234,7 @@ class Radical(object):
             raise TypeError('outside and inside must be of type int')
         self.outside = outside
         self.inside = inside
-        self.parent = None
+        self._parent = None
 
     def __repr__(self):
         """Returns the representation of this radical"""
@@ -256,7 +256,7 @@ class Radical(object):
 
     def __set_parent(self):
         """Sets the parent of this radical"""
-        self.parent = Radical(self.outside, self.inside)
+        self._parent = Radical(self.outside, self.inside)
 
     def simplify(self):
         """Simplifies this radical"""
@@ -264,6 +264,11 @@ class Radical(object):
         out = self.__greatest_square()
         self.outside *= int(math.sqrt(out))
         self.inside = int(self.inside / out)
+
+    @property
+    def parent(self):
+        """The parent radical"""
+        return self._parent
 
 def roots(a=0, b=0, c=0):
     """Returns a tuple of roots (intersections with the x-axis)
@@ -421,10 +426,10 @@ if __name__ == '__main__':
     rad.simplify()
     testif('simplified radical with outside prints correct string',
         rad.__str__(), '   _\n4-/5')
-    unreducible_radical = Radical(1, 5)
-    unreducible_radical.simplify()
+    irreducible_radical = Radical(1, 5)
+    irreducible_radical.simplify()
     testif('simplified radical with no outside prints correct string',
-        unreducible_radical.__str__(), '  _\n-/5')
+        irreducible_radical.__str__(), '  _\n-/5')
     print()
     print('LIMITS FOR SERIES')
     print(series_sum(TESTS['alternating'], logging=LIMPATH_FMT.format('alternating')))
