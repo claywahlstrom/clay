@@ -416,61 +416,83 @@ if __name__ == '__main__':
 
     from fractions import Fraction
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
+    from clay.utils import qualify
 
-    print('DEMO')
-    print('------------') # 12 count
     print('Printing fraction 3/39...')
     print_fraction(Fraction(3, 39))
-    testif('integral of inverse trig from 0 to 1 returns correct value',
-        integrate(TESTS['invtrig'], (0, 1)), 1.0,
-        transformer=lambda x: round(x, 4))
-    testif('limit of harmonic function returns correct value close to 0.5',
-        limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2), 0.5,
-        transformer=lambda x: round(list(x.values())[-1], 9)) # compare to math.isclose
+
+    testif('returns correct value for inverse trig from 0 to 1',
+        integrate(TESTS['invtrig'], (0, 1)),
+        1.0,
+        transformer=lambda x: round(x, 4),
+        name=qualify(integrate))
+    # TODO: compare rounding to math.isclose
+    testif('returns correct value close to 0.5 for harmonic function',
+        limit(TESTS['harmonic'], num=2, side='right', step=0.001, dist=2),
+        0.5,
+        transformer=lambda x: round(list(x.values())[-1], 9),
+        name=qualify(limit))
 
     print('LIMITS TO INFINITY')
-    testif('limit to infinity for converging function is 1/2',
+    testif('returns 0.5 for converging function towards infinity',
         liminf(TESTS['convergent1'], step_mag=True,
-            logging=LIMPATH_FMT.format('convergent1')), 0.5)
-    testif('limit to infinity for converging function is 0.0',
+            logging=LIMPATH_FMT.format('convergent1')),
+        0.5,
+        name=qualify(liminf))
+    testif('returns 0.0 for converging function towards infinity',
         liminf(TESTS['harmonic'], step_mag=True,
-            logging=LIMPATH_FMT.format('harmonic')), 0.0)
+            logging=LIMPATH_FMT.format('harmonic')),
+        0.0,
+        name=qualify(liminf))
 
-    testif('roots_approx returns empty list for polynomials without roots',
+    testif('returns empty list for polynomials without roots',
         roots_approx(TESTS['imaginary'], 0, 3),
-        [])
-    testif('roots_approx returns correct roots for polynomials with roots',
+        [],
+        name=qualify(roots_approx))
+    testif('returns correct roots for polynomials with roots',
         roots_approx(TESTS['quadratic3'], 0, 3, 9),
-        [-31.428, 0.828])
+        [-31.428, 0.828],
+        name=qualify(roots_approx))
 
-    testif('Newton\'s method returns correct root',
-        roots_newtons_method(TESTS['quadratic'], 10), -1.0,
+    testif('returns correct root',
+        roots_newtons_method(TESTS['quadratic'], 10),
+        -1.0,
         transformer=lambda x: round(x, 4))
-    testif('Newton\'s method throws RuntimeError when no root found',
-        lambda: roots_newtons_method(TESTS['quadratic2'], 10), None,
-        raises=RuntimeError)
+    testraises('no root found',
+        lambda: roots_newtons_method(TESTS['quadratic2'], 10),
+        RuntimeError,
+        name=qualify(roots_newtons_method))
 
-    testif('round_qty rounds scalar value correctly',
-        round_qty(0.00009), 0.0001)
-    testif('round_qty rounds vector values correctly',
-        round_qty([0.00009, 0.02004, 1.0]), [0.0001, 0.02, 1.0])
+    testif('rounds scalar value correctly',
+        round_qty(0.00009),
+        0.0001,
+        name=qualify(round_qty))
+    testif('rounds vector values correctly',
+        round_qty([0.00009, 0.02004, 1.0]),
+        [0.0001, 0.02, 1.0],
+        name=qualify(round_qty))
+
     print()
     print('RADICAL CLASS')
     rad = Radical(2, 20)
-    testif('radical with outside prints correct string',
-        rad.__str__(), '   __\n2-/20')
+    testif('returns correct string for radical with outside',
+        rad.__str__(), '   __\n2-/20',
+        name=qualify(Radical.__str__))
     rad.simplify()
-    testif('simplified radical with outside prints correct string (n=2)',
-        rad.__str__(), '   _\n4-/5')
+    testif('returns correct string for simplified radical with outside (n=2)',
+        rad.__str__(), '   _\n4-/5',
+        name=qualify(Radical.__str__))
     rad3 = Radical(4, 27)
     rad3.simplify(n=3)
-    testif('simplified radical with outside prints correct string (n=3)',
-        rad3.__str__(), '    _\n12-/1')
+    testif('returns correct string simplified radical with outside (n=3)',
+        rad3.__str__(), '    _\n12-/1',
+        name=qualify(Radical.__str__))
     irreducible_radical = Radical(1, 5)
     irreducible_radical.simplify()
-    testif('simplified radical with no outside prints correct string',
-        irreducible_radical.__str__(), '  _\n-/5')
+    testif('returns correct string for simplified radical with no outside',
+        irreducible_radical.__str__(), '  _\n-/5',
+        name=qualify(Radical.__str__))
     print()
     print('LIMITS FOR SERIES')
     print(series_sum(TESTS['alternating'], logging=LIMPATH_FMT.format('alternating')))
@@ -478,8 +500,12 @@ if __name__ == '__main__':
     import clay.graphing as g
     g.tabulatef(TESTS['alternating'], 0, 10)
 
-    testif('series_sum returns correct value (convergent function)',
-        series_sum(TESTS['convergent'], a=0), 15)
-    testif('series_sum returns correct value (convergent2 function)',
-        series_sum(TESTS['convergent2']), 1.7449,
-        transformer=lambda x: round(x, 4))
+    testif('returns correct value (convergent function)',
+        series_sum(TESTS['convergent'], a=0),
+        15,
+        name=qualify(series_sum))
+    testif('returns correct value (convergent2 function)',
+        series_sum(TESTS['convergent2']),
+        1.7449,
+        transformer=lambda x: round(x, 4),
+        name=qualify(series_sum))
