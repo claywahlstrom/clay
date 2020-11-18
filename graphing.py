@@ -5,7 +5,6 @@ Graphing: basic structures for visualizing data
 
 """
 
-from collections import OrderedDict as _OrderedDict
 import operator as _operator
 import sys as _sys
 

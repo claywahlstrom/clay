@@ -213,7 +213,7 @@ def lsgrep(regex, directory=_os.curdir, recurse=False):
     if isinstance(regex, str):
         regex = [regex]
     results = []
-    for root, dirs, files in _os.walk(directory):
+    for root, _, files in _os.walk(directory):
         for x in files:
             if all(len(re.findall(char, x)) > 0 for char in regex):
                 results.append(_os.path.join(root, x))
@@ -230,8 +230,8 @@ def lsshell(directory=_os.curdir):
     print(_subprocess.check_output([command, directory],
                                     shell=True).decode('utf8', errors='ignore'))
 
-from os import mkdir # def
 md = _os.mkdir # alias
+mkdir = _os.mkdir # alias
 
 from shutil import move as mv # alias
 

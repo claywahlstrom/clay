@@ -5,7 +5,6 @@ google: open common Google(TM) apps using Python
 """
 
 import json as _json
-import os as _os
 from urllib.parse import urlencode as _urlencode
 
 from clay import settings

@@ -4,7 +4,6 @@ Guids: extension methods for uuid.UUID
 
 """
 
-import string as _string
 import uuid as _uuid
 
 class Guid(_uuid.UUID):

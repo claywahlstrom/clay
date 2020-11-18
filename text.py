@@ -33,7 +33,7 @@ def box(text, width=0, height=3, module=False):
 
     print('#' * width)
 
-    for x in range(border):
+    for _ in range(border):
         print('#' + ' ' * (width - 2) + '#')
 
     for line in text.split('\n'):
@@ -41,7 +41,7 @@ def box(text, width=0, height=3, module=False):
         print(line.center(width - 2, ' '), end='')
         print('#')
 
-    for x in range(border):
+    for _ in range(border):
         print('#' + ' ' * (width - 2) + '#')
 
     print('#' * width)
@@ -53,20 +53,19 @@ def center(text):
 def fullbox(text, thickness=1, border=1):
     """Prints a formatted box based on "thickness" and "border" around text"""
     width = len(text) + thickness * 2 + border * 2
-    height = 3 # based on top/bottom or total lines???
 
-    for x in range(thickness):
+    for _ in range(thickness):
         print('#' * width)
 
-    for x in range(border): # greater than one
+    for _ in range(border): # greater than one
         _fullbox_printline(' ' * (len(text) + 2 * border), thickness)
 
     _fullbox_printline(text.center(len(text) + 2, ' '), thickness)
 
-    for x in range(border): # greater than one
+    for _ in range(border): # greater than one
         _fullbox_printline(' ' * (len(text) + 2 * border), thickness)
 
-    for x in range(thickness):
+    for _ in range(thickness):
         print('#' * width)
 
 def _fullbox_printline(text, thickness):

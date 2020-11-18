@@ -10,7 +10,6 @@ import os as _os
 
 from clay.lists import extend as _extend, query as _query
 from clay.models import Model as _Model, \
-    Serializable as _Serializable, \
     json2model as _json2model, \
     Abstract as _Abstract
 
@@ -384,7 +383,7 @@ class UserRepository(CrudRepository):
         modified = False
         for model in self.read():
             pk = model['id']
-            days_ago = _dt.datetime.now() - _dt.timedelta(days=30)
+            days_ago = _dt.datetime.now() - _dt.timedelta(days=days)
             if _dt.datetime.strptime(model[date_prop], date_format) <= days_ago:
                 modified = True
                 print('{}: pruning {}...'.format(self.name, pk))

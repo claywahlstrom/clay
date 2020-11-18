@@ -14,7 +14,6 @@ from statistics import median, mean as average
 
 from clay.graphing import Histogram
 from clay.settings import JOBS_BREAK_SCHEDULES
-from clay.utils import SortableDict
 
 DAYS_OF_THE_WEEK = ('Monday',
                     'Tuesday',
@@ -59,12 +58,10 @@ class Attendance(object):
 
         db = [{j: line[i] for i, j in enumerate(self.headers)} for line in file]
 
-
-        for i, row in enumerate(db):
+        for i in range(len(db)):
             db[i]['hours'] = float(db[i]['hours']) # convert the hours from strings to floats
 
         self.take_home_ratio = take_home_ratio
-
         self.db       = db
         self.perhour  = perhour
         self.offset   = offset

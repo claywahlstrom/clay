@@ -6,7 +6,6 @@ AdvancedSocket difference finder is not complete
 
 """
 
-import os
 import socket
 import time
 

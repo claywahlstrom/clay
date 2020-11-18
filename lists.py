@@ -5,7 +5,6 @@ Basic operations for lines, lists, and files
 """
 
 import io as _io
-import traceback as _traceback
 
 from clay.models import Interface as _Interface
 from clay.utils import qualify as _qualify
