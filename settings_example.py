@@ -33,3 +33,5 @@ SEARCH_EXCLUSIONS = [
     '3D Objects', 'AppData', 'Application Data', 'eclipse', 'Android',
     'NuGet'
 ]
+
+SONG_TEMPO = 60 # default beats per minute

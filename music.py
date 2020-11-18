@@ -17,6 +17,7 @@ import itertools as _it
 import os as _os
 import winsound as _ws
 
+from clay import settings
 from clay.files.core import save as _save
 from clay.shell.core import set_title, notify as _notify
 
@@ -65,10 +66,7 @@ class Note(object):
             return '%s()' % (self.__class__.__name__,)
         return '%s(%s)' % (self.__class__.__name__, '{}, {}'.format(self.name, self.length))
 
-if _is_posix():
-    print("<module 'winsound.py'> not available")
-else:
-    from winsound import Beep as note # def
+from winsound import Beep as note # alias
 
 def play_note(note, register, length, tempo):
     """Plays note of type str or int at the given register with length and tempo"""
@@ -114,7 +112,7 @@ class Song(object):
 
     """
 
-    def __init__(self, file='', selected=0, sub=0.25, tempo=60):
+    def __init__(self, selected=0, sub=0.25):
         """Initializes a new Song object from the given file name"""
         self.selected = selected
         self.sub = round(sub, 4) # 64th note length limit
@@ -138,7 +136,7 @@ class Song(object):
 
     def delete(self):
         """Deletes the selected note from this song"""
-        self.notes.pop(selected)
+        self.notes.pop(self.selected)
         self.selected -= 1
 
     def get_note(self):
@@ -155,6 +153,8 @@ class Song(object):
         """Loads a notes file written in standard format"""
         file = 'notes{:03d}.txt'.format(int(input('load song #? ')))
         notes = []
+
+        tempo = settings.SONG_TEMPO
         if file == 'new':
             _notify('Creating a new template...', 0.5)
             tempo = eval(input('tempo? '))
@@ -208,6 +208,7 @@ class Song(object):
         """Prompts and sets the subdivision for this song. Cannot be less than 1/64th"""
         while sub < 1 / 64: # 64th notes at minimum
             sub = float(input('new sub? ').strip())
+        self.sub = sub
 
     def set_tempo(self):
         """Prompts and sets the tempo for this song"""
