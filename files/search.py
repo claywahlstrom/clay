@@ -54,6 +54,7 @@ class Search(object):
         walker = _os.walk(self.folder) # root dir
         print('Search in progress...')
         print('Searching: ', end='', flush=True)
+        fp = None
         try:
             time_start = _time.time() # start timer
             for root, dirs, files in walker:
@@ -91,7 +92,7 @@ class Search(object):
             self.duration = _time.time() - time_start
         except KeyboardInterrupt:
             print('KeyboardInterrupt was raised')
-            if not(fp.closed):
+            if fp and not fp.closed:
                 fp.close()
         print('\nSearch complete')
         print('Results built')

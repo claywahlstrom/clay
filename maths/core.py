@@ -117,11 +117,16 @@ def liminf(func, i=1, step_mag=False, logging=None):
 
     """
 
-    if logging is not None:
-        if isinstance(logging, str):
-            file = open(logging, 'w')
+    file = None
 
+    if logging is not None:
+        if not isinstance(logging, str):
+            raise TypeError(logging)
+
+        file = open(logging, 'w')
         print('liminf for', func, file=file)
+
+    now = math.nan
 
     while True:
         try:
@@ -164,7 +169,7 @@ def liminf(func, i=1, step_mag=False, logging=None):
                 print(e, file=file)
             break
 
-    if logging is not None:
+    if logging and file:
         file.close()
     return round(now, 10)
 

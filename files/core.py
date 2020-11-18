@@ -206,6 +206,7 @@ class FileSizeReport(object):
 
 def fix_quotes(filename):
     """Replaces smart quotes with straight ones for the given filename"""
+    fp = None
     try:
         fp = open(filename,'rb+')
         fread = fp.read()
@@ -217,7 +218,7 @@ def fix_quotes(filename):
     except Exception as e:
         print('Error:', e)
     finally:
-        fp.close()
+        if fp: fp.close()
 
 def save(text, name='saved-text.txt', append_epoch=True):
     """Saves the given text to the file with sequential numbering"""
@@ -249,6 +250,7 @@ def replace_text(name, old, new, recurse=False, ext=''):
         sure = eval(input('Replace all "{1}" in "{0}" with "{2}" (True/False)? '.format(name, old, new)))
 
         if sure:
+            fp = None
             for root, dirs, files in _os.walk(name):
                 for f in files:
                     try:
@@ -258,7 +260,7 @@ def replace_text(name, old, new, recurse=False, ext=''):
                     except Exception as e:
                         raise e
                     finally:
-                        fp.close()
+                        if fp: fp.close()
             print('Done')
         else:
             print('Aborted')
@@ -272,6 +274,7 @@ def _rt_helper(filename, old, new):
     http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing
 
     """
+    fp = None
     try:
         fp = open(filename, 'rb+')
         fread = fp.read()
@@ -282,7 +285,7 @@ def _rt_helper(filename, old, new):
     except Exception as e:
         print('Error:', e)
     finally:
-        fp.close()
+        if fp: fp.close()
 
 if __name__ == '__main__':
 
