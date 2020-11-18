@@ -146,8 +146,9 @@ class CrudRepository(BaseRepository, IRepository):
     def build_index(self):
         """Builds the index for this CrudRepository to speed up access times"""
         for model in self._db:
-            if model['id'] is not None and model['id'] not in self.__index:
-                self.__index[model['id']] = model
+            model_id = model['id']
+            if model_id is not None and model_id not in self.__index:
+                self.__index[model_id] = model
 
     def clear_index(self):
         """Clears the index for this CrudRepository"""
