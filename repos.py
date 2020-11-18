@@ -31,8 +31,7 @@ class BaseRepository(_Abstract):
     def __init__(self, name, empty):
         """Intializes this repository with the given name
            and empty database structure"""
-        if type(self) is BaseRepository:
-            super().__init__()
+        self.raise_if_base(BaseRepository)
         self.__name = name
         self.__empty = empty
         self.__has_read = False
@@ -416,6 +415,11 @@ if __name__ == '__main__':
     testif('creates new json repo when already exists and forced', js1.create(force=True, write=False), True)
     testif('creates new json repo if not exists and not forced', js2.create(write=False), True)
     testif('creates new json repo if not exists and forced', js2.create(force=True, write=False), True)
+
+    testraises('base repository is initialized directly',
+        lambda: BaseRepository('name', []),
+        NotImplementedError,
+        name=qualify(BaseRepository.__init__))
 
     def crud_repository_insert_duplicate_model_test():
         test_repo.read()
