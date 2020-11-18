@@ -118,14 +118,6 @@ class Song(object):
         self.sub = round(sub, 4) # 64th note length limit
         self.load()
 
-    def at_end(self):
-        """
-        Returns True if the selection is at the end of the song,
-        False otherwise
-
-        """
-        return self.selected + 1 >= len(self.notes)
-
     def change_length(self, direction):
         """
         Changes the length of the selected note
@@ -139,15 +131,12 @@ class Song(object):
         self.notes.pop(self.selected)
         self.selected -= 1
 
-    def get_note(self):
+    @staticmethod
+    def get_note():
         """Prompts the user for a note name and length value"""
         name = input('Note? ').strip()
         length = eval(input('Length? ').strip())
         return name, length
-
-    def is_populated(self):
-        """Returns True if this song is populated, False otherwise"""
-        return len(self.notes) > 0
 
     def load(self):
         """Loads a notes file written in standard format"""
@@ -213,6 +202,20 @@ class Song(object):
     def set_tempo(self):
         """Prompts and sets the tempo for this song"""
         self.tempo = int(input('new tempo? ').strip())
+
+    @property
+    def is_at_end(self):
+        """
+        Returns True if the selection is at the end of the song,
+        False otherwise
+
+        """
+        return self.selected + 1 >= len(self.notes)
+
+    @property
+    def is_populated(self):
+        """Returns True if this song is populated, False otherwise"""
+        return bool(self.notes)
 
 if __name__ == '__main__':
     t = 120
