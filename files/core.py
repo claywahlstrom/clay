@@ -47,14 +47,13 @@ class File(object):
 
     def __init__(self, name, create_if_not_exists=False):
         """Initializes this file"""
-        if not(_os.path.exists(name)):
+        self.name = name
+
+        if not _os.path.exists(name):
             if create_if_not_exists:
-                with open(name, 'w') as fp:
-                    pass
+                self.clear()
             else:
                 raise FileNotFoundError(name)
-
-        self.name = name
 
     def append(self, string):
         """Appends the string to the end of this file.
