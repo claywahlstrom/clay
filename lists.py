@@ -43,6 +43,8 @@ def join_lines(file, join_sep=', '):
         fp = file
     elif isinstance(file, str):
         fp = open(file, 'r')
+    else:
+        raise TypeError(file)
     return fp.read().replace('\n', join_sep)
 
 class IEnumerable(_Interface):
@@ -345,6 +347,10 @@ if __name__ == '__main__':
         AssertionError,
         name=qualify(frange))
 
+    testraises('file is incorrect type',
+        lambda: join_lines(1234),
+        TypeError,
+        name=qualify(join_lines))
     testif('returns correct string',
         join_lines(TEST_FILE),
         'h, e, l, l, o',
