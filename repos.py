@@ -8,7 +8,7 @@ import datetime as _dt
 import json as _json
 import os as _os
 
-from clay.lists import extend as _extend
+from clay.lists import extend as _extend, query as _query
 from clay.models import Model as _Model, \
     Serializable as _Serializable, \
     json2model as _json2model, \
@@ -283,6 +283,12 @@ class CrudRepository(BaseRepository, IRepository):
             self.build_index()
 
         return self._db
+
+    def read_queryable(self, fetch_if_read=False):
+        """Reads data from the disk into the database.
+        Creates the database if it doesn't already exist.
+        """
+        return _query(self.read(fetch_if_read=fetch_if_read))
 
     def write(self, name=None):
         """Writes this database to the disk"""
