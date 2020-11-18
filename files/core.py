@@ -11,25 +11,34 @@ from clay.libr import replace_smart_quotes
 
 class ContentWatcher(object):
 
-    """Class ContentWacther can be used to watch the modification
-       time of a file, which correlates to a change in content"""
+    """
+    Class ContentWacther can be used to watch the modification
+    time of a file, which correlates to a change in content
+
+    """
 
     def __init__(self, filename):
         """Initializes this content watcher with the given file path"""
         self.set_path(filename)
 
     def get_mtime(self):
-        """Returns the modified time for the content, returns 0
-           if no file was found"""
+        """
+        Returns the modified time for the content, returns 0
+        if no file was found
+
+        """
         if _os.path.exists(self.filename):
             return _os.stat(self.filename).st_mtime
         print(self.filename, 'does not exist')
         return 0
 
     def is_modified(self):
-        """Returns True if the content has changed and resets the
-           modification time, otherwise returns False and does not
-           reset the modification time"""
+        """
+        Returns True if the content has changed and resets the
+        modification time, otherwise returns False and does not
+        reset the modification time
+
+        """
         new_time = self.get_mtime()
         if self.mtime == 0 or new_time != self.mtime:
             self.mtime = new_time
@@ -56,8 +65,11 @@ class File(object):
                 raise FileNotFoundError(name)
 
     def append(self, string):
-        """Appends the string to the end of this file.
-           No new line is preceded"""
+        """
+        Appends the string to the end of this file.
+        No new line is preceded
+
+        """
         with open(self.name, 'ab') as fp:
             try:
                 fp.write(string.encode('utf8')) # for non-binary strings
@@ -104,8 +116,11 @@ class File(object):
             print(fp.read())
 
     def remove_blank_lines(self):
-        """Removes blank lines from this file and writes the new
-           content to the disk"""
+        """
+        Removes blank lines from this file and writes the new
+        content to the disk
+
+        """
         content = self.get_content(binary=True)
         while b'\r\n\r\n' in content or b'\n\n' in content:
             print('replacing')
@@ -120,8 +135,11 @@ class File(object):
         return _os.path.getsize(self.name)
 
     def switch_lf(self):
-        """Switches the linefeed type from a Posix machine to
-           Windows and vice versa and overwrites this file"""
+        """
+        Switches the linefeed type from a Posix machine to
+        Windows and vice versa and overwrites this file
+
+        """
         with open(self.name, 'rb') as fp:
             fread = fp.read()
             to_posix = False
@@ -139,23 +157,28 @@ class File(object):
             print('Converted to crlf')
 
 class FileSizeReport(object):
-    """A class for generating reports on file systems
-       An exmaple of output:
+    """
+    A class for generating reports on file systems
 
-       .\align.py | 587
-       .\badquotes.txt | 308
-       .\boxes.py | 2027
-       .\collections.py | 3391
-       .\collections_test.txt | 1363
-       ...
+    An exmaple of output:
 
-       TODO: file IO
+    .\align.py | 587
+    .\badquotes.txt | 308
+    .\boxes.py | 2027
+    .\collections.py | 3391
+    .\collections_test.txt | 1363
+    ...
+
+    TODO: file IO
 
     """
 
     def __init__(self, directory='.'):
-        """Initializes this report using the given directory and stores
-           the result in the string field"""
+        """
+        Initializes this report using the given directory and stores
+        the result in the string field
+
+        """
         self.directory = directory
         self.report = self.generate()
 
@@ -212,8 +235,11 @@ def save(text, name='saved-text.txt', append_epoch=True):
     return name
 
 def _save_helper(split_ext, x):
-    """Returns a possible filename. Helps `save` with finding a
-       valid name for a file"""
+    """
+    Returns a possible filename. Helps `save` with finding a
+    valid name for a file
+
+    """
     return '{}-{:03d}{}'.format(split_ext[0], x, split_ext[-1])
 
 def replace_text(name, old, new, recurse=False, ext=''):
@@ -241,8 +267,11 @@ def replace_text(name, old, new, recurse=False, ext=''):
         _rt_helper(name, old, new)
 
 def _rt_helper(filename, old, new):
-    """Helps `replace_text` rename a single file
-       http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing"""
+    """
+    Helps `replace_text` rename a single file
+    http://stackoverflow.com/questions/6648493/open-file-for-both-reading-and-writing
+
+    """
     try:
         fp = open(filename, 'rb+')
         fread = fp.read()
