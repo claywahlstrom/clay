@@ -11,13 +11,19 @@ from clay.models import Interface as _Interface
 from clay.utils import qualify as _qualify
 
 def apply(function, vector):
-    """Applies the function to the given vector and returns the result
-       of the same type"""
+    """
+    Applies the function to the given vector and returns the result
+    of the same type
+
+    """
     return type(vector)(map(function, vector))
 
 def frange(start, stop, step):
-    """Returns a generator that produces a stream of floats from
-       start (inclusive) to stop (exclusive) by the given step"""
+    """
+    Returns a generator that produces a stream of floats from
+    start (inclusive) to stop (exclusive) by the given step
+
+    """
     if start > stop:
         assert step < 0, 'step must agree with start and stop'
     elif stop > start:
@@ -28,8 +34,11 @@ def frange(start, stop, step):
         yield round(start + x * step, digits)
 
 def join_lines(file, join_sep=', '):
-    """Returns the lines of text from the given file (object or str)
-       joined by the separator"""
+    """
+    Returns the lines of text from the given file (object or str)
+    joined by the separator
+
+    """
     if file.__class__.__module__ == '_io':
         fp = file
     elif isinstance(file, str):
@@ -81,9 +90,12 @@ def extend(iterable=()):
 
     class Enumerable(base, IEnumerable):
 
-        """Class Enumerable contains extension methods that can be
-           used to query and filter data like Microsoft's (c) LINQ
-           feature in C#"""
+        """
+        Class Enumerable contains extension methods that can be
+        used to query and filter data like Microsoft's (c) LINQ
+        feature in C#
+
+        """
 
         def __repr__(self):
             """Returns the string representation of this Enumerable"""
@@ -98,13 +110,19 @@ def extend(iterable=()):
             return Enumerable(to_copy)
 
         def first_or_default(self, default=None):
-            """Returns the first item in this Enumerable or
-               the default if this Enumerable is empty"""
+            """
+            Returns the first item in this Enumerable or
+            the default if this Enumerable is empty
+
+            """
             return next(iter(self), default)
 
         def last_or_default(self, default=None):
-            """Returns the last item in this Enumerable or
-               the default if this Enumerable is empty"""
+            """
+            Returns the last item in this Enumerable or
+            the default if this Enumerable is empty
+
+            """
             return self[-1] if self else default
 
         def group_by(self, property):
@@ -124,8 +142,11 @@ def extend(iterable=()):
             return Enumerable(base(sorted(self, key=key, reverse=reverse)))
 
         def select(self, selector):
-            """Returns a list of items projected into
-               a new form using the selector function"""
+            """
+            Returns a list of items projected into
+            a new form using the selector function
+
+            """
             return Enumerable(base(map(selector, self)))
 
         def where(self, predicate):
@@ -189,13 +210,19 @@ class Queryable:
         return Queryable(to_copy)
 
     def first_or_default(self, default=None):
-        """Returns the first item in this queryable or
-        the default if this queryable is empty"""
+        """
+        Returns the first item in this queryable or
+        the default if this queryable is empty
+
+        """
         return next(self._expr, default)
 
     def last_or_default(self, default=None):
-        """Returns the last item in this queryable or
-        the default if this queryable is empty"""
+        """
+        Returns the last item in this queryable or
+        the default if this queryable is empty
+
+        """
         data = self.to_list()
         return data[-1] if data else default
 

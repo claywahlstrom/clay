@@ -2,9 +2,7 @@
 """
 libr: tools for scholars and librarians
 
-
 """
-
 
 import re as _re
 import time as _time
@@ -31,11 +29,15 @@ TEST_LINKS = [
 ]
 
 class Essay(object):
-    """Class Essay can be used for storing and analyzing essays.
-       Converts the given line separator to single carriage returns
-       (\n). Start line must be >= 1."""
+    """
+    Class Essay can be used for storing and analyzing essays.
+    Converts the given line separator to single carriage returns
+    (\n). Start line must be >= 1.
+
+    """
 
     def __init__(self, source, line_start=1, line_sep='\n'):
+        """Initializes this essay with the given source, line start, and line separator"""
         if line_start < 1:
             raise ValueError('line start must be >= 1')
         self.line_start = line_start
@@ -65,11 +67,12 @@ class Essay(object):
             print('Could not remove the period exceptions from the text')
 
     def __repr__(self):
+        """Returns the string representation of this essay"""
         preview = self.source[:20].replace('\n', '\\n')
         return 'Essay(source={{{}...}}, line_start={})'.format(preview, self.line_start)
 
     def are_paren_bal(self):
-        """Finds if parentheses are balanced, returns boolean"""
+        """Returns True if parentheses are balanced, False otherwise"""
         return self.text.count('(') == self.text.count(')')
 
     def find_extraspace(self):
@@ -130,8 +133,11 @@ class Essay(object):
         return len(self.text.strip().split('\n'))
 
     def get_paren_citation(self, page_num=True, http_only=False):
-        """Returns citations extracted from essay.
-           Found using MLA parenthetical standards"""
+        """
+        Returns citations extracted from essay.
+        Found using MLA parenthetical standards
+
+        """
         parens = _re.findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
         parens = _rmdup(parens)
         if http_only:
@@ -172,23 +178,25 @@ class Essay(object):
         print('words', self.get_word_count())
 
     def save_topics(self, filename='saved-topics.txt'):
+        """Saves the topic sentences to the given filename"""
         with open(filename, 'w') as f:
             f.write('\n'.join(self.get_topics()))
         print('Topics written to', filename)
 
 class Citation(object):
-    """A class for citating content in MLA/Chicago styles
+    """
+    A class for citating content in MLA/Chicago styles
 
-       CATEGORIES:
-       # editor/author
-       # title
-       # container
-       # date
-       # url
+    CATEGORIES:
+    # editor/author
+    # title
+    # container
+    # date
+    # url
 
-       # follows MLA 8 standards
+    # follows MLA 8 standards
 
-       Data is stored as a dictionary in the object's `data` attribute
+    Data is stored as a dictionary in the object's `data` attribute
 
     """
 
@@ -198,6 +206,7 @@ class Citation(object):
                 'site_name']
 
     def __init__(self, link):
+        """Initializes this citation"""
         self.link = link
         self.build_dict()
 
@@ -223,13 +232,13 @@ class Citation(object):
                     except Exception as e:
                         print(e)
                     break
-                if not(desc):
+                if not desc:
                     desc = soup.find_all(attrs={'name': prop})
-            if desc: # if found
-                try:
-                    self.data[prop] = desc[0]['content']
-                except Exception as e:
-                    print(e)
+                if desc: # if found
+                    try:
+                        self.data[prop] = desc[0]['content']
+                    except Exception as e:
+                        print(e)
 
         if 'author' not in self.data.keys():
             print('author not found')
@@ -297,8 +306,11 @@ def replace_smart_quotes(text, encoding='utf8'):
     return encoded.decode(encoding)
 
 def sort_bib(filename):
-    """Sorts a bibliography lexicographically, no stdout required.
-       You need to sort quoted titles manually though"""
+    """
+    Sorts a bibliography lexicographically, no stdout required.
+    You need to sort quoted titles manually though
+
+    """
 
     with open(filename) as fp:
         lines = fp.read().strip().split('\n')

@@ -7,9 +7,10 @@ common physical constants
 import math as _math
 
 class Constant:
-    '''Used to signify a named physical constant'''
+    """Used to signify a named physical constant"""
 
     def __init__(self, name, value, units=None):
+        """Initializes this constant with the given name, value, and units"""
         super().__init__()
         if not isinstance(name, str):
             raise TypeError('name must be of type str')
@@ -22,6 +23,7 @@ class Constant:
         self.__units = units
 
     def __repr__(self):
+        """Returns the string representation of this constant"""
         return '%s(name=%r, value=%r, units=%r)' % (
             self.__class__.__name__,
             self.name,
@@ -108,14 +110,17 @@ class Constant:
 
     @property
     def name(self):
+        """The name of this constant"""
         return self.__name
 
     @property
     def value(self):
+        """The value of this constant"""
         return self.__value
 
     @property
     def units(self):
+        """The units of this constant"""
         return self.__units
 
 accel_grav = Constant('Acceleration due to gravity', 9.80665, 'm/s^2')

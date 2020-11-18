@@ -8,13 +8,19 @@ import collections as _collections
 import sys as _sys
 
 def human_hex(dec):
-    """Converts decimal values to human readable hex.
-       Mainly used in engineering class"""
+    """
+    Converts decimal values to human readable hex.
+    Mainly used in engineering class
+
+    """
     return hex(dec)[2:]
 
 def map_args(function, iterable, *args, **kwargs):
-    """Maps iterable to a function with arguments/keywords.
-       Dynamic types can be used"""
+    """
+    Maps iterable to a function with arguments/keywords.
+    Dynamic types can be used
+
+    """
     return type(iterable)(function(x, *args, **kwargs) for x in iterable)
 
 def _map_args_test(x, y=2, z=3):
@@ -49,10 +55,14 @@ class SortableDict(_collections.OrderedDict):
             self[key] = copy[key]
 
 class Watch(object):
-    """Holds a list of objects to display. Mainly used for tracking variables
-       in the debugging phase of a project."""
+    """
+    Holds a list of objects to display. Mainly used for tracking variables
+    in the debugging phase of a project.
+
+    """
 
     def __init__(self, objs=[], module='__main__'):
+        """Initializes this watch. Raises `TypeError` if `objs` is not a list of strings"""
         if not isinstance(objs, (list, set, tuple)) \
                 or any(not isinstance(obj, str) for obj in objs):
             raise TypeError('objs must be a list of strings')
@@ -61,12 +71,13 @@ class Watch(object):
         self.module = module
 
     def __repr__(self):
+        """Returns the string representation of this watch"""
         if not self:
             return '%s()' % (self.__class__.__name__,)
         return '%s(%r)' % (self.__class__.__name__, self.objs)
 
     def add(self, var):
-        """Adds the given object to this Watch"""
+        """Adds the given object to this watch"""
         if not isinstance(var, str):
             raise TypeError('var must be the string name of the object')
         if callable(self.get_dict()[var]):
@@ -75,10 +86,11 @@ class Watch(object):
         self.objs.append(var)
 
     def get_dict(self):
-        """Returns the dict for this Watch"""
+        """Returns the dict for this watch"""
         return _sys.modules[self.module].__dict__
 
     def is_watching(self, name):
+        """Returns True if this watch is watching the given name, False otherwise"""
         return name in self.objs
 
     def remove(self, var):
@@ -90,8 +102,10 @@ class Watch(object):
             self.objs.remove(var)
 
     def start_recording(self, useLocals):
-        """Records new objects created after this point until end
-           recording is called"""
+        """
+        Records new objects created after this point until `end_recording` is called
+
+        """
         self.__start_locals = useLocals.copy().keys()
 
     def stop_recording(self, useLocals):

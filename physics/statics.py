@@ -7,10 +7,12 @@ Module used for analyzing objects and systems in static equilibrium
 from clay.maths.core import round_qty as _r
 
 def id_member(name, value):
-    """Given the member name and value, returns the member name,
-       value, and axial force type identified as a string. Assumes
-       the initial direction of the reaction force points away from
-       the joint."""
+    """
+    Given the member name and value, returns the member name, value,
+    and axial force type identified as a string. Assumes the initial
+    direction of the reaction force points away from the joint.
+
+    """
     if value < 0:
         stress_type = 'C'
     elif value == 0:

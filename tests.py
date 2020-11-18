@@ -27,9 +27,12 @@ def _show_failure(expectation, expected, actual):
         .format(expectation, expected, actual))
 
 def testif(expectation, test_input, test_output, name=None, raises=None, transformer=lambda x: x):
-    """Tests whether the expectation is valid by comparing the
-       given test input to the test output. Test output may either
-       be a value or function accepting one argument."""
+    """
+    Tests whether the expectation is valid by comparing the
+    given test input to the test output. Test output may either
+    be a value or function accepting one argument.
+
+    """
     if name is not None:
         if not isinstance(name, str):
             raise TypeError('name must be of type str')
@@ -71,6 +74,11 @@ def testraises(raise_condition,
         exception,
         name=None,
         transformer=lambda x: x):
+    """
+    Tests if the expression raises the given exception when
+    the condition is True. Shortcut to the `testif` function.
+
+    """
 
     # if the raise condition is capitalized
     if _is_cap(raise_condition):

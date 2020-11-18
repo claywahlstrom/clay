@@ -44,16 +44,17 @@ WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
            'Connection': 'keep-alive'}
 
 class CacheableFile(object):
-    """Class Cache can be used to manage file caching on your local machine,
-       accepts one uri. The caching system will use the local version of
-       the file if it exists. Otherwise it will be downloaded from the server.
+    """
+    Class CacheableFile can be used to manage file caching on your local machine,
+    accepts one uri. The caching system will use the local version of
+    the file if it exists. Otherwise it will be downloaded from the server.
 
-       The main advantage is saving time by eliminating downloads
+    The main advantage is saving time by eliminating recurring downloads.
 
     """
 
     def __init__(self, reload_on_set=False):
-        """Initializes a new Cache object"""
+        """Initializes this cacheable file"""
         self.reloaded = False
         self.reload_on_set = reload_on_set
         self.remote_content = None
@@ -70,17 +71,24 @@ class CacheableFile(object):
         return fread
 
     def get_remote(self):
-        """Returns the content of the remote file. Stores a copy
-           in this object for future reloads to reduce bandwidth."""
+        """
+        Returns the content of the remote file. Stores a copy
+        in this object for future reloads to reduce bandwidth.
+
+        """
         self.remote_content = _requests.get(self.uri).content
         return self.remote_content
 
     def get_title(self):
+        """Returns the title of this cacheable file"""
         return self.title
 
     def is_updated(self):
-        """Returns True if the cached file has the same
-           length as the remote file, False otherwise"""
+        """
+        Returns True if the cacheable file has the same
+        length as the remote file, False otherwise
+
+        """
         return len(self.get_local()) == len(self.get_remote())
 
     def length(self):
@@ -95,8 +103,11 @@ class CacheableFile(object):
         return cont
 
     def reload(self):
-        """Alias for `store`, but easier to remember for humans
-           Commonly performed outside of a script"""
+        """
+        Alias for `store`, but easier to remember for humans
+        Commonly performed outside of a script
+
+        """
         print('Performing a cache reload for "{}"...'.format(self.title))
         self.store()
 
@@ -117,8 +128,11 @@ class CacheableFile(object):
             self.store()
 
     def store(self):
-        """Writes the binary content of the requested uri to the disk.
-           Writes and erases the remote content copy if it exists."""
+        """
+        Writes the binary content of the requested uri to the disk.
+        Writes and erases the remote content copy if it exists.
+
+        """
         print('Storing cached file "{}"...'.format(self.title), end=' ')
         with open(self.title, 'wb') as fp:
             if self.remote_content is not None:
@@ -131,21 +145,23 @@ class CacheableFile(object):
 
 class CourseCatalogUW(object):
 
-    """This class can be used to lookup courses by their ID
-       on the University of Washington's Course Catalog.
+    """
+    This class can be used to lookup courses by their ID
+    on the University of Washington's Course Catalog.
 
-       Query:
-           CEE for a list of all classes in the department
-           AES 1-25 or PHYS 12 or PHIL 1 for a narrowed listing
-           MATH 126 for a description of the course
+    Query:
+        CEE for a list of all classes in the department
+        AES 1-25 or PHYS 12 or PHIL 1 for a narrowed listing
+        MATH 126 for a description of the course
 
-       Casing is ignored
+    Casing is ignored
 
     """
 
     CATALOG_URI = 'https://www.washington.edu/students/crscat/'
 
     def __init__(self):
+        """Initializes this course catalog"""
         pages = {}
 
         pages['list'] = _BS(_requests.get(CourseCatalogUW.CATALOG_URI).content, 'html.parser')
@@ -158,6 +174,7 @@ class CourseCatalogUW(object):
         self.pages = pages
 
     def __print_columns(self, columns, width):
+        """Prints the column values as columns for this course catalog"""
         for i, j in enumerate(columns):
             print(j, end=int(_math.ceil(_math.ceil(self.MAX_LENGTH / 8) - len(j) / 8)) * '\t')
             if i % width == width - 1:
@@ -165,9 +182,11 @@ class CourseCatalogUW(object):
         print() # flush output
 
     def get_departments(self):
+        """Returns the departments"""
         return self.depts
 
     def print_departments(self, legacy=False):
+        """Prints the departments for all course levels"""
         if legacy:
             self.__print_columns(self.depts, 6)
         else:
@@ -190,6 +209,7 @@ class CourseCatalogUW(object):
             self.__print_columns(zipped, 6)
 
     def query(self, text):
+        """Returns a result dictionary containing a list of matching courses"""
         message = None
         header = None # department header
         course_list = []
@@ -265,10 +285,13 @@ def file2uri(path):
     return 'file:///' + path.replace('\\', '/')
 
 def find_anchors(location, query={}, internal=True, php=False):
-    """Returns anchor references from a location (file name or uri)
-           query    = query params sent in the request
-           internal = uses internal site referenes if True
-           php      = determines whether references with query params are included"""
+    """
+    Returns anchor references from a location (file name or uri)
+        query    = query params sent in the request
+        internal = uses internal site referenes if True
+        php      = determines whether references with query params are included
+
+    """
 
     if 'http' in location:
         fread = _requests.get(location, params=query).content#headers=WEB_HDRS, params=query).content
@@ -309,9 +332,12 @@ def get_vid(vid, vid_type='mp4'):
 
 class HtmlBuilder(object):
 
+    """Used to build HTML markup"""
+
     INDENT = '    ' # 4 spaces
 
     def __init__(self, debug=False):
+        """Initializes this builder"""
         self.indent = 0
         self.__html = ''
         self.__debug = debug
@@ -322,6 +348,7 @@ class HtmlBuilder(object):
         self.add_tag('html', attrs={'lang': 'en'})
 
     def add_raw(self, raw_html):
+        """Adds the raw HTML to this builder"""
         self.__html += raw_html
 
     def add_doctype(self):
@@ -333,9 +360,11 @@ class HtmlBuilder(object):
         self.add_tag('meta', self_closing=True, attrs={'charset': charset})
 
     def add_nl(self):
+        """Adds the newline character to this builder"""
         self.__html += '\n'
 
     def add_tag(self, tag, text='', self_closing=False, attrs={}):
+        """Adds the tag with options to this builder"""
         if self.debug:
             print('processing', tag, 'indent', self.indent)
         self.__html += HtmlBuilder.INDENT * self.indent + '<' + tag
@@ -355,6 +384,7 @@ class HtmlBuilder(object):
         self.add_nl()
 
     def close_tag(self, tag, has_text=False):
+        """Closes the given tag and dedents if applicable"""
         self.indent -= 1
         if not has_text:
             self.__html += HtmlBuilder.INDENT * self.indent
@@ -367,15 +397,17 @@ class HtmlBuilder(object):
             print('build', tag, 'now', self.indent)
 
     def build(self):
+        """Builds the HTML markup for this builder"""
         return self.__html
 
     @property
     def debug(self):
-        """Returns the debug setting for this HtmlBuilder"""
+        """Returns the debug setting for this builder"""
         return self.__debug
 
 def parse_raw_headers(raw_headers: str) -> dict:
-    """Parses the given headers string and returns the corresponding
+    """
+    Parses the given headers string and returns the corresponding
     headers dictionary. Useful when working with developer tools in
     the browser
 
@@ -387,11 +419,14 @@ def parse_raw_headers(raw_headers: str) -> dict:
     return headers
 
 class TagFinder(object):
-    """Class TagFinder can be used to find and store elements
-       from a given web page or markup"""
+    """
+    Class TagFinder can be used to find and store elements
+    from a given web page or markup
+
+    """
 
     def __init__(self, page):
-        """Initalizes this TagFinder object"""
+        """Initializes this tag finder"""
         self.request = None
         if isinstance(page, bytes):
             self.src = page
@@ -409,12 +444,14 @@ class TagFinder(object):
         self.soup = _BS(self.src, 'html.parser')
 
     def find(self, tag, method='find_all'):
+        """Returns a list of found tags for the given search method"""
         self.__found = eval('self.soup.{}("{}")'.format(method, tag))
         if len(self.__found) == 0:
             print('No tags matching "{}" found'.format(tag))
         return self.__found
 
     def show(self, attribute='text', file=_sys.stdout):
+        """Prints the tags to the output file (default is stdout)"""
         print('Tags:', file=file)
         for i in self.__found:
             try:
@@ -430,11 +467,13 @@ class TagFinder(object):
             print('None', file=file)
 
     def store_request(self, filename):
+        """Stores the request contents to the given filename"""
         assert isinstance(self.src, bytes)
         with open(filename, 'wb') as fp:
             fp.write(self.src)
 
     def store_tags(self, filename, inner='text'):
+        """Stores the delineated tags output to the given filename"""
         try:
             with open(filename, 'w') as fp:
                 self.show(inner=inner, file=fp)
@@ -494,11 +533,16 @@ class UrlBuilder(object):
 
 class WeatherPollenApiUrlBuilder(UrlBuilder):
 
+    """Used to build URLs for the Weather.com(tm) pollen API"""
+
     def __init__(self):
-        super(WeatherPollenApiUrlBuilder, self).__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
-        self.base_url = self.with_query_params({'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
+        """Initializes this builder"""
+        super().__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
+        self.base_url = self.with_query_params({
+            'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
             'format': 'json',
-            'language': 'en-US'}).build()
+            'language': 'en-US'
+        }).build()
 
     def with_geocode(self, lat, lon):
         """Adds the geocode latitude and longitude param to the URL"""
@@ -509,17 +553,22 @@ class WebDocument(object):
     """Can be used to work with files and URIs hosted on the web"""
 
     def __init__(self, uri=None):
+        """Initializes this web document"""
         self.set_uri(uri)
         self.set_query(None)
 
     def __repr__(self):
+        """Returns the string representation for this web document"""
         return 'WebDocument(uri=%s)' % self.__raw_uri
 
     def download(self, title='', full_title=False, destination='.',
             log_name='webdoc-dl.log', return_speed=False,
             headers=WEB_HDRS):
-        """Downloads data from the document uri and logs revelant
-           information in this directory"""
+        """
+        Downloads data from the document uri and logs revelant
+        information in this directory
+
+        """
 
         # http://stackoverflow.com/a/16696317/5645103
 
@@ -653,20 +702,24 @@ class WebDocument(object):
         return response.read()
 
     def get_title(self, headers=None):
+        """Returns the title of this web document"""
         from clay.net.core import get_title
         soup = _BS(self.get_html(headers=headers), 'html.parser')
         return get_title(soup)
 
     @property
     def query(self):
+        """The query parameters"""
         return self.__query
 
     @property
     def uri(self):
+        """The URI"""
         return self.__uri
 
     @property
     def raw_uri(self):
+        """The URI with query parameters"""
         return self.__raw_uri
 
     def launch(self, browser=settings.DEFAULT_BROWSER):
@@ -683,8 +736,11 @@ class WebDocument(object):
         self.__query = query
 
     def set_uri(self, uri):
-        """Sets the uri to the given string. Raises ValueError
-           if the uri scheme is not supported"""
+        """
+        Sets the uri to the given string. Raises ValueError
+        if the uri scheme is not supported
+
+        """
         if uri is not None:
             if not isinstance(uri, str):
                 raise TypeError('uri must be of type str')
@@ -704,34 +760,47 @@ class WebDocument(object):
 
 class WundergroundUrlBuilder(UrlBuilder):
 
+    """Used to build URLs for the Wunderground.com(tm) pollen data source"""
+
     def __init__(self):
-        super(WundergroundUrlBuilder, self).__init__('https://www.wunderground.com/health/us/')
+        """Initializes this builder"""
+        super().__init__('https://www.wunderground.com/health/us/')
 
     def with_location(self, state, city, station):
+        """Sets the location for the data source"""
         self.url = self.base_url + '/'.join((state, city, station))
         return self
 
     def to_string(self):
+        """Returns the built URL"""
         return self.url
 
 class PollenUrlBuilderFactory(object):
 
+    """Used to allow access to the pollen URL builders"""
+
     def __init__(self):
+        """Initializes thie pollen URL builder factory"""
         self.__weather = WeatherPollenApiUrlBuilder()
         self.__wunderground = WundergroundUrlBuilder()
 
     @property
     def weather(self):
+        """Returns the Weather.com(tm) URL builder"""
         return self.__weather
 
     @property
     def wunderground(self):
+        """Returns the Wunderground(tm) URL builder"""
         return self.__wunderground
 
 class PollenApiClient(object):
 
-    """Class PollenApiClient can be used to retrieve and store information about
-       the pollen forecast from The Weather Channel (tm) and Wunderground (tm)"""
+    """
+    Class PollenApiClient can be used to retrieve and store information about
+    the pollen forecast from The Weather Channel (tm) and Wunderground (tm)
+
+    """
 
     URL_FACTORY = PollenUrlBuilderFactory()
 
@@ -755,8 +824,11 @@ class PollenApiClient(object):
     TYPES = ('grass', 'ragweed', 'tree')
 
     def __init__(self, source, zipcode, print_sources=True):
-        """Initializes this PollenApiClient object using the given source and
-           zipcode. Builds the database when all inputs are valid."""
+        """
+        Initializes this PollenApiClient object using the given source and
+        zipcode. Builds the database when all inputs are valid.
+
+        """
         self.zipcode = zipcode
         self.source = source
         self.set_zipcode(zipcode)
@@ -775,16 +847,21 @@ class PollenApiClient(object):
             raise RuntimeError('PollenApiClient must be built after zipcode or source has been changed')
 
     def __verify_source(self, source):
+        """Raises `ValueError` if the source is invalid"""
         if source not in PollenApiClient.SOURCE_SPAN.keys():
             raise ValueError('source must be one from [{}]'.format(", ".join(PollenApiClient.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):
+        """Raises `ZipCodeNotFoundException` if the zipcode is invalid"""
         if zipcode not in PollenApiClient.SOURCE_URLS.keys() or zipcode < 0 or zipcode > 99501:
             raise ZipCodeNotFoundException(zipcode)
 
     def __get_markup(self, uri):
-        """Retrieves the markup with up to 4 max tries. Returns empty
-           markup if web requests fail"""
+        """
+        Retrieves the markup with up to 4 max tries. Returns empty
+        markup if web requests fail
+
+        """
 
         unsuccessful = True
         tries = 0
@@ -881,14 +958,22 @@ class PollenApiClient(object):
             print('{:>4}: {}'.format(i, j), file=file)
 
     def set_source(self, source):
-        """Sets the source for this PollenApiClient object. Requires `build` to be called to update data"""
+        """
+        Sets the source for this PollenApiClient object.
+        Requires `build` to be called to update data
+
+        """
         self.__verify_source(source)
         self.uri = PollenApiClient.SOURCE_URLS[self.zipcode][source]
         self.source = source
         self.__date_built = None
 
     def set_zipcode(self, zipcode):
-        """Sets the zipcode for this PollenApiClient object. Requires `build` to be called to update data"""
+        """
+        Sets the zipcode for this PollenApiClient object.
+        Requires `build` to be called to update data
+
+        """
         self.__verify_zipcode(zipcode)
         self.zipcode = zipcode
         self.set_source(self.source) # ensures data is updated if the method is 'weather text'
@@ -905,12 +990,15 @@ class PollenApiClient(object):
 
     @property
     def has_built(self):
-        """Returns True if this client has built the database, otherwise False"""
+        """Returns True if this client has built the database, False otherwise"""
         return self.date_built is not None
 
 class ZipCodeNotFoundException(Exception):
+
+    """Raised when a zipcode is invalid (not found)"""
+
     def __init__(self, zipcode, *args, **kwargs):
-        super(ZipCodeNotFoundException, self).__init__(repr(self), *args, **kwargs)
+        super().__init__(repr(self), *args, **kwargs)
         self.zipcode = zipcode
 
     def __repr__(self):

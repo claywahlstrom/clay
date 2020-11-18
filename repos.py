@@ -29,8 +29,11 @@ class IRepository(_Abstract):
 class BaseRepository(_Abstract):
 
     def __init__(self, name, empty):
-        """Intializes this repository with the given name
-           and empty database structure"""
+        """
+        Intializes this repository with the given name
+        and empty database structure
+
+        """
         self.raise_if_base(BaseRepository)
         self.__name = name
         self.__empty = empty
@@ -47,9 +50,12 @@ class BaseRepository(_Abstract):
         self._db = self.__empty
 
     def create(self, force=False, write=True):
-        """Creates this database if it does not exist and returns
-           a boolean of whether it was successful or not. Use force=True
-           if this database exists to clear its contents."""
+        """
+        Creates this database if it does not exist and returns
+        a boolean of whether it was successful or not. Use force=True
+        if this database exists to clear its contents.
+
+        """
         if _os.path.exists(self.__name) and not force:
             # could not create the database because it already exists
             return False
@@ -64,8 +70,10 @@ class BaseRepository(_Abstract):
         return _os.path.exists(self.__name)
 
     def read(self):
-        """Reads data from the disk into the database.
+        """
+        Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
+
         """
         if self.exists():
             with open(self.name) as fp:
@@ -87,16 +95,22 @@ class BaseRepository(_Abstract):
 
     @property
     def has_read(self):
-        """Returns True if read has been called for this database,
-           False otherwise"""
+        """
+        Returns True if read has been called for this database,
+        False otherwise
+
+        """
         return self.__has_read
 
 class JsonRepository(BaseRepository, IRepository):
     """Wrapper for working with JSON databases"""
 
     def prune(self, predicate):
-        """Prunes entities from the database based on the given predicate
-           function"""
+        """
+        Prunes entities from the database based on the given predicate
+        function
+
+        """
         modified = False
         temp = self.db.copy() # prevents concurrent modification errors
         for entity in self.db:
@@ -158,6 +172,7 @@ class CrudRepository(BaseRepository, IRepository):
         raise RecordNotFoundError('{}: pk "{}" not found'.format(self.name, pk))
 
     def _ensure_exists(self, pk):
+        """Ensures the given primary key exists"""
         if isinstance(self.read(), list) and self.get(pk) is None:
             model = self.model()
             if not self.is_model_based:
@@ -185,6 +200,7 @@ class CrudRepository(BaseRepository, IRepository):
         return model
 
     def create_if_not_exists(self, pk):
+        """Creates the given primary key if it does not exist"""
         self._ensure_exists(pk)
 
     def _insert_model(self, model):
@@ -254,8 +270,11 @@ class CrudRepository(BaseRepository, IRepository):
         print('{}: pk "{}" updated'.format(self.name, pk))
 
     def update_prop(self, pk, prop, value):
-        """Updates the value of the property for the given primary
-           key within this repository"""
+        """
+        Updates the value of the property for the given primary
+        key within this repository
+
+        """
         self._ensure_exists(pk)
 
         model = self.get(pk)
@@ -267,8 +286,10 @@ class CrudRepository(BaseRepository, IRepository):
         model[prop] = value
 
     def read(self, fetch_if_read=False):
-        """Reads data from the disk into the database.
+        """
+        Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
+
         """
         if not self.has_read or fetch_if_read:
             super().read()
@@ -284,8 +305,10 @@ class CrudRepository(BaseRepository, IRepository):
         return self._db
 
     def read_queryable(self, fetch_if_read=False):
-        """Reads data from the disk into the database.
+        """
+        Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
+
         """
         return _query(self.read(fetch_if_read=fetch_if_read))
 
@@ -350,8 +373,11 @@ class CrudRepositoryMigrator:
 
 class UserRepository(CrudRepository):
 
+    """Used to manage a repository of users"""
+
     def __init__(self, file='users.json'):
-        super(UserRepository, self).__init__(file)
+        """Initializes this user repository"""
+        super().__init__(file)
 
     def prune(self, date_prop, date_format, days=30):
         """Prunes users based on the database date if the date is days old"""
@@ -369,6 +395,8 @@ class UserRepository(CrudRepository):
 
 class UserWhitelist(object):
 
+    """Used to whilelist users for secret access"""
+
     def __init__(self, file):
         """Initializes this user whitelist"""
         self.__file = file
@@ -383,8 +411,11 @@ class UserWhitelist(object):
         return self.__users
 
     def is_authorized(self, user):
-        """Returns True if the given user is authorized
-           by this whitelist, False otherwise"""
+        """
+        Returns True if the given user is authorized
+        by this whitelist, False otherwise
+
+        """
         return user in self.__users
 
     def read(self):

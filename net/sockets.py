@@ -45,8 +45,11 @@ class AdvancedSocket:
     """Super-class for Server and Client socket handlers"""
 
     def show_info(self):
-        """Prints information about this socket and is called
-           at the beginning of a session"""
+        """
+        Prints information about this socket and is called
+        at the beginning of a session
+
+        """
         print(self.sock, 'started')
 
     def read_bin(self, buffer=MAX_BUFFER):
@@ -57,8 +60,11 @@ class AdvancedSocket:
             return b'quit'
 
     def read_stream_len(self, length, buffer=MAX_BUFFER):
-        """Receives and returns a filestream from the stream of given
-           length at buffer sized chunks"""
+        """
+        Receives and returns a filestream from the stream of given
+        length at buffer sized chunks
+
+        """
         stream = bytes()
         while True:
             stuff = self.read_bin(buffer)
@@ -116,8 +122,11 @@ class AdvancedSocket:
         time.sleep(0.1)
 
     def write_streams(self, files, length, buffer=MAX_BUFFER, charset=UTF_SET):
-        """Receives file content as one string and parses for each file
-           Assumes 'eof' is not contained in the files"""
+        """
+        Receives file content as one string and parses for each file
+        Assumes 'eof' is not contained in the files
+
+        """
         print('expected', length)
         streams = self.read_stream_len(length=length, buffer=buffer)
         print('actual', len(streams))
@@ -170,6 +179,7 @@ class Client(AdvancedSocket):
     """Class Client can be used to connect to a server"""
 
     def __init__(self, ip=None, port=DEF_PORT):
+        """Initializes this advanced client socket"""
         if ip is None:
             ip = input('ip? ')
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -182,6 +192,7 @@ class Server(AdvancedSocket):
     """Class Server can be used to host connections"""
 
     def __init__(self, ip='0.0.0.0', port=DEF_PORT, maxcon=MAX_CONN):
+        """Initializes this advanced server socket"""
         port = get_next_open_port(ip, port)
         serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #        serv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

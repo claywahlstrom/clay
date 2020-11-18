@@ -7,8 +7,11 @@ stats: module for statistical analysis
 import math as _math
 
 def multiplicity(q, N):
-    """Returns the multiplicity Omega given the number of objects q
-       and the number of cells to distribute to N"""
+    """
+    Returns the multiplicity Omega given the number of objects q
+    and the number of cells to distribute to N
+
+    """
     return int(_math.factorial(q + N - 1) /
         (_math.factorial(q) * _math.factorial(N - 1)))
 
@@ -29,8 +32,11 @@ def perms(n, k):
 P = perms # alias
 
 def partition(n, ks):
-    """Returns the number of ways the given n objects can be arranged
-       in groups of size k. ks must be an iterable of k values"""
+    """
+    Returns the number of ways the given n objects can be arranged
+    in groups of size k. ks must be an iterable of k values
+
+    """
     if type(ks) not in (list, tuple):
         raise TypeError('ks must be an iterable')
     if not ks:

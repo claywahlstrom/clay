@@ -109,7 +109,7 @@ class Anonymous(Serializable):
         self.__convert_data(kwargs)
 
     def __convert_data(self, lookup):
-        """ dfs"""
+        """Assigns the lookup keys and values to this Anonymous"""
         import datetime as dt
         for key in lookup:
             value = lookup[key]

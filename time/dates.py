@@ -56,7 +56,8 @@ class Date(dt.date):
         return Date(self.year, 1, 1)
 
     def this_quarter(self) -> 'Date':
-        """Returns this quarter's date given a date or datetime.
+        """
+        Returns this quarter's date given a date or datetime.
         Quarters are on the 1st, 4th, 7th, and 10th months
 
         """
@@ -113,7 +114,8 @@ class Date(dt.date):
         return Date(year, month, 1)
 
     def next_quarter(self) -> 'Date':
-        """Returns the next quarter's date.
+        """
+        Returns the next quarter's date.
         Quarters are on the 1st, 4th, 7th, and 10th months
 
         """
@@ -191,7 +193,8 @@ class DateRange(BaseDateTimeRange):
         return string
 
 def days_to_mail(weekday: int) -> int:
-    """Returns the number of days to send an item through priority
+    """
+    Returns the number of days to send an item through priority
     mail within the U.S. given the weekday (Monday: 0 - Sunday: 6)
 
     """

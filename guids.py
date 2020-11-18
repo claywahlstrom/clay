@@ -22,7 +22,8 @@ class Guid(_uuid.UUID):
 
     @staticmethod
     def is_valid(guid: str) -> bool:
-        """Returns True if the given string value is a valid guid,
+        """
+        Returns True if the given string value is a valid guid,
         False otherwise
 
         """
@@ -30,7 +31,8 @@ class Guid(_uuid.UUID):
 
     @staticmethod
     def is_valid_size(guid: str) -> bool:
-        """Returns True if the given string value is a valid size guid,
+        """
+        Returns True if the given string value is a valid size guid,
         False otherwise
 
         """
@@ -38,7 +40,8 @@ class Guid(_uuid.UUID):
 
     @staticmethod
     def is_valid_type(guid: str) -> bool:
-        """Returns True if the given string value is composed of hexadecimal digits,
+        """
+        Returns True if the given string value is composed of hexadecimal digits,
         False otherwise
 
         """

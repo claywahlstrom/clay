@@ -17,8 +17,11 @@ def add(vector1, vector2, *vectors):
     return _apply(sum, list(zip(vector1, vector2, *vectors)))
 
 def cross(v1, v2):
-    """Returns the cross product of the given two vectors
-       using the formulaic definition"""
+    """
+    Returns the cross product of the given two vectors
+    using the formulaic definition
+
+    """
     i = v1[1] * v2[2] - v2[1] * v1[2]
     j = v1[0] * v2[2] - v2[0] * v1[2]
     k = v1[0] * v2[1] - v2[0] * v1[1]

@@ -14,9 +14,12 @@ from clay.utils import SortableDict as _SortableDict
 
 class Graph(object):
 
+    """Used to graph two-dimensional data"""
+
     SHORT_LENGTH = 30
 
     def __init__(self, data, title=None, max_width=CONSOLE_WIDTH, sort=True):
+        """Initializes this graph with the given data, title, width, and sort option"""
         if type(data) is _SortableDict:
             sd = data
         else:
@@ -42,11 +45,13 @@ class Graph(object):
         self.title = title
 
     def __repr__(self):
+        """Returns the string representation of this graph"""
         if not self:
             return '%s()' % (self.__class__.__name__,)
         return '%s(%r)' % (self.__class__.__name__, list(self.sd.items()))
 
     def build(self, limit=0, shorten_keys=False, with_count=False):
+        """Builds the graph and prints it to stdout"""
         longest_key_len = max(map(lambda x: len(str(x)), self.sd.keys()))
         longest_value_len = max(map(lambda x: len(str(x)), self.sd.values()))
         max_value = max(self.sd.values())
@@ -99,6 +104,11 @@ class Graph(object):
         self.with_count = with_count
 
     def sort_by(self, name, reverse=False):
+        """
+        Sorts the graph data by the given name (column or count,
+        raises `ValueError` if other)
+
+        """
         if name not in ('column', 'count'):
             raise ValueError('name must be column or count')
         std = sorted(self.sd.items(), key=_operator.itemgetter(('column', 'count').index(name)), reverse=reverse)
@@ -107,19 +117,21 @@ class Graph(object):
             self.sd[j[0]] = j[-1]
 
 class Histogram(Graph):
-    """Counts objects into groups for histogram analysis.
+    """
+    Counts objects into groups for histogram analysis.
 
-       Consumes columns as a range of values, required
-       Consumes str or bytes as text, optional
+    Consumes columns as a range of values, required
+    Consumes str or bytes as text, optional
 
-       Initial values for each group is zero if no text is supplied.
+    Initial values for each group is zero if no text is supplied.
 
-       Always safe to have max_width be one less than the actual screen width.
+    Always safe to have max_width be one less than the actual screen width.
 
     """
 
     def __init__(self, columns=None, data=None, title=None,
             max_width=CONSOLE_WIDTH, sort=True):
+        """Initializes this histogram"""
         if columns is not None and type(columns) not in (tuple, list):
             raise TypeError('columns must be of type tuple')
 
@@ -149,9 +161,12 @@ def tabulate(dictionary, name=''):
         print('{:{}} : {}'.format(i, largestlen, dictionary[i]))
 
 def tabulatef(func, start=-5, end=5, step=1, spacing=9,
-              precision=10, roundto=14, file=_sys.stdout):
-    """Prints a table of values from the given a function,
-       bounds, step, and output location"""
+        precision=10, roundto=14, file=_sys.stdout):
+    """
+    Prints a table of values from the given a function,
+    bounds, step, and output location
+
+    """
     print('Table for {} on [{}, {}]'.format(func.__name__, start, end),  file=file)
     print('-'*30, file=file)
     mapstr = map(str, [start, end, step])

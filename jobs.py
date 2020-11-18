@@ -27,11 +27,14 @@ DAYS_OF_THE_WEEK = ('Monday',
 DAYS_PER_WEEK = len(DAYS_OF_THE_WEEK)
 
 class Attendance(object):
-    """Analyzes CSV time-sheets for jobs in the following format:
-           month day year,time in,time out,hours worked
+    """
+    Analyzes CSV time-sheets for jobs in the following format:
+        month day year,time in,time out,hours worked
 
-       Attendance sheet is read from 'attendance.csv', so it must exist for
-       anything to work."""
+    Attendance sheet is read from 'attendance.csv', so it must exist for
+    anything to work.
+
+    """
 
     PT_TYPES = ('week', 'month')
 
@@ -70,12 +73,15 @@ class Attendance(object):
         self.state    = state
 
     def get_average_hours(self):
+        """Returns the average hours per punch"""
         return average(self.get_hours())
 
     def get_hours(self):
+        """Returns a list of hours from the punches"""
         return list(self.select('hours'))
 
     def get_total_hours(self):
+        """Returns the total hours from the punches"""
         return sum(self.get_hours())
 
     def print_money(self, per):
@@ -93,6 +99,7 @@ class Attendance(object):
                                                                        self.get_total_hours() * self.perhour * self.take_home_ratio))
 
     def print_punchcard(self, names=True):
+        """Prints the punchcard to stdout"""
         # columns are initialized to 0
         hg = Histogram(columns=DAYS_OF_THE_WEEK, sort=not(names))
         for col in hg.data:
@@ -104,6 +111,7 @@ class Attendance(object):
         hg.build()
 
     def print_report(self):
+        """Prints the attendance report to stdout"""
         hours = self.get_hours()
         print()
         self.setup_pt() # set up both pt's
@@ -143,6 +151,7 @@ class Attendance(object):
                 JOBS_BREAK_SCHEDULES[self.state]['length']
 
     def select(self, attrib, until_date=None):
+        """Returns a list of values selected from the database. `until_date` is exclusive"""
         if attrib not in self.headers:
             raise ValueError('attrib must be a column header. Headers are ' + ', '.join(self.headers))
         selection = []
@@ -206,8 +215,11 @@ class Attendance(object):
             self.setup_pt('month')
 
 def get_day_offset(day, number):
-    """Returns an integer representing the day number shifted
-    by the given amount"""
+    """
+    Returns an integer representing the day number shifted
+    by the given amount
+
+    """
     day -= number
     if day < 0:
         day += 7

@@ -16,8 +16,11 @@ else:
     WIDTH = 100
 
 def box(text, width=0, height=3, module=False):
-    """Prints a formatted box based on size of text w/ thickness of 1.
-       Optional module headers to customize titles"""
+    """
+    Prints a formatted box based on size of text w/ thickness of 1.
+    Optional module headers to customize titles
+
+    """
     if width < len(text) + 4: # if width is zero
         for line in text.split('\n'):
             if len(line) + 4 > width:

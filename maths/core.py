@@ -31,7 +31,9 @@ TESTS = {
 }
 
 class Circle(object):
+
     """A class for managing basic circular functions"""
+
     def __init__(self, radius):
         self.radius = radius
 
@@ -58,7 +60,6 @@ def differential(f, x, deltax=1e-12):
     works best.
 
     """
-
     # the following formula is the average between the slopes using
     # the right limit [(f(x + deltax) - f(x)) / deltax] and
     # the left limit [(f(x) - f(x - deltax)) / deltax]
@@ -216,7 +217,9 @@ def max_M(func, interval):
     return m
 
 class Polar(object):
+
     """Class Polar can be used to convert from polar to cartesian"""
+
     def __init__(self, radius, theta, phi=math.pi/2):
         self.radius = radius
         self.theta = theta

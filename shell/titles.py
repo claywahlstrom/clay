@@ -41,8 +41,11 @@ class WindowHandler(object):
     """Class WindowHandler can be used to find Window titles by their name"""
 
     def __init__(self, query, regex=False):
-        """Initializes a new WindowHandler with the given query and whether
-           the query is regex or not"""
+        """
+        Initializes a new WindowHandler with the given query and whether
+        the query is regex or not
+
+        """
         self.query = query
         self.regex = regex
         self.__names = ()

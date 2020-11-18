@@ -74,10 +74,11 @@ def file_manager(directory=_os.curdir):
 fm = file_manager # alias
 
 def get_disk_drives():
-    """Returns a list of drive root paths that are available
-       on this machine.
+    """
+    Returns a list of drive root paths that are available
+    on this machine.
 
-       Ex. ['CSSS-9928', 'sda', ...] or ['C:\\', 'D:\\', ...]
+    Ex. ['CSSS-9928', 'sda', ...] or ['C:\\', 'D:\\', ...]
 
     """
     drives = []
@@ -96,9 +97,14 @@ def get_disk_drives():
 
 class Compiler(object):
 
+    """Used to compile source files into bytecode or executable format"""
+
     def __init__(self, compiler_name, src_ext, dst_ext, sources=None, directory=_os.curdir):
-        """Initializes the compiler. Default for classes is all in the given
-           directory or expects a list or tuple, otherwise and ValueError is thrown"""
+        """
+        Initializes the compiler. Default for classes is all in the given
+        directory or expects a list or tuple, otherwise and ValueError is thrown
+
+        """
         if sources is not None and not isinstance(sources, (list, set, tuple)):
             raise TypeError('sources must be an iterable')
         self.compiler_name = compiler_name
@@ -113,20 +119,23 @@ class Compiler(object):
         self.directory = directory
 
     def add_flag(self, flag):
+        """Adds the given flag to the list of flags"""
         self.flags.append(flag)
 
     def clear_flags(self):
+        """Clears the list of flags"""
         self.flags.clear()
 
     def compile(self, exclude=None, recurse=True, references=None, verbose=False):
-        """Compiles the source files in this directory with this compiler's
-           flags. Keyword parameters are as follows:
-               exclude = None or list of strings to exclude
-               recurse = boolean to indicate whether all files in this
-                         compiler's path should be compiled
-               references = None or list of refernces for C# sources
-               verbose = boolean to indicate whether the system command
-                         should be printed for each file
+        """
+        Compiles the source files in this directory with this compiler's
+        flags. Keyword parameters are as follows:
+            exclude = None or list of strings to exclude
+            recurse = boolean to indicate whether all files in this
+                compiler's path should be compiled
+            references = None or list of refernces for C# sources
+            verbose = boolean to indicate whether the system command
+                should be printed for each file
 
         """
         from clay.shell.core import lsgrep
@@ -170,16 +179,23 @@ class Compiler(object):
 
 class CSharpCompiler(Compiler):
 
+    """Used to compile C# source code"""
+
     def __init__(self, sources=None, directory=_os.curdir):
-        super(CSharpCompiler, self).__init__('csc', '.cs', '.exe', sources, directory)
+        """Initializes this compiler"""
+        super().__init__('csc', '.cs', '.exe', sources, directory)
         self.add_flag('nologo')
 
 class JavaCompiler(Compiler):
-    """Class JavaCompiler can be used to compile Java(tm) source
-       files to bytecode"""
+    """
+    Class JavaCompiler can be used to compile Java(tm) source
+    files to bytecode
+
+    """
 
     def __init__(self, sources=None, directory=_os.curdir):
-        super(JavaCompiler, self).__init__('javac', '.java', '.class', sources, directory)
+        """Initializes this compiler"""
+        super().__init__('javac', '.java', '.class', sources, directory)
         self.add_flag('g')
         self.add_flag('Xlint:unchecked')
 
@@ -320,7 +336,8 @@ def rm(target):
     print('Deleted "{}"'.format(target))
 
 def set_title(title=_os.path.basename(RUNTIME_ARGS[0]), include_args=False, add=''):
-    """Sets the title of the current shell instance. Defaults to the name
+    """
+    Sets the title of the current shell instance. Defaults to the name
     of the current module. Optionally include command-line arguments and
     add additional text at the end of the title.
 

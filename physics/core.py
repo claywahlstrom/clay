@@ -38,22 +38,30 @@ class Charge(object):
     """Class Charge can be used to represent a point charge"""
 
     def __init__(self, position, magnitude):
+        """Initializes this charge with the given position and magnitude"""
         self.position  = position
         self.magnitude = magnitude
 
     def forceon(self, c):
+        """Returns the force by this charge on the given charge `c`"""
         return Force(self, c)
 
 def dipole_moment(charge, a, l):
-    """Returns the magnitude of the dipole moment vector
-           charge = charge of the particle in Coulombs
-           a      = distance to the perpendicular bisector in meters
-           l      = distance between charges in meters"""
+    """
+    Returns the magnitude of the dipole moment vector
+        charge = charge of the particle in Coulombs
+        a      = distance to the perpendicular bisector in meters
+        l      = distance between charges in meters
+
+    """
     return 1 / (4 * _math.pi * const.epsilon_0) * charge / (a ** 2 + l ** 2) ** (3/2)
 
 def drop_time(displacement, v_i=0, a=const.accel_grav):
-    """Returns free fall time in seconds starting at t = 0.
-       Assumes up as the positive direction for position"""
+    """
+    Returns free fall time in seconds starting at t = 0.
+    Assumes up as the positive direction for position
+
+    """
     from clay.maths.core import roots
     if v_i:
         t1, t2 = roots(a, v_i, displacement)
@@ -66,10 +74,12 @@ class Force(object):
     """Class Force can be used to calculate force by one on two"""
 
     def __init__(self, one, two):
+        """Initializes this force with the given one and two"""
         self.one = one
         self.two = two
 
     def __repr__(self):
+        """Returns the string representation of this force"""
         return 'Force(x=%r,y=%r)' % (self.comp(_math.cos), self.comp(_math.sin))
 
     def mag(self):
@@ -117,8 +127,11 @@ def prefix_unit(scalar, units):
 
 class Position(object):
 
+    """Used to represent a position vs. time plot"""
+
     def __init__(self, position, time=None, step=None):
-        if type(position) not in (list, tuple):
+        """Initializes this position with a list of positions, times, and a step"""
+        if not isinstance(position, (list, set, tuple)):
             raise TypeError('position must be of type list or tuple')
         if step is None:
             step = 1
@@ -145,8 +158,11 @@ class Position(object):
         return self.accel
 
 def requivalent(res, config):
-    """Given a list of resistor values and their configuration,
-       returns the equivalent resistance"""
+    """
+    Given a list of resistor values and their configuration,
+    returns the equivalent resistance
+
+    """
     if config == 'series':
         return sum(res)
     elif config == 'parallel':
@@ -155,8 +171,11 @@ def requivalent(res, config):
         raise ValueError('The given configuration is not supported: ' + config)
 
 def urms(temp, molar_mass):
-    """"Returns the root mean square velocity using the given molar mass (g)
-        and temperature (*C)"""
+    """"
+    Returns the root mean square velocity using the given molar mass (g)
+    and temperature (*C)
+
+    """
     return _math.sqrt(3 * const.rydberg_energy * (temp + const.kelvin_offset) / (molar_mass / 1000))
 
 if __name__ == '__main__':

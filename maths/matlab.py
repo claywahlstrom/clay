@@ -25,8 +25,11 @@ def meshgrid(a, b):
     return A, B
 
 def solve_ode(dy, tspan, y0):
-    """Returns the solutions to the ODE given the differential,
-    time span, and initial value"""
+    """
+    Returns the solutions to the ODE given the differential,
+    time span, and initial value
+
+    """
     if len(tspan) != 2:
         raise ValueError('tspan must be include 2 times')
     t0, tf = tspan

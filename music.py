@@ -5,7 +5,6 @@ Music: for creating and playing music
 Steps are relative to A.
 Registers are in ovtaves with the lowest pitch of 55.
 
-
 """
 
 from clay.env import is_posix as _is_posix
@@ -98,19 +97,21 @@ def play_scale_half(notes, tempo):
     play_scale(notes, tempo)
 
 class Song(object):
-    """A class for writing and storing music.
+    """
+    A class for writing and storing music.
 
-       Receives optional file name, selection, and subdivision
-       Defaults:
-           file     :: type str
-           selected :: int(0)
-           sub      :: float(0.25)
-           tempo    :: int(60)
-       Gives functionality including:
-           writing a note
-           editing a note
-           setting the subdivision
-           deleting notes
+    Receives optional file name, selection, and subdivision
+    Defaults:
+        file     :: type str
+        selected :: int(0)
+        sub      :: float(0.25)
+        tempo    :: int(60)
+    Gives functionality including:
+        writing a note
+        editing a note
+        setting the subdivision
+        deleting notes
+
     """
 
     def __init__(self, file='', selected=0, sub=0.25, tempo=60):
@@ -120,13 +121,19 @@ class Song(object):
         self.load()
 
     def at_end(self):
-        """Returns true if the selection is at the end of the song,
-           false otherwise"""
+        """
+        Returns True if the selection is at the end of the song,
+        False otherwise
+
+        """
         return self.selected + 1 >= len(self.notes)
 
     def change_length(self, direction):
-        """Changes the length of the selected note
-           by the subdivision in the given direction"""
+        """
+        Changes the length of the selected note
+        by the subdivision in the given direction
+
+        """
         self.notes[self.selected] += self.sub * direction
 
     def delete(self):
@@ -141,7 +148,7 @@ class Song(object):
         return name, length
 
     def is_populated(self):
-        """Returns true if this song is populated, false otherwise"""
+        """Returns True if this song is populated, False otherwise"""
         return len(self.notes) > 0
 
     def load(self):

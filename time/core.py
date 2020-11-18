@@ -24,8 +24,11 @@ class datetime(_dt.datetime):
     """Provides extension methods to the datetime.datetime object"""
 
     def round(self, minutes=0, seconds=0):
-        """Rounds this datetime to the given number of nearest minutes and seconds.
-           Returns self to allow for chaining"""
+        """
+        Rounds this datetime to the given number of nearest minutes and seconds.
+        Returns self to allow for chaining
+
+        """
         if seconds != 0:
             # if halfway or more
             if self.second % seconds >= seconds / 2:
@@ -51,13 +54,18 @@ def get_time_struct():
     return _time.localtime(_time.time())
 
 def get_time_until(year, month, day):
-    """Returns the timedelta object from today until the
-       given year, month, day"""
+    """
+    Returns the timedelta object from today until the given year, month, day
+
+    """
     return _dt.datetime(year, month, day) - _dt.datetime.today()
 
 class ReadingTimer(object):
 
+    """Used to track reading rates"""
+
     def __init__(self, pages=0, current_page=0, precision=2):
+        """Initializes this reading timer"""
         self.pages = pages
         self.current_page = current_page
         self.precision = precision
@@ -66,18 +74,22 @@ class ReadingTimer(object):
         self.__paused = True
 
     def average_time(self):
+        """Returns the average time in seconds per page"""
         if len(self.times) == 0:
             return 0
         return round(_mean(self.times), self.precision) # 2 for 0.
 
     def divmod_string(self):
+        """Returns the string of the modulus division of average time"""
         dm = divmod(self.average_time(), 60)
         return ', '.join(map(str, map(lambda t: round(t, self.precision), dm)))
 
     def elapsed(self):
+        """Returns the elapsed time since the start"""
         return _time.time() - self.start_time
 
     def human_report_projected(self):
+        """Returns the human report projected time left to finish"""
         sec_left = self.seconds_left()
         if sec_left < 60:
             projected = str(round(sec_left, 2)) + ' seconds'
@@ -86,6 +98,7 @@ class ReadingTimer(object):
         return projected + ' left'
 
     def human_report_total(self):
+        """Returns the human report total time"""
         total_sec = self.seconds_total()
         if total_sec < 60:
             total = str(round(total_sec, 2)) + ' TOTAL seconds'
@@ -94,30 +107,38 @@ class ReadingTimer(object):
         return total
 
     def is_paused(self):
+        """Returns True if the reading timer is paused, False otherwise"""
         return self.__paused
 
     def pages_left(self):
+        """Returns the number of pages left to read"""
         return self.pages - self.current_page
 
     def pause(self):
+        """Pauses the reading timer"""
         self.__paused_time = _time.time()
         self.__paused = True
 
     def resume(self):
+        """Resumes the reading timer"""
         self.start_time += _time.time() - self.__paused_time
         self.__paused = False
 
     def seconds_left(self):
+        """Returns the number of seconds left to finish"""
         return self.average_time() * self.pages_left()
 
     def seconds_total(self):
+        """Returns the number of total seconds"""
         return self.average_time() * self.pages
 
     def start(self):
+        """Starts the reading timer"""
         self.start_time = _time.time()
         self.__paused = False
 
     def turn_page(self, forward=True):
+        """Turns the page in the given direction (optional)"""
         # complete time-sensitive operations first
         self.times.append(round(self.elapsed(), self.precision))
         self.start()
@@ -133,28 +154,31 @@ def round_nearest(hours, interval=0.5):
     return round(hours / interval) * interval
 
 class SunTimesApiClient(object):
-    """An API for collecting sun times information from timeanddate.com (c)
-       in the following form:
+    """
+    An API for collecting sun times information from timeanddate.com (c)
+    in the following form:
 
-           Rise/Set     |     Daylength       |   Solar Noon
-       Sunrise | Sunset | Length | Difference | Time | Million Miles
+        Rise/Set     |     Daylength       |   Solar Noon
+    Sunrise | Sunset | Length | Difference | Time | Million Miles
 
-       Countries with more than one occurence of a city require state abbrev.s,
-       such as Portland, OR, and Portland, ME:
-           city -> portland-or
-           city -> portland-me
+    Countries with more than one occurence of a city require state abbrev.s,
+    such as Portland, OR, and Portland, ME:
+        city -> portland-or
+        city -> portland-me
 
     """
 
     COLS = 6
 
     def __init__(self, country=DEF_COUNTRY, city=DEF_CITY, dynamic=False):
+        """Initializes this API client"""
         self.country = country
         self.city = city
         self.dynamic = dynamic
         self.build()
 
     def __repr__(self):
+        """Returns the string representation of this API client"""
         if not self:
             return '%s()' % (self.__class__.__name__,)
         return '%s(country=%s, city=%s, dynamic=%s)' % (self.__class__.__name__,
@@ -162,11 +186,12 @@ class SunTimesApiClient(object):
                                                         self.dynamic)
 
     def build(self):
-        """Collects sun data and creates the following fields:
-               req  = request response
-               cont = web request content
-               soup = `bs4` soup object
-               data = list of data scraped
+        """
+        Collects sun data and creates the following fields:
+            req  = request response
+            cont = web request content
+            soup = `bs4` soup object
+            data = list of data scraped
 
         """
         import textwrap as _textwrap
@@ -213,10 +238,16 @@ class SunTimesApiClient(object):
         self.__date = _dt.date.today()
 
     def __check_date(self):
+        """Checks the date last built and rebuilds if dynamic and not same-day"""
         if _dt.date.today() != self.__date and self.dynamic:
             self.rebuild()
 
     def __check_valid(self, day):
+        """
+        Raises `ValueError` if the given day is less than 0 or
+        greater than the data range
+
+        """
         if day < 0 or day >= len(self.data):
             raise ValueError('day must be from 0 to ' + str(len(self.data) - 1))
 

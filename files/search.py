@@ -20,7 +20,7 @@ STR_LIM = CONSOLE_WIDTH - 5 # path printing termination number
 class Search(object):
     """Used to search a file system"""
     def __init__(self, method='name', folder='.', string='', ext=None):
-        """Searches files by method, folder, regex string, ext"""
+        """Initializes the file search by method, folder, regex string, ext"""
         if ext is not None and not isinstance(ext, str):
             raise TypeError('extension must be of type string')
         # variable initializing
@@ -34,12 +34,14 @@ class Search(object):
         self.build_results()
 
     def __repr__(self):
+        """Returns the string representation of this Search"""
         if len(self.results) > 0:
             return self.raw_text
         else:
             return 'No results'
 
     def build_results(self):
+        """Builds the results and stores it as raw text for output purposes"""
         self.raw_text = 'Search results for "{}" with extension "{}" in "{}" took {} seconds\n' \
             .format(self.string, self.ext, self.folder, round(self.duration, 5))
         self.raw_text += '\n'.join([res + '\n\t' + \
@@ -47,6 +49,7 @@ class Search(object):
                                     for res in list(self.results.keys())])
 
     def do_search(self):
+        """Performs the file system search"""
         self.results = _OrderedDict()
         self.matches = 0
         self.last_len = 0
@@ -125,9 +128,12 @@ class Search(object):
             fp.write(self.raw_text)
 
 def print_files_containing(string, directories, ext=None):
-    """Given a string, directory(ies), and optional extension,
-       prints the search results for the files containing the
-       string"""
+    """
+    Given a string, directory(ies), and optional extension,
+    prints the search results for the files containing the
+    string
+
+    """
     if isinstance(directories, str):
         directories = [directories]
 
@@ -138,13 +144,17 @@ def print_files_containing(string, directories, ext=None):
         print()
 
 def search_executables(string, ext='exe'):
-    """Returns the tuple of results of from searching
-       program files directories with the given string"""
+    """
+    Returns the tuple of results of from searching
+    program files directories with the given string
+
+    """
     s = Search('name', folder=r'C:\Program Files', string=string, ext=ext)
     t = Search('name', folder=r'C:\Program Files (x86)', string=string, ext=ext)
     return dict({s.folder: s.get_results(), t.folder: t.get_results()})
 
 if __name__ == '__main__':
+
     import pprint
     from clay.settings import DOCS_DIR
 
