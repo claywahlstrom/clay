@@ -13,7 +13,7 @@ from clay.env import is_idle as _is_idle
 if _is_idle():
     WIDTH = 80
 else:
-    WIDTH = 100
+    from clay.settings import CONSOLE_WIDTH as WIDTH
 
 def box(text, width=0, height=3, module=False):
     """
