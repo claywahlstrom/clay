@@ -18,6 +18,7 @@ DOCS_DIR = r'path-to-documents-folder'
 FLASK_APP = 'app.py' # a common name for Flask web apps
 HOME_DIR = _os.environ['HOME'] if env.is_posix() else _os.environ['USERPROFILE']
 PACKAGE_DIR = _os.path.join(_sys.prefix, 'Lib', 'site-packages', 'clay')
+LOGS_DIR = _os.path.join(PACKAGE_DIR, 'logs')
 TRASH = _os.path.join(HOME_DIR, 'Desktop', 'clay-trash')
 
 CONSOLE_WIDTH = 80
