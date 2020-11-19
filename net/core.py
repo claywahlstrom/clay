@@ -98,7 +98,7 @@ class CacheableFile(object):
 
     def load(self):
         """Returns binary content from self.title"""
-        print('Loading cached file "{}"...'.format(self.title), end=' ')
+        print('Loading cached file "{}"...'.format(self.title), end=' ', flush=True)
         cont = self.get_local()
         print('Done')
         return cont
@@ -134,7 +134,7 @@ class CacheableFile(object):
         Writes and erases the remote content copy if it exists.
 
         """
-        print('Storing cached file "{}"...'.format(self.title), end=' ')
+        print('Storing cached file "{}"...'.format(self.title), end=' ', flush=True)
         with open(self.title, 'wb') as fp:
             if self.remote_content is not None:
                 fp.write(self.remote_content)

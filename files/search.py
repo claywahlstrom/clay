@@ -56,7 +56,7 @@ class Search(object):
         self.duration = 0
         walker = _os.walk(self.folder) # root dir
         print('Search in progress...')
-        print('Searching: ', end='', flush=True)
+        print('Searching:', end=' ', flush=True)
         fp = None
         try:
             time_start = _time.time() # start timer

@@ -73,7 +73,7 @@ class AdvancedSocket:
                 break
         return stream
 
-    def read_stream(self, buffer=MAX_BUFFER, file=False):
+    def read_stream(self, buffer=MAX_BUFFER, is_file=False):
         """Receives and returns a stream of bytes read from a file"""
         stream = bytes()
         while True:
@@ -82,8 +82,8 @@ class AdvancedSocket:
                 stream += stuff[:stuff.index(UNIT_SEP)]
                 break
             stream += stuff
-            if file:
-                print('\r' + str(len(stream)), 'bytes', flush=True, end='')
+            if is_file:
+                print('\r' + str(len(stream)), 'bytes', end='', flush=True)
         time.sleep(0.01)
         return stream
 
@@ -115,7 +115,7 @@ class AdvancedSocket:
 
     def write_stream(self, filename, buffer=MAX_BUFFER, charset=UTF_SET):
         """Write a file stream to the given filename"""
-        stream = self.read_stream(buffer, file=True)
+        stream = self.read_stream(buffer, is_file=True)
         with open(filename, 'wb') as fp:
             print('\r' + str(fp.write(stream)), 'bytes')
         time.sleep(0.1)

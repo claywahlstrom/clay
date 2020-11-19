@@ -14,7 +14,7 @@ _gs_web_doc = WebDocument()
 
 def launch_gs_app(name, browser, url):
     """Launches the given app name in the browser using the URL"""
-    print('Opening {} in {}...'.format(name, browser), end=' ')
+    print('Opening {} in {}...'.format(name, browser), end=' ', flush=True)
     _gs_web_doc.set_uri(url)
     _gs_web_doc.launch(browser)
     print('Done')

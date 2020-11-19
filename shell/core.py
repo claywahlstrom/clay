@@ -42,7 +42,7 @@ def chext(filepath, ext):
 
 def copy(src, dst):
     """Copies the source item to destination using shutil.copy"""
-    print('Copying "{}" to "{}"...'.format(src, dst), end=' ')
+    print('Copying "{}" to "{}"...'.format(src, dst), end=' ', flush=True)
     from shutil import copy as cp # avoids recursion
     try:
         cp(src, dst)
@@ -381,10 +381,10 @@ def timeout(seconds, hidden=False):
         raise ValueError('seconds must be >= 0')
 
     if env.is_idle() or seconds > 99999:
-        if not(hidden):
-            print('Waiting for', seconds, 'seconds...', end='')
+        if not hidden:
+            print('Waiting for', seconds, 'seconds...', end='', flush=True)
         _time.sleep(seconds)
-        if not(hidden):
+        if not hidden:
             print()
     else:
         command = TIMEOUT_CMD + str(seconds)
