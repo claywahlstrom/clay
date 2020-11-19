@@ -287,8 +287,10 @@ def rm_all(criteria, directory=_os.curdir, prompt=True):
 
 def rm_target(target):
     """Removes the given target from the file system"""
-    rms = {'win32': ('del', 'rmdir /s'),
-           'linux': ('rm', 'rm -r')}
+    rms = {
+        'win32': ('del', 'rmdir /s'),
+        'linux': ('rm', 'rm -r')
+    }
 
     if _os.path.isfile(target):
         i = 0

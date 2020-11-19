@@ -36,12 +36,14 @@ LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 EXAMPLE_URL = 'http://example.com'
 TEST_LINK = 'https://minecraft.net/en-us/'
 VALID_SCHEMES = ('file', 'ftp', 'http', 'https')
-WEB_HDRS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
-           'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
-           'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
-           'Accept-Encoding': 'gzip, deflate, br',
-           'Accept-Language': 'en-US,en;q=0.8;q=0.5',
-           'Connection': 'keep-alive'}
+WEB_HDRS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+    'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-US,en;q=0.8;q=0.5',
+    'Connection': 'keep-alive'
+}
 
 class CacheableFile(object):
     """
@@ -253,9 +255,11 @@ class CourseCatalogUW(object):
                             found.p.a.decompose() # remove the MyPlan link
                         title = found.p.b.get_text()
                         description = found.p.get_text().replace(title, '')
-                        course_list.append({'title': title,
-                                            'description': description if description else None,
-                                            'instructor': instructor if instructor else None})
+                        course_list.append({
+                            'title': title,
+                            'description': description if description else None,
+                            'instructor': instructor if instructor else None
+                        })
                     else:
                         message = 'course not found within ' + parts[0]
                     already_set = True
@@ -264,16 +268,22 @@ class CourseCatalogUW(object):
             if not already_set:
                 if len(found) > 0:
                     for f in found:
-                        course_list.append({'title': f.get_text(),
-                                            'description': None,
-                                            'instructor': None})
+                        course_list.append({
+                            'title': f.get_text(),
+                            'description': None,
+                            'instructor': None
+                        })
                 else:
                     message = 'course(s) not found'
         else: # invalid department
             message = 'enter a valid course id, ex. MATH 126'
-        return {'message': message,
-                'results': {'course_list': course_list,
-                            'header': header}}
+        return {
+            'message': message,
+            'results': {
+                'course_list': course_list,
+                'header': header
+            }
+        }
 
 def encode_json(data) -> str:
     """Returns the JSON string representation of the given data"""
@@ -304,7 +314,8 @@ def find_anchors(location, query={}, internal=True, php=False):
     if php or internal:
         for x in raw_links:
             try:
-                if (location[:16] in x['href'] or x['href'].startswith('/')) and '#' not in x['href']:
+                if (location[:16] in x['href'] or x['href'].startswith('/')) and \
+                    '#' not in x['href']:
                     links.append(x['href'])
             except:
                 links.append(x)
@@ -806,16 +817,22 @@ class PollenApiClient(object):
 
     MAX_REQUESTS = 4
     SOURCE_SPAN = {'weather text': 7, 'weather values': 7, 'wu poll': 4}
-    SOURCE_URLS = {98105: {'weather values': URL_FACTORY.weather.with_geocode(47.654003, -122.309166).build(),
-                           'wu poll': URL_FACTORY.wunderground \
-                                .with_location('wa', 'seattle', 'KWASEATT446') \
-                                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
-                                .build()},
-                   98684: {'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).build(),
-                           'wu poll': URL_FACTORY.wunderground \
-                                .with_location('wa', 'camas', 'KWACAMAS42') \
-                                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
-                                .build()}}
+    SOURCE_URLS = {
+        98105: {
+            'weather values': URL_FACTORY.weather.with_geocode(47.654003, -122.309166).build(),
+            'wu poll': URL_FACTORY.wunderground \
+                .with_location('wa', 'seattle', 'KWASEATT446') \
+                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
+                .build()
+        },
+        98684: {
+            'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).build(),
+            'wu poll': URL_FACTORY.wunderground \
+                .with_location('wa', 'camas', 'KWACAMAS42') \
+                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
+                .build()
+        }
+    }
 
     for url in SOURCE_URLS:
         # weather text and values use the same endpoint
@@ -1026,27 +1043,45 @@ if __name__ == '__main__':
     cc = CourseCatalogUW()
     testif('UW course catalog queries general course correctly',
         cc.query('cse 14'),
-        {'message': None,
-         'results': {'course_list':
-             [{'title': 'CSE 142 Computer Programming I (4) NW, QSR',
-               'description': None, 'instructor': None},
-              {'title': 'CSE 143 Computer Programming II (5) NW, QSR',
-               'description': None, 'instructor': None}],
-         'header': None}})
+        {
+            'message': None,
+            'results': {
+                'course_list': [
+                    {
+                        'title': 'CSE 142 Computer Programming I (4) NW, QSR',
+                        'description': None,
+                        'instructor': None
+                    },
+                    {
+                        'title': 'CSE 143 Computer Programming II (5) NW, QSR',
+                        'description': None,
+                        'instructor': None
+                    }
+                ],
+               'header': None
+            }
+         })
     testif('UW course catalog queries specific course correctly',
         cc.query('cse 142'),
-        {'message': None,
-         'results': {'course_list':
-            [{'title': 'CSE 142 Computer Programming I (4) NW, QSR',
-              'description': 'Basic programming-in-the-small abilities '
-                  'and concepts including procedural programming (methods, '
-                  'parameters, return, values), basic control structures '
-                  '(sequence, if/else, for loop, while loop), file processing, '
-                  'arrays, and an introduction to defining objects. Intended '
-                  'for students without prior programming experience. Offered: '
-                  'AWSpS.',
-              'instructor': None}],
-         'header': None}})
+        {
+            'message': None,
+            'results': {
+                'course_list': [
+                    {
+                        'title': 'CSE 142 Computer Programming I (4) NW, QSR',
+                        'description': 'Basic programming-in-the-small abilities '
+                        'and concepts including procedural programming (methods, '
+                        'parameters, return, values), basic control structures '
+                        '(sequence, if/else, for loop, while loop), file processing, '
+                        'arrays, and an introduction to defining objects. Intended '
+                        'for students without prior programming experience. Offered: '
+                        'AWSpS.',
+                        'instructor': None
+                    }
+                ],
+                'header': None
+            }
+        })
 
     with open('logs/net-core-find-anchors.log', 'w') as fa_log:
         print('ANCHORS', file=fa_log)

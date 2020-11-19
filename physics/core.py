@@ -9,14 +9,19 @@ import math as _math
 
 from clay.physics import constants as const
 
-OHMS_TABLE = {'I': 'V/R',
-              'V': 'I*R',
-              'R': 'V/I'}
+OHMS_TABLE = {
+    'I': 'V/R',
+    'V': 'I*R',
+    'R': 'V/I'
+}
+
 # Standard SI prefixes
 NO_PREFIX = ''
-PREFIXES = ['Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
-            'Mega', 'kilo', NO_PREFIX, 'milli', 'micro(u)', 'nano',
-            'pico', 'femto', 'atto', 'zepto', 'yocto']
+PREFIXES = [
+    'Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
+    'Mega', 'kilo', NO_PREFIX, 'milli', 'micro(u)', 'nano',
+    'pico', 'femto', 'atto', 'zepto', 'yocto'
+]
 
 def apply_ohms_law(V=None, I=None, R=None):
     """Fills in and returns the missing value to satisfy Ohm's law"""
@@ -148,13 +153,19 @@ class Position(object):
     def vel(self):
         """Calculates and returns the velocities at each time interval"""
         #self.dp = [self.position[t+1]-self.position[t] for t in range(len(self.position)-1)]
-        self.vel = _collections.OrderedDict({t: (self.position[i+1]-self.position[i])/(self.dt[i])/self.step for (i,t) in enumerate(self.time[:-2])})
+        self.vel = _collections.OrderedDict({
+            t: (self.position[i + 1] - self.position[i]) / self.dt[i] / self.step \
+                for i,t in enumerate(self.time[:-2])
+        })
         return self.vel
 
     def accel(self):
         """Calculates and returns the accelerations at each time interval"""
         self.dv = [self.vel[t+1]-self.vel[t] for t in range(len(self.vel)-1)]
-        self.accel = _collections.OrderedDict({t: (self.dv[i])/(self.dt[i]) for (i,t) in enumerate(self.time[:-3])})
+        self.accel = _collections.OrderedDict({
+            t: self.dv[i] / self.dt[i] \
+                for (i,t) in enumerate(self.time[:-3])
+        })
         return self.accel
 
 def requivalent(res, config):
@@ -192,6 +203,5 @@ if __name__ == '__main__':
     print(prefix_unit(0.0021040, 'm/s'))
     print(prefix_unit(0.00021040, 'm/s'))
     print('requivalent', requivalent(
-        [10, requivalent([100, 25, 100, 50, 12.5],
-            'parallel')],
+        [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
         'series'))
