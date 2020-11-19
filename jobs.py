@@ -9,19 +9,22 @@ TODO: support overtime hours and salary calculations
 from collections import OrderedDict
 import datetime as dt
 import math
+import os
 import pprint
 from statistics import median, mean as average
 
 from clay.graphing import Histogram
 from clay.settings import JOBS_BREAK_SCHEDULES
 
-DAYS_OF_THE_WEEK = ('Monday',
-                    'Tuesday',
-                    'Wednesday',
-                    'Thursday',
-                    'Friday',
-                    'Saturday',
-                    'Sunday')
+DAYS_OF_THE_WEEK = (
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+)
 
 DAYS_PER_WEEK = len(DAYS_OF_THE_WEEK)
 
@@ -39,7 +42,6 @@ class Attendance(object):
 
     def __init__(self, take_home_ratio, perhour, state, offset=0):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is for Monday."""
-        import os
         if state not in JOBS_BREAK_SCHEDULES:
             raise ValueError('state must be in [{}]'.format(", ".join(JOBS_BREAK_SCHEDULES)))
         if not(os.path.exists('attendance.csv')):
