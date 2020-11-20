@@ -13,7 +13,43 @@ import time as _time
 from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
+from clay.models import Abstract as _Abstract
 from clay.net.core import WundergroundUrlBuilder, UrlBuilder
+from clay.net.sockets import LOCALHOST as _LOCALHOST
+
+class BaseSocketApiClient(_Abstract):
+
+    """Used to create a socket API client"""
+
+    def __init__(self, ip_addr, port):
+        """Initializes this socket API client"""
+        self.raise_if_base(BaseSocketApiClient)
+        self.__ip_addr = ip_addr
+        self.__port = port
+
+    @property
+    def ip_addr(self):
+        """The socket IP address"""
+        return self.__ip_addr
+
+    @property
+    def port(self):
+        """The socket port"""
+        return self.__port
+
+    @property
+    def url(self):
+        """The URL of the socket API"""
+        return 'http://{}:{}'.format(self.ip_addr, self.port)
+
+class BaseLocalhostApiClient(BaseSocketApiClient):
+
+    """Used to create a localhost API client"""
+
+    def __init__(self, port):
+        """Initializes this localhost API client"""
+        self.raise_if_base(BaseLocalhostApiClient)
+        super().__init__(_LOCALHOST, port)
 
 class WeatherPollenApiUrlBuilder(UrlBuilder):
 
