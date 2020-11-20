@@ -102,9 +102,24 @@ def pretty_print(heading, data):
     print(underline(heading))
     pprint.pprint(data)
 
+def remove_padding(string):
+    """Returns the given string stripped and with double-spaces as single-spaces"""
+    string = string.strip()
+    while '  ' in string:
+        string = string.replace('  ', ' ')
+    return string
+
+def remove_padding_many(strings):
+    """
+    Returns the given iterable of strings stripped and with double-spaces as single-spaces
+
+    """
+    return type(strings)(map(remove_padding, strings))
+
 if __name__ == '__main__':
 
     from clay.tests import testif
+    from clay.utils import qualify
 
     print('Box Art Examples:')
     fullbox('Hello full', 2, 1)
@@ -134,3 +149,12 @@ if __name__ == '__main__':
     testif('Returns uncapitalized text (>1 character)',
         uncapitalize('Hello'),
         'hello')
+
+    testif('removes text padding',
+        remove_padding(' remove spaces  from padded   test string  '),
+        'remove spaces from padded test string',
+        name=qualify(remove_padding))
+    testif('removes many text paddings',
+        remove_padding_many([' remove spaces  from padded   test string  ', ' my  string']),
+        ['remove spaces from padded test string', 'my string'],
+        name=qualify(remove_padding_many))
