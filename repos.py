@@ -8,7 +8,9 @@ import datetime as _dt
 import json as _json
 import os as _os
 
-from clay.lists import extend as _extend, query as _query
+from clay.lists import extend as _extend, \
+    query as _query, \
+    rmdup as _rmdup
 from clay.models import Model as _Model, \
     json2model as _json2model, \
     Abstract as _Abstract
@@ -26,6 +28,7 @@ class IRepository(_Abstract):
         raise NotImplementedError('write')
 
 class BaseRepository(_Abstract):
+    """Base repository for working with databases"""
 
     def __init__(self, name, empty):
         """
@@ -141,12 +144,23 @@ class JsonRepository(BaseRepository, IRepository):
             raise TypeError('db must be a JSON serializable of base type dict or list')
         self._db = value
 
-class CrudRepository(BaseRepository, IRepository):
+class ListRepository(JsonRepository):
+    """Wrapper for working with list databases"""
+
+    def __init__(self, name):
+        """Initializes this list repository"""
+        super().__init__(name, [])
+
+    def uniquify(self):
+        """Removes duplicates from the database"""
+        self.db = _rmdup(self.db) # remove duplicates
+
+class CrudRepository(ListRepository):
     """Wrapper for working with CRUD databases"""
 
     def __init__(self, name):
         """Initializes this CRUD repository under the given file name"""
-        super().__init__(name, [])
+        super().__init__(name)
         self.__model = object
         self.clear_index()
 
