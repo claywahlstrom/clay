@@ -56,6 +56,9 @@ class IEnumerable(_Interface):
     def copy(self):
         raise NotImplementedError(_qualify(self.copy))
 
+    def any(self):
+        raise NotImplementedError(_qualify(self.any))
+
     def first_or_default(self):
         raise NotImplementedError(_qualify(self.first_or_default))
 
@@ -109,6 +112,10 @@ def extend(iterable=()):
             else:
                 to_copy = base(self).copy()
             return Enumerable(to_copy)
+
+        def any(self, predicate=lambda x: True):
+            """Returns True if there are any items matching the predicate, False otherwise"""
+            return any(map(predicate, self))
 
         def first_or_default(self, default=None):
             """
@@ -209,6 +216,10 @@ class Queryable:
         """Returns a shallow copy of this queryable"""
         to_copy = list(self).copy()
         return Queryable(to_copy)
+
+    def any(self, predicate=lambda x: True):
+        """Returns True if there are any items matching the predicate, False otherwise"""
+        return any(map(predicate, self._expr))
 
     def first_or_default(self, default=None):
         """
@@ -363,6 +374,40 @@ if __name__ == '__main__':
         lambda: extend({}),
         TypeError,
         name=qualify(extend))
+
+    testif('returns False if empty (no predicate)',
+        extend([]).any(),
+        False,
+        name=qualify(IEnumerable.any))
+    testif('returns True if not empty (no predicate)',
+        extend([0]).any(),
+        True,
+        name=qualify(IEnumerable.any))
+    testif('returns False if not empty and no matches (with predicate)',
+        extend([0]).any(lambda x: x == 1),
+        False,
+        name=qualify(IEnumerable.any))
+    testif('returns True if not empty and has matches (with predicate)',
+        extend([0]).any(lambda x: x == 0),
+        True,
+        name=qualify(IEnumerable.any))
+
+    testif('returns False if empty (no predicate)',
+        query([]).any(),
+        False,
+        name=qualify(Queryable.any))
+    testif('returns True if not empty (no predicate)',
+        query([0]).any(),
+        True,
+        name=qualify(Queryable.any))
+    testif('returns False if not empty and no matches (with predicate)',
+        query([0]).any(lambda x: x == 1),
+        False,
+        name=qualify(Queryable.any))
+    testif('returns True if not empty and has matches (with predicate)',
+        query([0]).any(lambda x: x == 0),
+        True,
+        name=qualify(Queryable.any))
 
     from clay.models import Anonymous
     objs = [Anonymous(a=1), Anonymous(a=2, b=3), Anonymous(a=2, b=1)]
