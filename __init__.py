@@ -35,6 +35,7 @@ __all__ = [
    'guids',
    'jobs',
    'libr',
+   'linq',
    'lists',
    'logs',
    'maths',

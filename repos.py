@@ -8,9 +8,9 @@ import datetime as _dt
 import json as _json
 import os as _os
 
-from clay.lists import extend as _extend, \
-    query as _query, \
-    rmdup as _rmdup
+from clay.linq import extend as _extend, \
+    query as _query
+from clay.lists import rmdup as _rmdup
 from clay.models import Model as _Model, \
     json2model as _json2model, \
     Abstract as _Abstract
