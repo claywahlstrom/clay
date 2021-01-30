@@ -200,10 +200,7 @@ if __name__ == '__main__':
     POS = Position([1, 4, 9, 16, 25, 36])
     print('velocities', POS.vel())
     print('accels', POS.accel())
-    print(prefix_unit(100, 's'))
-    print(prefix_unit(24582000, 'm'))
-    print(prefix_unit(0.0021040, 'm/s'))
-    print(prefix_unit(0.00021040, 'm/s'))
+
     print('requivalent', requivalent(
         [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
         'series'))
@@ -231,6 +228,19 @@ if __name__ == '__main__':
         apply_ohms_law(V=1, I=4),
         0.25,
         name=qualify(apply_ohms_law))
+
+    prefix_unit_tests = [
+        (100, 's', '100 s <=> 100 s'),
+        (24582000, 'm', '24582000 m <=> 24.582 Mega (e6) m'),
+        (0.0021040, 'm/s', '0.002104 m/s <=> 2.104 milli (e-3) m/s'),
+        (0.00021040, 'm/s', '0.0002104 m/s <=> 210.4 micro(u) (e-6) m/s')
+    ]
+
+    for test in prefix_unit_tests:
+        testif('returns correct string (scalar: {}, unit: {})'.format(test[0], test[1]),
+            prefix_unit(test[0], test[1]),
+            test[2],
+            name=qualify(prefix_unit))
 
     testif('returns correct size tolerance',
         round(tolerance(10, 10), 1),
