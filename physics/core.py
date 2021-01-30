@@ -181,6 +181,14 @@ def requivalent(res, config):
     else:
         raise ValueError('The given configuration is not supported: ' + config)
 
+def tolerance(dimension_mm, itg):
+    """
+    Returns the tolerance in micrometers using ISO standard
+    using the given dimension and ITG number
+
+    """
+    return 10 ** ((itg - 1) / 5) * (0.45 * dimension_mm ** (1 / 3) + dimension_mm / 1000)
+
 def urms(temp, molar_mass):
     """"
     Returns the root mean square velocity using the given molar mass (g)
@@ -205,3 +213,11 @@ if __name__ == '__main__':
     print('requivalent', requivalent(
         [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
         'series'))
+
+    from clay.tests import testif
+    from clay.utils import qualify
+
+    testif('returns correct size tolerance',
+        round(tolerance(10, 10), 1),
+        61.8,
+        name=qualify(tolerance))
