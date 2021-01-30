@@ -9,13 +9,7 @@ import math as _math
 
 from clay.physics import constants as const
 
-OHMS_TABLE = {
-    'I': 'V/R',
-    'V': 'I*R',
-    'R': 'V/I'
-}
-
-# Standard SI prefixes
+# standard SI prefixes
 NO_PREFIX = ''
 PREFIXES = [
     'Yotta', 'Zetta', 'Exa', 'Peta', 'Tera', 'Giga',
@@ -24,14 +18,15 @@ PREFIXES = [
 ]
 
 def apply_ohms_law(V=None, I=None, R=None):
-    """Fills in and returns the missing value to satisfy Ohm's law"""
-    for letter in OHMS_TABLE.keys():
-        if eval(letter) is None:
-            try:
-                return eval(OHMS_TABLE[letter])
-            except:
-                print('missing keyword arguments, 2 required')
-                return
+    """Fills in and returns the unspecified value to satisfy Ohm's law"""
+    if len(list(filter(lambda x: x, (V, I, R)))) < 2:
+        raise ValueError('at least two variables must be specified')
+    elif I and R:
+        return I * R
+    elif V and R:
+        return V / R
+    else: # V and I
+        return V / I
 
 def capacitor_energy(charge, distance, area):
     """Given charge (C), distance (m) and area (m^2), returns the potential
@@ -202,7 +197,6 @@ if __name__ == '__main__':
     pos = Position([0, 4.905, 19.62, 44.145, 78.48, 122.625])
     print('vel =', pos.vel())
     print('accel =', pos.accel())
-    print(apply_ohms_law(V=9, I=15))
     POS = Position([1, 4, 9, 16, 25, 36])
     print('velocities', POS.vel())
     print('accels', POS.accel())
@@ -214,8 +208,29 @@ if __name__ == '__main__':
         [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
         'series'))
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
     from clay.utils import qualify
+
+    testraises('variables not specified (none given)',
+        lambda: apply_ohms_law(),
+        ValueError,
+        name=qualify(apply_ohms_law))
+    testraises('variables not specified (V given)',
+        lambda: apply_ohms_law(V=2),
+        ValueError,
+        name=qualify(apply_ohms_law))
+    testif('returns correct value (V)',
+        apply_ohms_law(I=1, R=2),
+        2,
+        name=qualify(apply_ohms_law))
+    testif('returns correct value (I)',
+        apply_ohms_law(V=1, R=2),
+        0.5,
+        name=qualify(apply_ohms_law))
+    testif('returns correct value (R)',
+        apply_ohms_law(V=1, I=4),
+        0.25,
+        name=qualify(apply_ohms_law))
 
     testif('returns correct size tolerance',
         round(tolerance(10, 10), 1),
