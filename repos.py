@@ -41,15 +41,21 @@ class BaseRepository(_Abstract):
         self.__empty = empty
         self.__has_read = False
         self.clear()
+        self._update_context()
 
     def _ensure_connected(self):
         """Ensures the database has been read from the disk"""
         if not self.has_read:
             _ = self.read()
 
+    def _update_context(self):
+        """Updates the context to be the current database snapshot"""
+        self.__context = self._db.copy()
+
     def clear(self):
         """Sets the database to the empty structure"""
         self._db = self.__empty
+        self._update_context()
 
     def create(self, force=False, write=True):
         """
@@ -80,6 +86,7 @@ class BaseRepository(_Abstract):
         if self.exists():
             with open(self.name) as fp:
                 self._db = _json.load(fp)
+            self._update_context()
         else:
             self.create()
 
@@ -103,6 +110,15 @@ class BaseRepository(_Abstract):
 
         """
         return self.__has_read
+
+    @property
+    def has_context_changed(self):
+        """
+        Returns True if the database context has changed since last
+        read/write, False otherwise
+
+        """
+        return self.__context != self._db
 
 class JsonRepository(BaseRepository, IRepository):
     """Wrapper for working with JSON databases"""
@@ -131,6 +147,7 @@ class JsonRepository(BaseRepository, IRepository):
         """Writes this database to the disk"""
         with open(self.name, 'w') as fd:
             _json.dump(self.db, fd)
+        self._update_context()
 
     @property
     def db(self):
@@ -314,6 +331,7 @@ class CrudRepository(ListRepository):
                 self._db = self._db.select(lambda x: _json2model(x, self.model))
 
             self.build_index()
+            self._update_context()
 
         return self._db
 
@@ -342,6 +360,8 @@ class CrudRepository(ListRepository):
             _json.dump(models, fd)
 
         print('{}: database written'.format(filename))
+
+        self._update_context()
 
     def set_model(self, model: _Model):
         """Sets the model type for this repository"""
