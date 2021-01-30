@@ -201,10 +201,6 @@ if __name__ == '__main__':
     print('velocities', POS.vel())
     print('accels', POS.accel())
 
-    print('requivalent', requivalent(
-        [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
-        'series'))
-
     from clay.tests import testif, testraises
     from clay.utils import qualify
 
@@ -241,6 +237,13 @@ if __name__ == '__main__':
             prefix_unit(test[0], test[1]),
             test[2],
             name=qualify(prefix_unit))
+
+    testif('returns correct resistor equivalent',
+        requivalent(
+            [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
+            'series'),
+        16.25,
+        name=qualify(requivalent))
 
     testif('returns correct size tolerance',
         round(tolerance(10, 10), 1),
