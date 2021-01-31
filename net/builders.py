@@ -76,20 +76,22 @@ if __name__ == '__main__':
 
     from clay.net.core import EXAMPLE_URL
     from clay.tests import testif
+    from clay.utils import qualify
 
     expected_url = 'http://example.com/?key=value'
     for test_url in ('http://example.com/', EXAMPLE_URL):
         url_builder = UrlBuilder(test_url)
         url_builder.with_query_string('key=value')
-        testif('UrlBuilder adds query string correctly', url_builder.build(), expected_url)
+        testif('adds query string correctly', url_builder.build(), expected_url, name=qualify(UrlBuilder))
     expected_url = 'http://example.com/path/segment'
     for test_url in ('http://example.com/', EXAMPLE_URL):
         url_builder = UrlBuilder(test_url)
         for test_path in ('path', '/path'):
             url_builder.reset()
             url_builder.append_segments(test_path, 'segment')
-            testif('UrlBuilder adds path segments correctly', url_builder.build(), expected_url)
+            testif('adds path segments correctly', url_builder.build(), expected_url, name=qualify(UrlBuilder))
     print(url_builder) # test the string representation
-    testif('UrlBuilder resets URL to base correctly',
+    testif('resets URL to base correctly',
         url_builder.reset() or url_builder.build(),
-        EXAMPLE_URL)
+        EXAMPLE_URL,
+        name=qualify(UrlBuilder))
