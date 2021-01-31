@@ -110,7 +110,7 @@ class PollenApiClient(object):
         98684: {
             'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).build(),
             'wu poll': URL_FACTORY.wunderground \
-                .with_location('wa', 'camas', 'KWACAMAS42') \
+                .with_location('wa', 'vancouver', 'KWAVANCO547') \
                 .with_query_params({'cm_ven': 'localwx_modpollen'}) \
                 .build()
         }

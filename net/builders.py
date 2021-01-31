@@ -65,12 +65,7 @@ class WundergroundUrlBuilder(UrlBuilder):
 
     def with_location(self, state, city, station):
         """Sets the location for the data source"""
-        self.url = self.base_url + '/'.join((state, city, station))
-        return self
-
-    def to_string(self):
-        """Returns the built URL"""
-        return self.url
+        return self.append_segments(state, city, station)
 
 if __name__ == '__main__':
 
@@ -95,3 +90,8 @@ if __name__ == '__main__':
         url_builder.reset() or url_builder.build(),
         EXAMPLE_URL,
         name=qualify(UrlBuilder))
+
+    testif('builds correct resource path',
+        WundergroundUrlBuilder().with_location('wa', 'vancouver', 'KWAVANCO547').build(),
+        'https://www.wunderground.com/health/us/wa/vancouver/KWAVANCO547',
+        name=qualify(WundergroundUrlBuilder.with_location))
