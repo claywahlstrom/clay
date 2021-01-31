@@ -87,6 +87,10 @@ if __name__ == '__main__':
         0.25,
         name=qualify(apply_ohms_law))
 
+    testraises('configuration invalid',
+        lambda: requivalent([], 'unknown'),
+        ValueError,
+        name=qualify(requivalent))
     testif('returns correct resistor equivalent',
         requivalent(
             [10, requivalent([100, 25, 100, 50, 12.5], 'parallel')],
