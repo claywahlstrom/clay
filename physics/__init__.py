@@ -1,2 +1,2 @@
 
-__all__ = ['constants', 'core', 'statics']
+__all__ = ['constants', 'core', 'em', 'statics']
