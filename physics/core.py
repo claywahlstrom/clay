@@ -193,7 +193,6 @@ def urms(temp, molar_mass):
     return _math.sqrt(3 * const.rydberg_energy * (temp + const.kelvin_offset) / (molar_mass / 1000))
 
 if __name__ == '__main__':
-    print('drop time', drop_time(displacement=abs(const.accel_grav / 2), v_i=0))
     pos = Position([0, 4.905, 19.62, 44.145, 78.48, 122.625])
     print('vel =', pos.vel())
     print('accel =', pos.accel())
@@ -224,6 +223,11 @@ if __name__ == '__main__':
         apply_ohms_law(V=1, I=4),
         0.25,
         name=qualify(apply_ohms_law))
+
+    testif('returns correct time',
+        drop_time(displacement=abs(const.accel_grav / 2), v_i=0),
+        1.0,
+        name=qualify(drop_time))
 
     prefix_unit_tests = [
         (100, 's', '100 s <=> 100 s'),
