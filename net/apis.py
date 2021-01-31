@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
 from clay.models import Abstract as _Abstract
-from clay.net.core import WundergroundUrlBuilder, UrlBuilder
+from clay.net.builders import WundergroundUrlBuilder, UrlBuilder
 from clay.net.sockets import LOCALHOST as _LOCALHOST
 
 class BaseSocketApiClient(_Abstract):
