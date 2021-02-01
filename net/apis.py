@@ -151,9 +151,9 @@ class PollenApiClient(object):
             raise ValueError('source must be one from [{}]'.format(", ".join(PollenApiClient.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):
-        """Raises `ZipCodeNotFoundException` if the zipcode is invalid"""
+        """Raises `ZipCodeNotSupportedError` if the zipcode is invalid"""
         if zipcode not in PollenApiClient.SOURCE_URLS.keys() or zipcode < 0 or zipcode > 99501:
-            raise ZipCodeNotFoundError(zipcode)
+            raise ZipCodeNotSupportedError(zipcode)
 
     def __get_markup(self, uri):
         """
@@ -292,19 +292,19 @@ class PollenApiClient(object):
         """Returns True if this client has built the database, False otherwise"""
         return self.date_built is not None
 
-class ZipCodeNotFoundError(Exception):
+class ZipCodeNotSupportedError(Exception):
 
-    """Raised when a zipcode is invalid (not found)"""
+    """Raised when a zipcode is not supported"""
 
     def __init__(self, zipcode, *args, **kwargs):
-        super().__init__(repr(self), *args, **kwargs)
         self.zipcode = zipcode
+        super().__init__(repr(self), *args, **kwargs)
 
     def __repr__(self):
         """Returns the string representation"""
         zipcodes = ', '.join(map(str, PollenApiClient.SOURCE_URLS.keys()))
         plural = zipcodes.count(',') > 0
-        string = 'The only zipcode'
+        string = '{} is not supported. The only zipcode'.format(self.zipcode)
         if plural:
             string += 's'
         string += ' currently supported for PollenApiClient '
@@ -339,7 +339,7 @@ if __name__ == '__main__':
         lambda: p.set_source('invalid source'),
         ValueError,
         name=qualify(PollenApiClient.set_source))
-    testraises('zipcode invalid',
+    testraises('zipcode not supported',
         lambda: p.set_zipcode(97132),
-        ZipCodeNotFoundError,
+        ZipCodeNotSupportedError,
         name=qualify(PollenApiClient.set_zipcode))
