@@ -151,8 +151,14 @@ class PollenApiClient(object):
             raise ValueError('source must be one from [{}]'.format(", ".join(PollenApiClient.SOURCE_SPAN.keys())))
 
     def __verify_zipcode(self, zipcode):
-        """Raises `ZipCodeNotSupportedError` if the zipcode is invalid"""
-        if zipcode not in PollenApiClient.SOURCE_URLS.keys() or zipcode < 0 or zipcode > 99501:
+        """
+        Raises `ZipCodeInvalidError` if the zipcode is invalid.
+        Raises `ZipCodeNotSupportedError` if the zipcode is not supported.
+
+        """
+        if zipcode < 0 or zipcode > 99501 or len(str(zipcode)) != 5:
+            raise ZipCodeInvalidError(zipcode)
+        elif zipcode not in PollenApiClient.SOURCE_URLS.keys():
             raise ZipCodeNotSupportedError(zipcode)
 
     def __get_markup(self, uri):
@@ -292,6 +298,18 @@ class PollenApiClient(object):
         """Returns True if this client has built the database, False otherwise"""
         return self.date_built is not None
 
+class ZipCodeInvalidError(Exception):
+
+    """Raised when a zipcode is invalid"""
+
+    def __init__(self, zipcode, *args, **kwargs):
+        self.zipcode = zipcode
+        super().__init__(repr(self), *args, **kwargs)
+
+    def __repr__(self):
+        """Returns the string representation"""
+        return str(self.zipcode)
+
 class ZipCodeNotSupportedError(Exception):
 
     """Raised when a zipcode is not supported"""
@@ -339,6 +357,18 @@ if __name__ == '__main__':
         lambda: p.set_source('invalid source'),
         ValueError,
         name=qualify(PollenApiClient.set_source))
+    testraises('zipcode invalid (zipcode: -1234)',
+        lambda: p.set_zipcode(-1234),
+        ZipCodeInvalidError,
+        name=qualify(PollenApiClient.set_zipcode))
+    testraises('zipcode invalid (zipcode: 1234)',
+        lambda: p.set_zipcode(1234),
+        ZipCodeInvalidError,
+        name=qualify(PollenApiClient.set_zipcode))
+    testraises('zipcode invalid (zipcode: 99502)',
+        lambda: p.set_zipcode(99502),
+        ZipCodeInvalidError,
+        name=qualify(PollenApiClient.set_zipcode))
     testraises('zipcode not supported',
         lambda: p.set_zipcode(97132),
         ZipCodeNotSupportedError,
