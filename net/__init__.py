@@ -1,2 +1,2 @@
 
-__all__ = ['apis', 'builders', 'core', 'google', 'helpers', 'metrics', 'sockets', 'vial']
+__all__ = ['apis', 'builders', 'core', 'factories', 'google', 'helpers', 'metrics', 'settings', 'sockets', 'vial']

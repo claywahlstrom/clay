@@ -55,6 +55,23 @@ class UrlBuilder(object):
         """Builds the URL string for this UrlBuilder"""
         return self.__url
 
+class WeatherPollenApiUrlBuilder(UrlBuilder):
+
+    """Used to build URLs for the Weather.com(tm) pollen API"""
+
+    def __init__(self):
+        """Initializes this builder"""
+        super().__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
+        self.base_url = self.with_query_params({
+            'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
+            'format': 'json',
+            'language': 'en-US'
+        }).build()
+
+    def with_geocode(self, lat, lon):
+        """Adds the geocode latitude and longitude param to the URL"""
+        return self.reset() or self.with_query_params({'geocode': str(lat) + ',' + str(lon)})
+
 class WundergroundUrlBuilder(UrlBuilder):
 
     """Used to build URLs for retrieving data from Wunderground.com(tm)"""

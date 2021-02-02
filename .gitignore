@@ -2,5 +2,6 @@
 __pycache__
 *.pyc
 logs/
+net/settings.py
 test_files/
 settings.py

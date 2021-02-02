@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
 from clay.models import Abstract as _Abstract
-from clay.net.builders import WundergroundUrlBuilder, UrlBuilder
+from clay.net import settings as net_settings
 from clay.net.sockets import LOCALHOST as _LOCALHOST
 
 class BaseSocketApiClient(_Abstract):
@@ -51,42 +51,6 @@ class BaseLocalhostApiClient(BaseSocketApiClient):
         self.raise_if_base(BaseLocalhostApiClient)
         super().__init__(_LOCALHOST, port)
 
-class WeatherPollenApiUrlBuilder(UrlBuilder):
-
-    """Used to build URLs for the Weather.com(tm) pollen API"""
-
-    def __init__(self):
-        """Initializes this builder"""
-        super().__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
-        self.base_url = self.with_query_params({
-            'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
-            'format': 'json',
-            'language': 'en-US'
-        }).build()
-
-    def with_geocode(self, lat, lon):
-        """Adds the geocode latitude and longitude param to the URL"""
-        return self.reset() or self.with_query_params({'geocode': str(lat) + ',' + str(lon)})
-
-class PollenUrlBuilderFactory(object):
-
-    """Used to allow access to the pollen URL builders"""
-
-    def __init__(self):
-        """Initializes thie pollen URL builder factory"""
-        self.__weather = WeatherPollenApiUrlBuilder()
-        self.__wunderground = WundergroundUrlBuilder()
-
-    @property
-    def weather(self):
-        """Returns the Weather.com(tm) URL builder"""
-        return self.__weather
-
-    @property
-    def wunderground(self):
-        """Returns the Wunderground(tm) URL builder"""
-        return self.__wunderground
-
 class PollenApiClient(object):
 
     """
@@ -95,31 +59,8 @@ class PollenApiClient(object):
 
     """
 
-    URL_FACTORY = PollenUrlBuilderFactory()
-
     MAX_REQUESTS = 4
     SOURCE_SPAN = {'weather text': 7, 'weather values': 7, 'wu poll': 4}
-    SOURCE_URLS = {
-        98105: {
-            'weather values': URL_FACTORY.weather.with_geocode(47.654003, -122.309166).build(),
-            'wu poll': URL_FACTORY.wunderground \
-                .with_location('wa', 'seattle', 'KWASEATT446') \
-                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
-                .build()
-        },
-        98684: {
-            'weather values': URL_FACTORY.weather.with_geocode(45.639816, -122.497902).build(),
-            'wu poll': URL_FACTORY.wunderground \
-                .with_location('wa', 'vancouver', 'KWAVANCO547') \
-                .with_query_params({'cm_ven': 'localwx_modpollen'}) \
-                .build()
-        }
-    }
-
-    for url in SOURCE_URLS:
-        # weather text and values use the same endpoint
-        SOURCE_URLS[url]['weather text'] = SOURCE_URLS[url]['weather values']
-    del url # remove from scope
     TYPES = ('grass', 'ragweed', 'tree')
 
     def __init__(self, source, zipcode, print_sources=True):
@@ -158,7 +99,7 @@ class PollenApiClient(object):
         """
         if zipcode < 0 or zipcode > 99501 or len(str(zipcode)) != 5:
             raise ZipCodeInvalidError(zipcode)
-        elif zipcode not in PollenApiClient.SOURCE_URLS.keys():
+        elif zipcode not in net_settings.pollen_source_urls:
             raise ZipCodeNotSupportedError(zipcode)
 
     def __get_markup(self, uri):
@@ -269,7 +210,7 @@ class PollenApiClient(object):
 
         """
         self.__verify_source(source)
-        self.uri = PollenApiClient.SOURCE_URLS[self.zipcode][source]
+        self.uri = net_settings.pollen_source_urls[self.zipcode][source]
         self.source = source
         self.__date_built = None
 
@@ -320,7 +261,7 @@ class ZipCodeNotSupportedError(Exception):
 
     def __repr__(self):
         """Returns the string representation"""
-        zipcodes = ', '.join(map(str, PollenApiClient.SOURCE_URLS.keys()))
+        zipcodes = ', '.join(map(str, net_settings.pollen_source_urls.keys()))
         plural = zipcodes.count(',') > 0
         string = '{} is not supported. The only zipcode'.format(self.zipcode)
         if plural:
