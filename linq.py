@@ -165,7 +165,11 @@ class Queryable:
 
     def copy(self):
         """Returns a shallow copy of this queryable"""
-        to_copy = list(self).copy()
+        # create a copy of the source
+        to_copy = list(self._expr).copy()
+        # reset the source expression to not affect the source
+        self._expr = iter(self._type(to_copy))
+        # return the copied queryable
         return Queryable(to_copy)
 
     def any(self, predicate=lambda x: True):
