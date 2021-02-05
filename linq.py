@@ -35,6 +35,12 @@ class IEnumerable(_Interface):
     def select(self):
         raise NotImplementedError(_qualify(self.select))
 
+    def select_many(self):
+        raise NotImplementedError(_qualify(self.select_many))
+
+    def distinct(self):
+        raise NotImplementedError(_qualify(self.distinct))
+
     def where(self):
         raise NotImplementedError(_qualify(self.where))
 
@@ -118,6 +124,18 @@ def extend(iterable=()):
             """
             return Enumerable(base(map(selector, self)))
 
+        def select_many(self, selector):
+            """
+            Projects items into a new form using the selector function
+            and flattens the results into one list
+
+            """
+            return Enumerable(base(sum(self.select(selector), [])))
+
+        def distinct(self):
+            """Filters items down to distinct ones"""
+            return Enumerable(base(set(self)))
+
         def where(self, predicate):
             """Filters items based on the given predicate"""
             return Enumerable(base(filter(predicate, self)))
@@ -196,6 +214,20 @@ class Queryable:
     def select(self, selector):
         """Projects items into a new form using the selector function"""
         self._expr = map(selector, self._expr)
+        return self
+
+    def select_many(self, selector):
+        """
+        Projects items into a new form using the selector function
+        and flattens the results into one list
+
+        """
+        self._expr = iter(sum(self.select(selector)._expr, []))
+        return self
+
+    def distinct(self):
+        """Filters items down to distinct ones"""
+        self._expr = iter(self._type(set(self._expr)))
         return self
 
     def where(self, predicate):
@@ -326,6 +358,10 @@ if __name__ == '__main__':
         extend([['John', 'Smith', '1/1/2000']]).select(lambda x: [x[0], x[2]]),
         [['John', '1/1/2000']],
         name=_qualify(IEnumerable.select))
+    testif('returns correct results',
+        extend([1, 2, 2, 3]).distinct(),
+        [1, 2, 3],
+        name=_qualify(IEnumerable.distinct))
 
     test_iterable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
 
@@ -383,3 +419,37 @@ if __name__ == '__main__':
             .to_list(),
         [2, 2],
         name=_qualify(Queryable.select))
+    testif('returns correct results',
+        query([1, 2, 2, 3]).distinct().to_list(),
+        [1, 2, 3],
+        name=_qualify(Queryable.distinct))
+
+    test_iterable_select_many = [
+        {
+            'teacher': 'Teacher1',
+            'students': [
+                'Student1',
+                'Student2'
+            ]
+        },
+        {
+            'teacher': 'Teacher2',
+            'students': [
+                'Student2',
+                'Student3'
+            ]
+        }
+    ]
+
+    testif('flattens results correctly',
+        extend(test_iterable_select_many) \
+            .select_many(lambda x: x['students']),
+        ['Student1', 'Student2', 'Student2', 'Student3'],
+        name=_qualify(IEnumerable.select_many))
+
+    testif('flattens results correctly',
+        query(test_iterable_select_many) \
+            .select_many(lambda x: x['students']) \
+            .to_list(),
+        ['Student1', 'Student2', 'Student2', 'Student3'],
+        name=_qualify(Queryable.select_many))
