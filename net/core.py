@@ -46,16 +46,16 @@ WEB_HDRS = {
 
 class CacheableFile(object):
     """
-    Class CacheableFile can be used to manage file caching on your local machine,
-    accepts one uri. The caching system will use the local version of
-    the file if it exists. Otherwise it will be downloaded from the server.
+    Used to manage file caching on your local machine, accepts one URI.
+    The caching system will use the local version of the file if it exists.
+    Otherwise it will be downloaded from the server on load.
 
     The main advantage is saving time by eliminating recurring downloads.
 
     """
 
-    def __init__(self, uri, title=None):
-        """Initializes this cacheable file"""
+    def __init__(self, uri, filename=None):
+        """Initializes this cacheable file. Does not cache the file."""
         self.reloaded = False
         self.remote_content = None
 
@@ -64,17 +64,17 @@ class CacheableFile(object):
         elif not uri or 'http' not in uri:
             raise ValueError('uri must use the HTTP protocol')
 
-        self.title = title or WebDocument(uri).get_basename()[0]
+        self.filename = filename or WebDocument(uri).get_basename()[0]
         self.uri = uri
 
     def exists(self):
-        """Returns a boolean of whether the file exists"""
-        return _os.path.exists(self.title)
+        """Returns a boolean of whether the cacheable file exists"""
+        return _os.path.exists(self.filename)
 
     def get_local(self):
-        """Returns the content of the local cached file"""
+        """Returns the content of the local cacheable file"""
         assert self.exists()
-        with open(self.title, 'rb') as fp:
+        with open(self.filename, 'rb') as fp:
             fread = fp.read()
         return fread
 
@@ -89,38 +89,38 @@ class CacheableFile(object):
 
     def get_title(self):
         """Returns the title of this cacheable file"""
-        return self.title
+        return self.filename
 
     def is_updated(self):
         """
-        Returns True if the cacheable file has the same
-        length as the remote file, False otherwise
+        Returns True if the cacheable file has the same length
+        as the remote file, False otherwise
 
         """
         return len(self.get_local()) == len(self.get_remote())
 
     def length(self):
-        """Returns the length of the locally cached byte file"""
+        """Returns the length of the locally cacheable byte file"""
         return len(self.get_local())
 
     def load(self):
         """Returns binary content from self.title"""
-        print('Loading cached file "{}"...'.format(self.title), end=' ', flush=True)
+        print('Loading cacheable file "{}"...'.format(self.filename), end=' ', flush=True)
         cont = self.get_local()
         print('Done')
         return cont
 
     def reload(self):
         """
-        Alias for `store`, but easier to remember for humans
+        Alias for `store`, but easier to remember for humans.
         Commonly performed outside of a script
 
         """
-        print('Performing a cache reload for "{}"...'.format(self.title))
+        print('Performing a cache reload for "{}"...'.format(self.filename))
         self.store()
 
     def store_if_not_exists(self):
-        """Stores the remote content if the title does not already exist"""
+        """Stores the remote content if the filename does not already exist"""
         if not self.exists():
             self.store()
 
@@ -130,8 +130,8 @@ class CacheableFile(object):
         Writes and erases the remote content copy if it exists.
 
         """
-        print('Storing cached file "{}"...'.format(self.title), end=' ', flush=True)
-        with open(self.title, 'wb') as fp:
+        print('Storing cacheable file "{}"...'.format(self.filename), end=' ', flush=True)
+        with open(self.filename, 'wb') as fp:
             if self.remote_content is not None:
                 fp.write(self.remote_content)
                 self.remote_content = None
