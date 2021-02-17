@@ -54,11 +54,18 @@ class CacheableFile(object):
 
     """
 
-    def __init__(self, reload_on_set=False):
+    def __init__(self, uri, title=None):
         """Initializes this cacheable file"""
         self.reloaded = False
-        self.reload_on_set = reload_on_set
         self.remote_content = None
+
+        if not isinstance(uri, str):
+            raise TypeError('uri must be of type string')
+        elif not uri or 'http' not in uri:
+            raise ValueError('uri must use the HTTP protocol')
+
+        self.title = title or WebDocument(uri).get_basename()[0]
+        self.uri = uri
 
     def exists(self):
         """Returns a boolean of whether the file exists"""
@@ -112,20 +119,9 @@ class CacheableFile(object):
         print('Performing a cache reload for "{}"...'.format(self.title))
         self.store()
 
-    def set(self, uri, title=None):
-        """Sets the cache to point to the given uri with the optional title"""
-
-        if 'http' not in uri:
-            raise ValueError('uri must use the HTTP protocol')
-
-        if title is None:
-            title = WebDocument(uri).get_basename()[0]
-        self.title = title
-
-        self.uri = uri
-        self.__init__(reload_on_set=self.reload_on_set)
-
-        if self.reload_on_set and not _os.path.exists(self.title):
+    def store_if_not_exists(self):
+        """Stores the remote content if the title does not already exist"""
+        if not self.exists():
             self.store()
 
     def store(self):
@@ -705,8 +701,21 @@ class WebDocument(object):
 if __name__ == '__main__':
 
     from clay.settings import DOCS_DIR, LOGS_DIR
-    from clay.tests import testif
+    from clay.tests import testif, testraises
     from clay.utils import qualify
+
+    testraises('URI is not a string',
+        lambda: CacheableFile(None),
+        TypeError,
+        name=qualify(CacheableFile.__init__))
+    testraises('URI is empty',
+        lambda: CacheableFile(''),
+        ValueError,
+        name=qualify(CacheableFile.__init__))
+    testraises('URI does not use HTTP scheme',
+        lambda: CacheableFile('ftp://127.0.0.1'),
+        ValueError,
+        name=qualify(CacheableFile.__init__))
 
     cc = CourseCatalogUW()
     testif('UW course catalog queries general course correctly',
