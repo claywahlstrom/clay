@@ -71,13 +71,21 @@ class CacheableFile(object):
         """Returns a boolean of whether the cacheable file exists"""
         return _os.path.exists(self.filename)
 
-    def get_remote(self):
+    def fetch_remote(self):
+        """Returns the content of the remote file"""
+        print('Fetching remote for "{}"...'.format(self.filename), end=' ', flush=True)
+        content = _requests.get(self.uri).content
+        print('Done')
+        return content
+
+    def get_cached_remote(self):
         """
-        Returns the content of the remote file. Stores a copy
-        in this object for future reloads to reduce bandwidth.
+        Returns the content of the remote file from memory.
+        Uses a copy of the remote for future calls to save bandwidth.
 
         """
-        self.remote_content = _requests.get(self.uri).content
+        if self.remote_content is None:
+            self.remote_content = self.fetch_remote()
         return self.remote_content
 
     def is_updated(self):
@@ -86,7 +94,7 @@ class CacheableFile(object):
         as the remote file, False otherwise
 
         """
-        return len(self._get_local()) == len(self.get_remote())
+        return len(self._get_local()) == len(self.fetch_remote())
 
     def length(self):
         """Returns the length of the locally cacheable byte file"""
@@ -122,10 +130,7 @@ class CacheableFile(object):
         """
         print('Storing cacheable file "{}"...'.format(self.filename), end=' ', flush=True)
         with open(self.filename, 'wb') as fp:
-            if self.remote_content is not None:
-                fp.write(self.remote_content)
-            else:
-                fp.write(self.get_remote())
+            fp.write(self.get_cached_remote())
         print('Done')
         self.reloaded = True
 
