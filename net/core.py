@@ -71,13 +71,6 @@ class CacheableFile(object):
         """Returns a boolean of whether the cacheable file exists"""
         return _os.path.exists(self.filename)
 
-    def get_local(self):
-        """Returns the content of the local cacheable file"""
-        assert self.exists()
-        with open(self.filename, 'rb') as fp:
-            fread = fp.read()
-        return fread
-
     def get_remote(self):
         """
         Returns the content of the remote file. Stores a copy
@@ -97,16 +90,16 @@ class CacheableFile(object):
         as the remote file, False otherwise
 
         """
-        return len(self.get_local()) == len(self.get_remote())
+        return len(self._get_local()) == len(self.get_remote())
 
     def length(self):
         """Returns the length of the locally cacheable byte file"""
-        return len(self.get_local())
+        return len(self._get_local())
 
     def load(self):
         """Returns binary content from self.title"""
         print('Loading cacheable file "{}"...'.format(self.filename), end=' ', flush=True)
-        cont = self.get_local()
+        cont = self._get_local()
         print('Done')
         return cont
 
@@ -139,6 +132,13 @@ class CacheableFile(object):
                 fp.write(self.get_remote())
         print('Done')
         self.reloaded = True
+
+    def _get_local(self):
+        """Returns the content of the local cacheable file"""
+        assert self.exists()
+        with open(self.filename, 'rb') as fp:
+            fread = fp.read()
+        return fread
 
 class CourseCatalogUW(object):
 
