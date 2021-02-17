@@ -116,6 +116,7 @@ class CacheableFile(object):
 
         """
         print('Performing a cache reload for "{}"...'.format(self.filename))
+        self.remote_content = self.fetch_remote()
         self.store()
 
     def store_if_not_exists(self):
