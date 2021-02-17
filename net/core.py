@@ -80,10 +80,6 @@ class CacheableFile(object):
         self.remote_content = _requests.get(self.uri).content
         return self.remote_content
 
-    def get_title(self):
-        """Returns the title of this cacheable file"""
-        return self.filename
-
     def is_updated(self):
         """
         Returns True if the cacheable file has the same length
@@ -94,6 +90,7 @@ class CacheableFile(object):
 
     def length(self):
         """Returns the length of the locally cacheable byte file"""
+        self.store_if_not_exists()
         return len(self._get_local())
 
     def load(self):
