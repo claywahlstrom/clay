@@ -97,7 +97,8 @@ class CacheableFile(object):
         return len(self._get_local())
 
     def load(self):
-        """Returns binary content from self.title"""
+        """Returns binary content from the cacheable file. Stores if not exists"""
+        self.store_if_not_exists()
         print('Loading cacheable file "{}"...'.format(self.filename), end=' ', flush=True)
         cont = self._get_local()
         print('Done')
@@ -119,15 +120,13 @@ class CacheableFile(object):
 
     def store(self):
         """
-        Writes the binary content of the requested uri to the disk.
-        Writes and erases the remote content copy if it exists.
+        Writes the binary content of the requested URI to the disk.
 
         """
         print('Storing cacheable file "{}"...'.format(self.filename), end=' ', flush=True)
         with open(self.filename, 'wb') as fp:
             if self.remote_content is not None:
                 fp.write(self.remote_content)
-                self.remote_content = None
             else:
                 fp.write(self.get_remote())
         print('Done')
