@@ -89,12 +89,12 @@ class Html(clay.models.Static):
         and attributes `attrs`"""
         return Html.input(name, type, value=value, attrs=attrs)
 
-def json_code_result(status_code, message=''):
-    """Returns a `flask.Response` object with the given status code and message"""
-    return flask.jsonify(hasMessage=bool(message),
-        message=message,
-        status_code=status_code,
-        success=status_code >= 200 and status_code < 300), status_code
+def json_code_result(status_code, data=None):
+    """Returns a `flask.Response` object with the given status code and data"""
+    data = data or {}
+    if isinstance(data, dict) and 'success' not in data:
+        data['success'] = status_code >= 200 and status_code < 300
+    return flask.jsonify(data), status_code
 
 def print_request_args():
     """Prints the incoming request arguments data"""
