@@ -87,9 +87,15 @@ def is_capitalized(text):
 
 def uncapitalize(text):
     """Returns the given text uncapitalized"""
+    # return early if empty string or none
     if not text: return ''
+    # return lower if one character
     elif len(text) == 1:
         return text[0].lower()
+    # return as-is if first word is uppercase
+    elif text.split(' ')[0].isupper():
+        return text
+    # return lower first character and rest of string
     else:
         return text[0].lower() + text[1:]
 
@@ -142,13 +148,20 @@ if __name__ == '__main__':
 
     testif('Returns empty string if text empty',
         uncapitalize(''),
-        '')
+        '',
+        name=qualify(uncapitalize))
     testif('Returns uncapitalized text (1 character)',
         uncapitalize('H'),
-        'h')
+        'h',
+        name=qualify(uncapitalize))
     testif('Returns uncapitalized text (>1 character)',
         uncapitalize('Hello'),
-        'hello')
+        'hello',
+        name=qualify(uncapitalize))
+    testif('Returns text as-is (uppercase word)',
+        uncapitalize('HELLO world'),
+        'HELLO world',
+        name=qualify(uncapitalize))
 
     testif('removes text padding',
         remove_padding(' remove spaces  from padded   test string  '),
