@@ -91,9 +91,13 @@ class CacheableFile(object):
     def is_updated(self):
         """
         Returns True if the cacheable file has the same length
-        as the remote file, False otherwise
+        as the remote file, False otherwise. Returns early with
+        False if the file does not exist on the disk.
 
         """
+        if not self.exists():
+            return False
+
         return len(self._get_local()) == len(self.fetch_remote())
 
     def length(self):
