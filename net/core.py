@@ -33,9 +33,7 @@ del n
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 EXAMPLE_URL = 'http://example.com'
-TEST_LINK = 'https://minecraft.net/en-us/'
-VALID_SCHEMES = ('file', 'ftp', 'http', 'https')
-WEB_HDRS = {
+HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
     'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
@@ -43,6 +41,8 @@ WEB_HDRS = {
     'Accept-Language': 'en-US,en;q=0.8;q=0.5',
     'Connection': 'keep-alive'
 }
+TEST_LINK = 'https://minecraft.net/en-us/'
+VALID_SCHEMES = ('file', 'ftp', 'http', 'https')
 
 class CacheableFile(object):
     """
@@ -305,7 +305,7 @@ def find_anchors(location, query={}, internal=True, php=False):
     """
 
     if 'http' in location:
-        fread = _requests.get(location, params=query).content#headers=WEB_HDRS, params=query).content
+        fread = _requests.get(location, params=query).content#headers=HEADERS, params=query).content
     else:
         with open(location,'r') as bc:
             fread = bc.read()
@@ -446,7 +446,7 @@ class TagFinder(object):
             with open(page, 'rb') as fp:
                 self.src = fp.read()
         else:
-            betterheaders = WEB_HDRS.copy()
+            betterheaders = HEADERS.copy()
             self.request = _requests.get(page, headers=betterheaders)
             if not self.request.content.startswith(b'<'):
                 betterheaders.pop('Accept-Encoding')
@@ -510,7 +510,7 @@ class WebDocument(object):
 
     def download(self, title='', full_title=False, destination='.',
             log_name='webdoc-dl.log', return_speed=False,
-            headers=WEB_HDRS):
+            headers=HEADERS):
         """
         Downloads data from the document uri and logs revelant
         information in this directory
@@ -654,7 +654,7 @@ class WebDocument(object):
 
     def get_response(self):
         """Returns the response from this document's `uri`"""
-        request = urllib.request.Request(self.__raw_uri, headers=WEB_HDRS)
+        request = urllib.request.Request(self.__raw_uri, headers=HEADERS)
         response = urllib.request.urlopen(request)
         return response.read()
 
@@ -708,11 +708,11 @@ class WebDocument(object):
 
     def size(self):
         """Returns the size of this document in bytes"""
-        response = _requests.head(self.__raw_uri, headers=WEB_HDRS)
+        response = _requests.head(self.__raw_uri, headers=HEADERS)
         if 'Content-Length' in response.headers:
             size = int(response.headers['Content-Length'])
         else:
-            size = len(self._perform_get_request(headers=WEB_HDRS).content)
+            size = len(self._perform_get_request(headers=HEADERS).content)
         return size
 
     def _perform_get_request(self, headers=None):
@@ -833,7 +833,7 @@ Connection: keep-alive"""),
     #     WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
     #     'I tracked every minute of my life for 3 months. - YouTube')
     testif('webdoc get_html ignores user-agent and accept-encoding headers when JS bypassed',
-        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg', bypass_js=True).get_title(headers=WEB_HDRS),
+        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg', bypass_js=True).get_title(headers=HEADERS),
         'I tracked every minute of my life for 3 months. - YouTube')
     testif('webdoc get_html throws TypeError for invalid headers type',
         lambda: WebDocument().get_html(['invalid', 'headers', 'type']), None, raises=TypeError)
