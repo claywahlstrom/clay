@@ -498,10 +498,11 @@ class WebDocument(object):
 
     """Can be used to work with files and URIs hosted on the web"""
 
-    def __init__(self, uri=None):
+    def __init__(self, uri=None, bypass_js=False):
         """Initializes this web document"""
         self.set_uri(uri)
         self.set_query(None)
+        self.bypass_js = bypass_js
 
     def __repr__(self):
         """Returns the string representation for this web document"""
@@ -630,16 +631,26 @@ class WebDocument(object):
     def get_html(self, headers=None):
         """Returns the binary response from this document's `uri`"""
         if headers is not None:
-            if not hasattr(headers, 'keys'):
+            if not isinstance(headers, dict):
                 raise TypeError('headers must derive from type dict')
-            # remove user-agent and accept-encoding to ensure html is returned
-            # for JS rendered pages
+            if self.bypass_js:
+                # remove user-agent and accept-encoding to ensure html is returned
+                # for JS rendered pages
+                headers = headers.copy()
+                if 'Accept-Encoding' in headers:
+                    headers.pop('Accept-Encoding')
+                if 'User-Agent' in headers:
+                    headers.pop('User-Agent')
+
+        req = self._perform_get_request(headers=headers)
+
+        if (req.status_code < 200 or req.status_code >= 300) and \
+                headers and 'Accept-Encoding' in headers:
             headers = headers.copy()
-            for header in ('User-Agent', 'Accept-Encoding'):
-                if header in headers:
-                    headers.pop(header)
-        fread = _requests.get(self.__raw_uri, params=self.__query, headers=headers)
-        return fread.content
+            headers.pop('Accept-Encoding')
+            req = self._perform_get_request(headers=headers)
+
+        return req.content
 
     def get_response(self):
         """Returns the response from this document's `uri`"""
@@ -701,8 +712,12 @@ class WebDocument(object):
         if 'Content-Length' in response.headers:
             size = int(response.headers['Content-Length'])
         else:
-            size = len(_requests.get(self.__raw_uri, headers=WEB_HDRS).content)
+            size = len(self._perform_get_request(headers=WEB_HDRS).content)
         return size
+
+    def _perform_get_request(self, headers=None):
+        """Performs the GET request and returns the response"""
+        return _requests.get(self.__raw_uri, params=self.__query, headers=headers)
 
 if __name__ == '__main__':
 
@@ -817,8 +832,8 @@ Connection: keep-alive"""),
     # testif('webdoc returns correct YouTube html title',
     #     WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(),
     #     'I tracked every minute of my life for 3 months. - YouTube')
-    testif('webdoc get_html ignores user-agent and accept-encoding headers',
-        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg').get_title(headers=WEB_HDRS),
+    testif('webdoc get_html ignores user-agent and accept-encoding headers when JS bypassed',
+        WebDocument('https://www.youtube.com/watch?v=LUjTvPy_UAg', bypass_js=True).get_title(headers=WEB_HDRS),
         'I tracked every minute of my life for 3 months. - YouTube')
     testif('webdoc get_html throws TypeError for invalid headers type',
         lambda: WebDocument().get_html(['invalid', 'headers', 'type']), None, raises=TypeError)
