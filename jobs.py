@@ -94,8 +94,9 @@ class Attendance(object):
 
     def print_money_all(self):
         """Calculates and prints the take-home estimate for the whole job"""
-        print('estimate take-home using the ratio {}: ${:,.2f}'.format(round(self.take_home_ratio, 4), \
-                                                                       self.get_total_hours() * self.perhour * self.take_home_ratio))
+        print('estimate take-home using the ratio {}: ${:,.2f}'.format(
+            round(self.take_home_ratio, 4),
+            self.get_total_hours() * self.perhour * self.take_home_ratio))
 
     def print_punchcard(self, names=True):
         """Prints the punchcard to stdout"""
