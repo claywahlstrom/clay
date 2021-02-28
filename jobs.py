@@ -133,22 +133,24 @@ class Attendance(object):
         self.print_punchcard()
         print()
 
-    def remove_breaks(self, lunches=False):
+    def remove_breaks(self):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
         print('Removing breaks using the rules for', self.state)
         print('break length is', JOBS_BREAK_SCHEDULES[self.state]['length'], 'hr')
         print('count', end='\t')
         print('date', end='\t\t')
-        print('hours (before deduction)')
+        print('hours (before)', end='\t')
+        print('hours (after)')
 
-        for i, row in enumerate(self.db):
-            print(math.floor(self.db[i]['hours'] / JOBS_BREAK_SCHEDULES[self.state]['hours']), end='\t')
-            print(self.db[i]['date'], end='\t')
-            print(self.db[i]['hours'])
+        for row in self.db:
+            print(math.floor(row['hours'] / JOBS_BREAK_SCHEDULES[self.state]['hours']), end='\t')
+            print(row['date'], end='\t')
+            print(row['hours'], end='\t\t')
             # remove lunch breaks from hours
-            self.db[i]['hours'] -= math.floor(self.db[i]['hours'] / \
+            row['hours'] -= math.floor(row['hours'] / \
                 JOBS_BREAK_SCHEDULES[self.state]['hours']) * \
                 JOBS_BREAK_SCHEDULES[self.state]['length']
+            print(row['hours'])
 
     def select(self, attrib, until_date=None):
         """Returns a list of values selected from the database. `until_date` is exclusive"""
@@ -232,5 +234,5 @@ if __name__ == '__main__':
     os.chdir('test_files')
 
     att = Attendance(0.75, 11.0, 'OR', offset=3)
-    att.remove_breaks(lunches=True)
+    att.remove_breaks()
     att.print_report()
