@@ -135,21 +135,22 @@ class Attendance(object):
 
     def remove_breaks(self):
         """Removes breaks from the punchcard, allows for accurate money calculations"""
+        state_schedule = JOBS_BREAK_SCHEDULES[self.state]
+
         print('Removing breaks using the rules for', self.state)
-        print('break length is', JOBS_BREAK_SCHEDULES[self.state]['length'], 'hr')
+        print('break length is', state_schedule['length'], 'hr')
         print('count', end='\t')
         print('date', end='\t\t')
         print('hours (before)', end='\t')
         print('hours (after)')
 
         for row in self.db:
-            print(math.floor(row['hours'] / JOBS_BREAK_SCHEDULES[self.state]['hours']), end='\t')
+            number_of_breaks = math.floor(row['hours'] / state_schedule['hours'])
+            print(number_of_breaks, end='\t')
             print(row['date'], end='\t')
             print(row['hours'], end='\t\t')
             # remove lunch breaks from hours
-            row['hours'] -= math.floor(row['hours'] / \
-                JOBS_BREAK_SCHEDULES[self.state]['hours']) * \
-                JOBS_BREAK_SCHEDULES[self.state]['length']
+            row['hours'] -= number_of_breaks * state_schedule['length']
             print(row['hours'])
 
     def select(self, attrib, until_date=None):
