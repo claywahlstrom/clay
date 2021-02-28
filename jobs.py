@@ -44,11 +44,11 @@ class Attendance(object):
         """Accepts pay ratio, pay per hour, and the payday offset, default 0 is for Monday."""
         if state not in JOBS_BREAK_SCHEDULES:
             raise ValueError('state must be in [{}]'.format(", ".join(JOBS_BREAK_SCHEDULES)))
-        if not(os.path.exists('attendance.csv')):
+        if not os.path.exists('attendance.csv'):
             raise FileNotFoundError('attendance.csv doesn\'t exist')
         with open('attendance.csv') as fp:
             file = [line.split(',') for line in fp.read().strip().split('\n') \
-                                        if len(line) > 0 and not(line.startswith('#'))]
+                                        if len(line) > 0 and not line.startswith('#')]
         assert len(file) > 0, 'file must have at least one entry'
         assert max(map(len, file)) == min(map(len, file)), 'data columns must be consistent'
 
@@ -101,7 +101,7 @@ class Attendance(object):
     def print_punchcard(self, names=True):
         """Prints the punchcard to stdout"""
         # columns are initialized to 0
-        hg = Histogram(columns=DAYS_OF_THE_WEEK, sort=not(names))
+        hg = Histogram(columns=DAYS_OF_THE_WEEK, sort=not names)
         for col in hg.data:
             for row in self.db:
                 date = dt.datetime.strptime(row['date'], '%m-%d-%Y').weekday()
@@ -159,9 +159,8 @@ class Attendance(object):
             raise ValueError('attrib must be a column header. Headers are ' + ', '.join(self.headers))
         selection = []
         for row in self.db:
-            if until_date is not None and row['date'] >= until_date:
-                break
-            selection.append(row[attrib])
+            if not until_date or row['date'] < until_date:
+                selection.append(row[attrib])
         return selection
 
     def setup_pt(self, by=None):
@@ -171,7 +170,7 @@ class Attendance(object):
             fp = open('months.log', 'w')
             for row in self.db:
                 mon = row['date'].split('-')[0]
-                if not(mon in months):
+                if mon not in months:
                     print('new', mon, file=fp)
                     months[mon] = []
                 print('adding', row['hours'], 'to', mon, file=fp)
