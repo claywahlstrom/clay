@@ -167,15 +167,14 @@ class Attendance(object):
         """Sets up the 'Pivot Table' for the given field. Sets up both tables if by is None"""
         if by == 'month':
             months = OrderedDict()
-            fp = open('months.log', 'w')
-            for row in self.db:
-                mon = row['date'].split('-')[0]
-                if mon not in months:
-                    print('new', mon, file=fp)
-                    months[mon] = []
-                print('adding', row['hours'], 'to', mon, file=fp)
-                months[mon].append(row['hours'])
-            fp.close()
+            with open('months.log', 'w') as fp:
+                for row in self.db:
+                    mon = row['date'].split('-')[0]
+                    if mon not in months:
+                        print('new', mon, file=fp)
+                        months[mon] = []
+                    print('adding', row['hours'], 'to', mon, file=fp)
+                    months[mon].append(row['hours'])
             sorted_months = OrderedDict()
             for month in months:
                 sorted_months[month] = sum(months[month])
@@ -187,27 +186,25 @@ class Attendance(object):
 
             prev = dt.date(2017, 7, 3) # date before any work starts
 
-            fp = open('weeks.log', 'w')
-
-            sorted_weeks = OrderedDict()
-            for row in self.db:
-                date = dt.datetime.strptime(row['date'], '%m-%d-%Y')
-                prevday = get_day_offset(prev.weekday(), self.offset)
-                dateday = get_day_offset(date.weekday(), self.offset)
-                print(row['date'], file=fp) # print the date
-                print('    prev {} : date {}'.format(prevday, dateday), file=fp)
-                print(' ' * 4, end='', file=fp)
-                if prevday < dateday and len(sorted_weeks) > 0:
-                    print('date is bigger than last. using existing week', file=fp)
-                else:
-                    print('date is smaller than last. adding a new week...', file=fp)
-                    sorted_weeks[str(len(sorted_weeks))] = []
-                prev = date
-                sorted_weeks[str(len(sorted_weeks) - 1)].append(row['hours'])
-                print(' ' * 4, end='', file=fp)
-                thisweek = sorted_weeks[str(len(sorted_weeks) - 1)]
-                print(thisweek, '-> average =', average(thisweek), file=fp)
-            fp.close()
+            with open('weeks.log', 'w') as fp:
+                sorted_weeks = OrderedDict()
+                for row in self.db:
+                    date = dt.datetime.strptime(row['date'], '%m-%d-%Y')
+                    prevday = get_day_offset(prev.weekday(), self.offset)
+                    dateday = get_day_offset(date.weekday(), self.offset)
+                    print(row['date'], file=fp) # print the date
+                    print('    prev {} : date {}'.format(prevday, dateday), file=fp)
+                    print(' ' * 4, end='', file=fp)
+                    if prevday < dateday and len(sorted_weeks) > 0:
+                        print('date is bigger than last. using existing week', file=fp)
+                    else:
+                        print('date is smaller than last. adding a new week...', file=fp)
+                        sorted_weeks[str(len(sorted_weeks))] = []
+                    prev = date
+                    sorted_weeks[str(len(sorted_weeks) - 1)].append(row['hours'])
+                    print(' ' * 4, end='', file=fp)
+                    thisweek = sorted_weeks[str(len(sorted_weeks) - 1)]
+                    print(thisweek, '-> average =', average(thisweek), file=fp)
 
             self.pt['week'] = OrderedDict()
             for week, values in sorted_weeks.items():
