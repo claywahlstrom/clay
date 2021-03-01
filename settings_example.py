@@ -28,6 +28,11 @@ JOBS_BREAK_SCHEDULES = {
     'OR': {'hours': 5, 'length': 1.0}
 }
 
+JOBS_OVERTIME_RATES = {
+    'WA': {'hours': 40, 'rate': 1.5},
+    'OR': {'hours': 40, 'rate': 1.5}
+}
+
 SEARCH_EXCLUSIONS = [
     '.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
     '.jmc', '.matplotlib', '.oracle_jre_usage', '.pdfsam', '.phet',

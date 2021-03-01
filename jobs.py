@@ -2,7 +2,7 @@
 """
 Jobs
 
-TODO: support overtime hours and salary calculations
+TODO: support salary calculations
 
 """
 
@@ -14,7 +14,7 @@ import pprint
 from statistics import median, mean as average
 
 from clay.graphing import Histogram
-from clay.settings import JOBS_BREAK_SCHEDULES
+from clay.settings import JOBS_BREAK_SCHEDULES, JOBS_OVERTIME_RATES
 
 DAYS_OF_THE_WEEK = (
     'Monday',
@@ -79,6 +79,18 @@ class Attendance(object):
         """Returns a list of hours from the punches"""
         return list(self.select('hours'))
 
+    def get_overtime_hours(self):
+        """Returns the weeks pivot table with regular hours removed"""
+        # use the existing pivot table if already created
+        if 'week' not in self.pt:
+            self.setup_pt('week')
+        # create a copy of the pivot table
+        overtime = self.pt['week'].copy()
+        for key, value in overtime.items():
+            # calculate overtime hours
+            overtime[key] = self._get_overtime_hours(value)
+        return overtime
+
     def get_total_hours(self):
         """Returns the total hours from the punches"""
         return sum(self.get_hours())
@@ -87,16 +99,33 @@ class Attendance(object):
         """Calculates and prints the take-home estimate for the given period `per`"""
         if per in Attendance.PT_TYPES and per in self.pt:
             for key, value in self.pt[per].items():
-                money = value * self.perhour * self.take_home_ratio
+                # calculate regular pay
+                money = value * self.perhour
+                # calculate overtime pay
+                overtime = self._get_overtime_hours(value)
+                money += overtime * self.perhour * JOBS_OVERTIME_RATES[self.state]['rate']
+                # account for withholding and taxes
+                money *= self.take_home_ratio
+                # report the pay
                 print('{} {}: ${:,.2f}'.format(per, key, money))
         else:
             print(per, 'is not a supported type')
 
     def print_money_all(self):
         """Calculates and prints the take-home estimate for the whole job"""
+        # calculate overtime hours
+        overtime = self.get_overtime_hours()
+        overtime_hours = sum(overtime.values())
+        # calculate regular hours
+        regular_hours = self.get_total_hours() - overtime_hours
+        # calculate the pay
+        money = self.perhour * \
+            (regular_hours + JOBS_OVERTIME_RATES[self.state]['rate'] * overtime_hours) * \
+            self.take_home_ratio
+        # report the estimated pay
         print('estimate take-home using the ratio {}: ${:,.2f}'.format(
             round(self.take_home_ratio, 4),
-            self.get_total_hours() * self.perhour * self.take_home_ratio))
+            money))
 
     def print_punchcard(self, names=True):
         """Prints the punchcard to stdout"""
@@ -212,6 +241,9 @@ class Attendance(object):
         else:
             self.setup_pt('week')
             self.setup_pt('month')
+
+    def _get_overtime_hours(self, value):
+        return max(0, value - JOBS_OVERTIME_RATES[self.state]['hours'])
 
 def get_day_offset(day, number):
     """
