@@ -18,11 +18,11 @@ def is_powershell():
 
 def is_launcher():
     """
-    Returns True if the script is running within the Python launcher (python.exe),
+    Returns True if the script is running within the Python launcher,
     False otherwise
 
     """
-    return not is_idle() and (_sys.argv[0] == 'python.exe' or not _sys.argv[0].startswith('.'))
+    return not is_idle()
 
 def is_posix():
     """
