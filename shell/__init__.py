@@ -1,2 +1,2 @@
 
-__all__ = ['core', 'titles']
+__all__ = ['compilers', 'core', 'titles']
