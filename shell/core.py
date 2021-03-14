@@ -1,7 +1,8 @@
 
 """
-shell: commands that can be used to manage your system or
-       retrieve information about it
+shell
+
+Commands to manage your system or retrieve information about it.
 
 """
 
@@ -239,12 +240,10 @@ def notify(message, seconds=2.25):
     print(message)
     _time.sleep(seconds)
 
-def pause(shell_only=False):
+def pause(launcher_only=False):
     """Pauses the console execution and prompts the user to continue"""
-    if shell_only and env.is_idle():
-        return
-    print()
-    input('Press enter to continue . . . ')
+    if not launcher_only or env.is_launcher():
+        input('\nPress enter to continue . . . ')
 
 def ren(src, dst):
     """Renames src to dst and prints the status of the operation"""
@@ -407,4 +406,4 @@ if __name__ == '__main__':
     # env.is_posix = lambda: True
     # env.is_idle = lambda: True
     pause()
-    pause(shell_only=True)
+    pause(launcher_only=True)
