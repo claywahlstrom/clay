@@ -4,6 +4,11 @@
 
 My personal package for doing all things Python 3.
 
+## Supported Systems
+
+- Windows (targeted)
+- POSIX-based machines (partial)
+
 ## Requirements
 
 - bs4
