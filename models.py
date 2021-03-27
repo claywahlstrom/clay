@@ -98,6 +98,15 @@ class Anonymous(Serializable):
         """Returns the attributes for this Anonymous"""
         return self._props.copy()
 
+    def get(self, name, default=None):
+        """Gets the attribute with the given name. Defaults to None"""
+        try:
+            return getattr(self, name)
+        except AttributeError as ae:
+            return default
+        except:
+            raise
+
     def update(self, *initial_data, **kwargs):
         """Updates attributes using dictionaries and keyword arguments"""
         for param in initial_data:
@@ -271,6 +280,42 @@ if __name__ == '__main__':
     testif('Anonymous sets attribute correctly (2)', obj.two, 2)
     testif('Anonymous sets attribute correctly (3)', obj.three, 3)
     testif('Anonymous has three attributes set', len(obj.props), 3)
+
+    testif('returns value if exists',
+        obj.get('one'),
+        1,
+        name=qualify(Anonymous.get))
+    testif('returns default if not exists',
+        obj.get('four'),
+        None,
+        name=qualify(Anonymous.get))
+    testif('returns correct default if not exists',
+        obj.get('four', -4),
+        -4,
+        name=qualify(Anonymous.get))
+
+    def test_anonymous_get_fails_if_getattr_does():
+        # allow monkey-patching
+        global getattr
+
+        # store a reference to the built-in
+        builtin = getattr
+
+        # set up the new getattr
+        def getattr(self, name):
+            raise ValueError
+
+        # perform the test
+        testraises('raises error when getattr raises',
+            lambda: obj.get('one'),
+            ValueError,
+            name=qualify(Anonymous.get))
+
+        # reset the built-in
+        getattr = builtin
+
+    test_anonymous_get_fails_if_getattr_does()
+
     obj.update({'two': obj.three}, three=obj.two) # swap the values of two and three
     testif('Anonymous updates attributes correctly',
         (obj.two, obj.three),
