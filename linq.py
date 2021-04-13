@@ -262,6 +262,10 @@ class Queryable:
         """Reduces the queryable expression to its type"""
         return self.type(self._expr)
 
+    def to_enum(self):
+        """Reduces the queryable expression to an enumerable"""
+        return extend(self.to_list())
+
     @property
     def type(self):
         """Iterable type for this queryable"""
