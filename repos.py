@@ -396,6 +396,12 @@ class CrudRepositoryMigrator:
 
     def drop_column(self, name):
         """Drops a column with the given name"""
+        if self.repo.read().any(lambda entity: entity.get(name) is not None):
+            print('Data from column {} will be lost.'.format(name))
+            sure = input('Are you sure (y/n)? ').lower() == 'y'
+            if not sure:
+                return print('Aborting...')
+
         for entity in self.repo.read():
             if name in entity:
                 del entity[name]
