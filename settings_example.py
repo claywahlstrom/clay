@@ -33,6 +33,15 @@ JOBS_OVERTIME_RATES = {
     'OR': {'hours': 40, 'rate': 1.5}
 }
 
+NET_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+    'Accept': 'text/html,text/plain,application/xhtml+xml,application/xml,application/_json;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Charset': 'Windows-1252,utf-8;q=0.7,*;q=0.3',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-US,en;q=0.8;q=0.5',
+    'Connection': 'keep-alive'
+}
+
 SEARCH_EXCLUSIONS = [
     '.android', '.AndroidStudio1.5', 'eclipse', '.gradle', '.idlerc',
     '.jmc', '.matplotlib', '.oracle_jre_usage', '.pdfsam', '.phet',
