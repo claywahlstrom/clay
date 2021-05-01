@@ -269,6 +269,11 @@ class CrudRepository(ListRepository):
         # append the model
         self._insert_model(model)
 
+    def insert_range(self, models):
+        """Inserts the given models into this repository"""
+        for model in models:
+            self.insert(model)
+
     def delete(self, pk):
         """Deletes the given primary key from this repository"""
         self._ensure_connected()
