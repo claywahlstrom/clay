@@ -286,8 +286,11 @@ class CrudRepository(ListRepository):
         else:
             self.__pk_not_found(pk)
 
-    def update(self, pk, model):
-        """Updates the model with the given primary key"""
+    def update(self, model):
+        """Updates the model by inferring the primary key"""
+
+        # infer pk from model
+        pk = model['id']
 
         self._ensure_exists(pk)
 
@@ -299,7 +302,7 @@ class CrudRepository(ListRepository):
 
         props = model.props if model.is_model_based else model.keys()
 
-        for attr in props:
+        for attr in [prop for prop in props if prop != 'id']:
             original[attr] = getattr(model, attr)
 
         print('{}: pk "{}" updated'.format(self.name, pk))
