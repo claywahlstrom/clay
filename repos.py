@@ -8,6 +8,7 @@ import datetime as _dt
 import json as _json
 import os as _os
 
+from clay.decors import obsolete
 from clay.linq import extend as _extend, \
     query as _query
 from clay.lists import rmdup as _rmdup
@@ -196,6 +197,25 @@ class CrudRepository(ListRepository):
     def clear_index(self):
         """Clears the index for this CrudRepository"""
         self.__index = {}
+
+    def add_column(self, name, default_value=None):
+        """Adds a column with the given name and default value"""
+        for entity in self.read():
+            if name in entity:
+                raise RuntimeWarning('column "{}" already exists'.format(name))
+            entity[name] = default_value
+
+    def drop_column(self, name):
+        """Drops a column with the given name"""
+        if self.read().any(lambda entity: entity.get(name) is not None):
+            print('Data from column {} will be lost.'.format(name))
+            sure = input('Are you sure (y/n)? ').lower() == 'y'
+            if not sure:
+                return print('Aborting...')
+
+        for entity in self.read():
+            if name in entity:
+                del entity[name]
 
     def __pk_not_found(self, pk):
         """Raises a RecordNotFoundError for a primary key"""
@@ -387,6 +407,7 @@ class CrudRepository(ListRepository):
         """Returns True if this repository is model-based, False otherwise"""
         return self.model != object
 
+@obsolete
 class CrudRepositoryMigrator:
 
     """Used to migrate CRUD repositories"""
