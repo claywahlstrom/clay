@@ -407,38 +407,6 @@ class CrudRepository(ListRepository):
         """Returns True if this repository is model-based, False otherwise"""
         return self.model != object
 
-@obsolete
-class CrudRepositoryMigrator:
-
-    """Used to migrate CRUD repositories"""
-
-    def __init__(self, name):
-        """Initializes this CRUD repository migrator"""
-        self.repo = CrudRepository(name)
-
-    def add_column(self, name, default_value=None):
-        """Adds a column with the given name and default value"""
-        for entity in self.repo.read():
-            if name in entity:
-                raise RuntimeWarning('column "{}" already exists'.format(name))
-            entity[name] = default_value
-
-    def drop_column(self, name):
-        """Drops a column with the given name"""
-        if self.repo.read().any(lambda entity: entity.get(name) is not None):
-            print('Data from column {} will be lost.'.format(name))
-            sure = input('Are you sure (y/n)? ').lower() == 'y'
-            if not sure:
-                return print('Aborting...')
-
-        for entity in self.repo.read():
-            if name in entity:
-                del entity[name]
-
-    def commit(self):
-        """Commits pending CRUD repository changes"""
-        self.repo.write()
-
 class UserRepository(CrudRepository):
 
     """Used to manage a repository of users"""
