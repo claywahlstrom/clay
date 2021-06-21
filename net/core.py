@@ -430,7 +430,7 @@ class TagFinder(object):
 
     """
 
-    def __init__(self, page):
+    def __init__(self, page, headers=None):
         """Initializes this tag finder"""
         self.request = None
         if isinstance(page, bytes):
@@ -439,11 +439,11 @@ class TagFinder(object):
             with open(page, 'rb') as fp:
                 self.src = fp.read()
         else:
-            betterheaders = HEADERS.copy()
-            self.request = _requests.get(page, headers=betterheaders)
+            better_headers = headers if headers else HEADERS.copy()
+            self.request = _requests.get(page, headers=better_headers)
             if not self.request.content.startswith(b'<'):
-                betterheaders.pop('Accept-Encoding')
-                self.request = _requests.get(page, headers=betterheaders)
+                better_headers.pop('Accept-Encoding')
+                self.request = _requests.get(page, headers=better_headers)
             self.src = self.request.content
         self.page = page
         self.soup = _BS(self.src, 'html.parser')
