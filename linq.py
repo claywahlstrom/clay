@@ -11,7 +11,8 @@ class IEnumerable(_Interface):
 
     """Interface for enumerable objects"""
 
-    def __init__(self):
+    # iterable is passed here to allow tuples
+    def __init__(self, iterable):
         self.raise_if_base(IEnumerable)
 
     def copy(self):
@@ -288,6 +289,15 @@ if __name__ == '__main__':
         TypeError,
         name=_qualify(extend))
 
+    testif('accepts tuple as iterable (empty)',
+        isinstance(extend(tuple()), tuple),
+        True,
+        name=_qualify(extend))
+    testif('accepts tuple as iterable',
+        isinstance(extend(tuple((1, 2, 3))), tuple),
+        True,
+        name=_qualify(extend))
+
     testif('returns False if empty (no predicate)',
         extend([]).any(),
         False,
@@ -461,3 +471,12 @@ if __name__ == '__main__':
             .to_list(),
         ['Student1', 'Student2', 'Student2', 'Student3'],
         name=_qualify(Queryable.select_many))
+
+    testif('selects correct element for tuple (explicit)',
+        extend(tuple((1, 2, 3))).where(lambda x: x == 2).first_or_default(),
+        2,
+        name=_qualify(IEnumerable.first_or_default))
+    testif('selects correct element for tuple (implicit)',
+        extend((1, 2, 3)).where(lambda x: x == 2).first_or_default(),
+        2,
+        name=_qualify(IEnumerable.first_or_default))
