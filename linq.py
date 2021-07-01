@@ -39,6 +39,9 @@ class IEnumerable(_Interface):
     def select_many(self):
         raise NotImplementedError(_qualify(self.select_many))
 
+    def skip(self, count):
+        raise NotImplementedError(_qualify(self.skip))
+
     def distinct(self):
         raise NotImplementedError(_qualify(self.distinct))
 
@@ -132,6 +135,10 @@ def extend(iterable=()):
 
             """
             return Enumerable(base(sum(self.select(selector), [])))
+
+        def skip(self, count):
+            """Skips count number of items and returns the result"""
+            return Enumerable(base(list(self)[count:]))
 
         def distinct(self):
             """Filters items down to distinct ones"""
@@ -228,6 +235,15 @@ class Queryable:
 
         """
         self._expr = iter(sum(self.select(selector)._expr, []))
+        return self
+
+    def skip(self, count):
+        """Skips count number of items and returns the queryable"""
+        for i in range(count):
+            try:
+                next(self._expr)
+            except StopIteration:
+                break
         return self
 
     def distinct(self):
@@ -471,6 +487,41 @@ if __name__ == '__main__':
             .to_list(),
         ['Student1', 'Student2', 'Student2', 'Student3'],
         name=_qualify(Queryable.select_many))
+
+    testif('skips elements correctly (count: 0)',
+        extend([0, 2, 4, 6]) \
+            .skip(0),
+        [0, 2, 4, 6],
+        name=_qualify(IEnumerable.skip))
+    testif('skips elements correctly (count: 2)',
+        extend([0, 2, 4, 6]) \
+            .skip(2),
+        [4, 6],
+        name=_qualify(IEnumerable.skip))
+    testif('skips elements correctly (count: 5)',
+        extend([0, 2, 4, 6]) \
+            .skip(5),
+        [],
+        name=_qualify(IEnumerable.skip))
+
+    testif('skips elements correctly (count: 0)',
+        query([0, 2, 4, 6]) \
+            .skip(0) \
+            .to_list(),
+        [0, 2, 4, 6],
+        name=_qualify(Queryable.skip))
+    testif('skips elements correctly (count: 2)',
+        query([0, 2, 4, 6]) \
+            .skip(2) \
+            .to_list(),
+        [4, 6],
+        name=_qualify(Queryable.skip))
+    testif('skips elements correctly (count: 5)',
+        query([0, 2, 4, 6]) \
+            .skip(5) \
+            .to_list(),
+        [],
+        name=_qualify(Queryable.skip))
 
     testif('selects correct element for tuple (explicit)',
         extend(tuple((1, 2, 3))).where(lambda x: x == 2).first_or_default(),
