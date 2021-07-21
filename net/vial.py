@@ -70,7 +70,7 @@ class Html(clay.models.Static):
     def date(name, value='', attrs={}):
         """Returns markup for the date input element `name` of value `value`,
         and attributes `attrs`"""
-        return Html.input(name, 'date', value=value, attrs=attrs)
+        return Html.input(name, 'date', value=value.replace('/', '-'), attrs=attrs)
 
     @staticmethod
     def hidden(name, value=''):
