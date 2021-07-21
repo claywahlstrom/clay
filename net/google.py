@@ -64,7 +64,7 @@ class GoogleSuite(object):
         launch_gs_app('search', self.browser, GoogleSuite.SEARCH_URL.format(_urlencode([('q', query)])))
 
 if __name__ == '__main__':
-    gs = GoogleSuite('chrome')
+    gs = GoogleSuite()
     gs.mail()
     gs.drive()
     gs.search('test search')
