@@ -23,7 +23,7 @@ class GoogleSuite(object):
 
     """Used for quick access to Google Suite(tm) services"""
 
-    SEARCH_URL = 'https://www.google.com/?gws_rd=ssl#newwindow=1&{}'
+    SEARCH_URL = 'https://www.google.com/search?{}&newwindow=1'
 
     def __init__(self, browser=settings.DEFAULT_BROWSER):
         """Initializes this Google Suite(tm)"""
@@ -61,7 +61,9 @@ class GoogleSuite(object):
 
     def search(self, query):
         """Launches the search with the given search query"""
-        launch_gs_app('search', self.browser, GoogleSuite.SEARCH_URL.format(_urlencode([('q', query)])))
+        launch_gs_app('search',
+            self.browser,
+            GoogleSuite.SEARCH_URL.format(_urlencode([('q', query)])))
 
 if __name__ == '__main__':
     gs = GoogleSuite()
