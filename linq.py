@@ -4,6 +4,8 @@ Classes and extensions to make iterables more fluent.
 
 """
 
+from collections import OrderedDict
+
 from clay.models import Interface as _Interface
 from clay.utils import qualify as _qualify
 
@@ -30,6 +32,9 @@ class IEnumerable(_Interface):
     def group_by(self):
         raise NotImplementedError(_qualify(self.group_by))
 
+    def group_by_key(self, key_selector):
+        raise NotImplementedError(_qualify(self.group_by_key))
+
     def order_by(self):
         raise NotImplementedError(_qualify(self.order_by))
 
@@ -54,6 +59,29 @@ class IEnumerable(_Interface):
     @property
     def base(self):
         raise NotImplementedError('IEnumerable.base')
+
+def group_items(iterable, property):
+    grouped = OrderedDict()
+    for each in iterable:
+        if property in each:
+            if each[property] not in grouped:
+                grouped[each[property]] = []
+            grouped[each[property]].append(each)
+        else:
+            print('Could not group by {}: {}'.format(property, each))
+    return grouped
+
+def group_items_by_key(iterable, key_selector):
+    grouped = OrderedDict()
+    for each in iterable:
+        try:
+            key = key_selector(each)
+            if key not in grouped:
+                grouped[key] = []
+            grouped[key].append(each)
+        except AttributeError:
+            print('Could not group by key selector: {}'.format(each))
+    return grouped
 
 def extend(iterable=()):
     """Returns an instance of Enumerable using the given iterable"""
@@ -105,16 +133,12 @@ def extend(iterable=()):
             return self[-1] if self else default
 
         def group_by(self, property):
-            """Returns items grouped by the given property"""
-            grouped = {}
-            for each in self:
-                if property in each:
-                    if each[property] not in grouped:
-                        grouped[each[property]] = Enumerable([])
-                    grouped[each[property]].append(each)
-                else:
-                    print('Could not group by {}: {}'.format(property, each))
-            return grouped
+            """Groups items by the given property"""
+            return group_items(self, property)
+
+        def group_by_key(self, key_selector):
+            """Groups items by the given key selector"""
+            return group_items_by_key(self, key_selector)
 
         def order_by(self, key=None, reverse=False):
             """Returns items ordered by the given key selector"""
@@ -203,14 +227,17 @@ class Queryable:
 
     def group_by(self, property):
         """Groups items by the given property"""
-        grouped = {}
-        for each in self:
-            if property in each:
-                if each[property] not in grouped:
-                    grouped[each[property]] = []
-                grouped[each[property]].append(each)
-            else:
-                print('Could not group by {}: {}'.format(property, each))
+        grouped = group_items(self, property)
+
+        # convert the groups to queryables
+        for group in grouped:
+            grouped[group] = Queryable(grouped[group])
+
+        return grouped
+
+    def group_by_key(self, key_selector):
+        """Groups items by the given key selector"""
+        grouped = group_items_by_key(self, key_selector)
 
         # convert the groups to queryables
         for group in grouped:
