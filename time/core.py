@@ -10,15 +10,10 @@ import time as _time
 
 from clay.time.base import BaseDateTimeRange
 
-DEF_COUNTRY = 'usa'
-DEF_CITY    = 'vancouver'
-
 MONTHS = ['january', 'february', 'march',
           'april', 'may', 'june', 'july',
           'august', 'september', 'october',
           'november', 'december']
-
-TAD_BASE = 'https://www.timeanddate.com/astronomy' # astronomy or sun url base
 
 class datetime(_dt.datetime):
     """Provides extension methods to the datetime.datetime object"""
@@ -157,137 +152,6 @@ def round_nearest(hours, interval=0.5):
         raise ValueError('interval must be greater than zero')
     return round(hours / interval) * interval
 
-class SunTimesApiClient(object):
-    """
-    An API for collecting sun times information from timeanddate.com (c)
-    in the following form:
-
-        Rise/Set     |     Daylength       |   Solar Noon
-    Sunrise | Sunset | Length | Difference | Time | Million Miles
-
-    Countries with more than one occurence of a city require state abbrev.s,
-    such as Portland, OR, and Portland, ME:
-        city -> portland-or
-        city -> portland-me
-
-    """
-
-    COLS = 6
-
-    def __init__(self, country=DEF_COUNTRY, city=DEF_CITY, dynamic=False):
-        """Initializes this API client"""
-        self.country = country
-        self.city = city
-        self.dynamic = dynamic
-        self.build()
-
-    def __repr__(self):
-        """Returns the string representation of this API client"""
-        if not self:
-            return '%s()' % (self.__class__.__name__,)
-        return '%s(country=%s, city=%s, dynamic=%s)' % (self.__class__.__name__,
-                                                        self.country, self.city,
-                                                        self.dynamic)
-
-    def build(self):
-        """
-        Collects sun data and creates the following fields:
-            req  = request response
-            cont = web request content
-            soup = `bs4` soup object
-            data = list of data scraped
-
-        """
-        import textwrap as _textwrap
-        from bs4 import BeautifulSoup as _BS
-        import requests as _requests
-        url = '/'.join([TAD_BASE, self.country, self.city])
-        message = None
-        try:
-            req = _requests.get(url)
-            if req.status_code != 200:
-                raise Exception('request unsuccessful, used url: %s' % url)
-            cont = req.content
-            soup = _BS(cont, 'html.parser')
-            scraped = [td.text for td in soup.select('#as-monthsun > tbody > tr > td')]
-            # check for notes about daylight savings
-            if scraped[0].startswith('Note'):
-                message = scraped[0]
-                print(message)
-                scraped = scraped[1:]
-        except Exception as e:
-            print('A SunTimesApiClient instance made a request to:')
-            print(' ' * 4 + url)
-            print('which caused the folloing error:')
-            print(_textwrap.indent(_textwrap.fill(str(e)), ' ' * 4))
-            req = object()
-            cont = ''
-            soup = _BS(cont, 'html.parser')
-            scraped = ['offline'] * SunTimesApiClient.COLS * 2
-
-        # parse the data into rows
-        data = []
-        for i in range(0, len(scraped), SunTimesApiClient.COLS):
-            data.append(scraped[i: i + SunTimesApiClient.COLS])
-
-        # store relevant fields
-        self.url     = url
-        self.req     = req
-        self.cont    = cont
-        self.soup    = soup
-        self.scraped = scraped
-        self.data    = data
-        self.message = message
-
-        self.__date = _dt.date.today()
-
-    def __check_date(self):
-        """Checks the date last built and rebuilds if dynamic and not same-day"""
-        if _dt.date.today() != self.__date and self.dynamic:
-            self.rebuild()
-
-    def __check_valid(self, day):
-        """
-        Raises `ValueError` if the given day is less than 0 or
-        greater than the data range
-
-        """
-        if day < 0 or day >= len(self.data):
-            raise ValueError('day must be from 0 to ' + str(len(self.data) - 1))
-
-    def __validate(self, day):
-        """Verifies that the requested day is valid and the data is up to date"""
-        self.__check_valid(day)
-        self.__check_date()
-
-    def get_data(self):
-        """Returns data retrieved and parsed from timeanddate.com (c)"""
-        return self.data
-
-    def get_message(self):
-        """Prints out any important information such as daylight
-           savings messages"""
-        return self.message
-
-    def get_sunrise(self, day=0):
-        """Returns string of the sunrise time"""
-        self.__validate(day)
-        return self.data[day][0]
-
-    def get_sunset(self, day=0):
-        """Returns string of the sunset time"""
-        self.__validate(day)
-        return self.data[day][1]
-
-    def get_solar_noon(self, day=0):
-        """Returns string of the solar noon time"""
-        self.__validate(day)
-        return self.data[day][4]
-
-    def rebuild(self):
-        """An alias for building the relevant information. See `build`"""
-        self.build()
-
 class TimeRange(BaseDateTimeRange):
 
     """Stores a range of dates for easy comparison"""
@@ -404,7 +268,3 @@ if __name__ == '__main__':
             round_nearest(half_hour_test[0]),
             half_hour_test[1],
             name=qualify(round_nearest))
-
-    sun = SunTimesApiClient()
-    print('sunset tonight is', sun.get_sunset())
-
