@@ -49,6 +49,10 @@ class datetime(_dt.datetime):
 
         return self
 
+def get_next_hour(date=_dt.datetime.now()):
+    """Returns the given datetime with the next hour and no total seconds"""
+    return (date + _dt.timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+
 def get_time_struct():
     """Returns the local time as struct object"""
     return _time.localtime(_time.time())
@@ -339,6 +343,32 @@ if __name__ == '__main__':
     testif('datetime rounds minutes up near hour',
         datetime(2000, 1, 1, 0, 50).round(minutes=20),
        _dt.datetime(2000, 1, 1, 1, 0))
+
+    get_next_date_tests = [
+        (
+            _dt.datetime(2021, 7, 21, 0, 0, 24, 627),
+            _dt.datetime(2021, 7, 21, 1, 0, 0, 0)
+        ),
+        (
+            _dt.datetime(2021, 7, 21, 0, 1, 37, 145525),
+            _dt.datetime(2021, 7, 21, 1, 0, 0, 0)
+        ),
+        (
+            _dt.datetime(2021, 7, 21, 0, 59, 42, 236125),
+            _dt.datetime(2021, 7, 21, 1, 0, 0, 0)
+        ),
+        (
+            _dt.datetime(2021, 7, 21, 1, 1, 28, 983788),
+            _dt.datetime(2021, 7, 21, 2, 0, 0, 0)
+        )
+    ]
+
+    for get_next_date_test in get_next_date_tests:
+        date = get_next_date_test[0]
+        testif('returns correct date (date: {})'.format(date),
+            get_next_hour(date),
+            get_next_date_test[1],
+            name=qualify(get_next_hour))
 
     print('birthday', get_time_until(2019, 11, 6))
     print('exams over', get_time_until(2018, 12, 13))
