@@ -32,7 +32,7 @@ class IEnumerable(_Interface):
     def group_by(self):
         raise NotImplementedError(_qualify(self.group_by))
 
-    def group_by_key(self, key_selector):
+    def group_by_key(self, key_selector, element_selector=lambda x: x):
         raise NotImplementedError(_qualify(self.group_by_key))
 
     def order_by(self):
@@ -74,16 +74,16 @@ def group_items(iterable, property):
             print('Could not group by {}: {}'.format(property, each))
     return grouped
 
-def group_items_by_key(iterable, key_selector):
+def group_items_by_key(iterable, key_selector, element_selector=lambda x: x):
     grouped = OrderedDict()
     for each in iterable:
         try:
             key = key_selector(each)
             if key not in grouped:
                 grouped[key] = []
-            grouped[key].append(each)
+            grouped[key].append(element_selector(each))
         except AttributeError:
-            print('Could not group by key selector: {}'.format(each))
+            print('Could not group by key or element selector: {}'.format(each))
     return grouped
 
 def extend(iterable=()):
@@ -139,9 +139,9 @@ def extend(iterable=()):
             """Groups items by the given property"""
             return group_items(self, property)
 
-        def group_by_key(self, key_selector):
-            """Groups items by the given key selector"""
-            return group_items_by_key(self, key_selector)
+        def group_by_key(self, key_selector, element_selector=lambda x: x):
+            """Groups items by the given key and element selectors"""
+            return group_items_by_key(self, key_selector, element_selector)
 
         def order_by(self, key=None, reverse=False):
             """Returns items ordered by the given key selector"""
@@ -245,9 +245,9 @@ class Queryable:
 
         return grouped
 
-    def group_by_key(self, key_selector):
-        """Groups items by the given key selector"""
-        grouped = group_items_by_key(self, key_selector)
+    def group_by_key(self, key_selector, element_selector=lambda x: x):
+        """Groups items by the given key and element selectors"""
+        grouped = group_items_by_key(self, key_selector, element_selector)
 
         # convert the groups to queryables
         for group in grouped:
