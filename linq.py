@@ -47,6 +47,9 @@ class IEnumerable(_Interface):
     def skip(self, count):
         raise NotImplementedError(_qualify(self.skip))
 
+    def diff(self, other):
+        raise NotImplementedError(_qualify(self.diff))
+
     def distinct(self):
         raise NotImplementedError(_qualify(self.distinct))
 
@@ -164,6 +167,13 @@ def extend(iterable=()):
             """Skips count number of items and returns the result"""
             return Enumerable(base(list(self)[count:]))
 
+        def diff(self, other):
+            """
+            Returns the set difference of this enumerable and another iterable
+
+            """
+            return Enumerable(base(set(self).difference(other)))
+
         def distinct(self):
             """Filters items down to distinct ones"""
             return Enumerable(base(set(self)))
@@ -272,6 +282,13 @@ class Queryable:
             except StopIteration:
                 break
         return self
+
+    def diff(self, other):
+        """
+        Returns the set difference of this queryable and another iterable
+
+        """
+        return self.where(lambda item: item not in other)
 
     def distinct(self):
         """Filters items down to distinct ones"""
@@ -420,6 +437,10 @@ if __name__ == '__main__':
         [['John', '1/1/2000']],
         name=_qualify(IEnumerable.select))
     testif('returns correct results',
+        extend([1, 2, 2, 3]).diff([1, 2]),
+        [3],
+        name=_qualify(IEnumerable.diff))
+    testif('returns correct results',
         extend([1, 2, 2, 3]).distinct(),
         [1, 2, 3],
         name=_qualify(IEnumerable.distinct))
@@ -480,6 +501,10 @@ if __name__ == '__main__':
             .to_list(),
         [2, 2],
         name=_qualify(Queryable.select))
+    testif('returns correct results',
+        query([1, 2, 2, 3]).diff([1, 2]).to_list(),
+        [3],
+        name=_qualify(Queryable.diff))
     testif('returns correct results',
         query([1, 2, 2, 3]).distinct().to_list(),
         [1, 2, 3],
