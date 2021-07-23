@@ -20,28 +20,28 @@ class IEnumerable(_Interface):
     def copy(self):
         raise NotImplementedError(_qualify(self.copy))
 
-    def any(self):
+    def any(self, predicate=lambda x: True):
         raise NotImplementedError(_qualify(self.any))
 
-    def first_or_default(self):
+    def first_or_default(self, default=None):
         raise NotImplementedError(_qualify(self.first_or_default))
 
-    def last_or_default(self):
+    def last_or_default(self, default=None):
         raise NotImplementedError(_qualify(self.last_or_default))
 
-    def group_by(self):
+    def group_by(self, property):
         raise NotImplementedError(_qualify(self.group_by))
 
     def group_by_key(self, key_selector, element_selector=lambda x: x):
         raise NotImplementedError(_qualify(self.group_by_key))
 
-    def order_by(self):
+    def order_by(self, key=None, reverse=False):
         raise NotImplementedError(_qualify(self.order_by))
 
-    def select(self):
+    def select(self, selector):
         raise NotImplementedError(_qualify(self.select))
 
-    def select_many(self):
+    def select_many(self, selector):
         raise NotImplementedError(_qualify(self.select_many))
 
     def skip(self, count):
@@ -53,10 +53,10 @@ class IEnumerable(_Interface):
     def distinct(self):
         raise NotImplementedError(_qualify(self.distinct))
 
-    def where(self):
+    def where(self, predicate):
         raise NotImplementedError(_qualify(self.where))
 
-    def whereif(self):
+    def whereif(self, condition, predicate):
         raise NotImplementedError(_qualify(self.whereif))
 
     @property
