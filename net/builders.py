@@ -1,10 +1,10 @@
 
 """
-builders: Mainly for URL builders
+net builders: Mainly for URL builders
 
 """
 
-import urllib
+import urllib.parse
 
 class UrlBuilder(object):
     """Can be used to build formatted URLs"""
