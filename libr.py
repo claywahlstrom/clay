@@ -339,7 +339,7 @@ if __name__ == '__main__':
     with open(r'test_files\essay-fixper.txt','w') as fp:
         fp.write(e.text)
 
-    link = 'http://www.datascribble.com/deep-learning/deep-learning-tensorflow-series-part-1-neural-network/'
+    link = 'https://www.theatlantic.com/science/archive/2019/04/what-happens-human-body-space/586966/'
     cit = Citation(link)
     print(cit.to_string())
 
