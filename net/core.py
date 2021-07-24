@@ -288,9 +288,10 @@ def file2uri(path):
     """Returns the web file URI for the given file path"""
     return 'file:///' + path.replace('\\', '/')
 
-def find_anchors(location, query={}, internal=True, php=False):
+def find_anchors(location, headers={}, query={}, internal=True, php=False):
     """
     Returns anchor references from a location (file name or uri)
+        headers  = headers sent in the request
         query    = query params sent in the request
         internal = uses internal site referenes if True
         php      = determines whether references with query params are included
@@ -298,7 +299,7 @@ def find_anchors(location, query={}, internal=True, php=False):
     """
 
     if 'http' in location:
-        fread = _requests.get(location, params=query).content#headers=HEADERS, params=query).content
+        fread = _requests.get(location, headers=headers, params=query).content
     else:
         with open(location,'r') as bc:
             fread = bc.read()
@@ -774,11 +775,13 @@ if __name__ == '__main__':
             }
         })
 
+    print('Generating {} output...'.format(qualify(find_anchors)), end=' ')
     with open(_os.path.join(LOGS_DIR, 'net-core-find-anchors.log'), 'w') as fa_log:
         print('ANCHORS', file=fa_log)
-        print(find_anchors(TEST_LINK, internal=False), file=fa_log)
+        print(find_anchors(TEST_LINK, headers=HEADERS, internal=False), file=fa_log)
+    print('Done')
 
-    testif('Parses headers correctly',
+    testif('parses headers correctly',
         parse_raw_headers("""Host: example.com
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate
