@@ -1,6 +1,6 @@
 
 """
-Net module
+Net core
 
 TODO (web-header): fix the web header to fix google.com rendering JS problem using
                        alternate accept-char types
@@ -21,8 +21,9 @@ import urllib.request, urllib.error, urllib.parse
 from bs4 import BeautifulSoup as _BS
 import requests as _requests
 
-from clay.env import is_idle as _is_idle, is_posix as _is_posix
 from clay import settings
+from clay.env import is_idle as _is_idle, is_posix as _is_posix
+from clay.net.settings import HEADERS
 
 # download links for testing
 LINKS = {}
@@ -33,7 +34,6 @@ del n
 LINKS['1GB'] = 'http://download.thinkbroadband.com/1GB.zip'
 
 EXAMPLE_URL = 'http://example.com'
-HEADERS = settings.NET_HEADERS
 TEST_LINK = 'https://minecraft.net/en-us/'
 VALID_SCHEMES = ('file', 'ftp', 'http', 'https')
 
