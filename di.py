@@ -21,7 +21,7 @@ class TypeUnboundError(Exception):
 
 class _Kernel:
 
-    """Used to set up the bindings and track resolutions"""
+    """Used to set up bindings and track resolutions"""
 
     def __init__(self):
         """Initializes this kernel"""
@@ -29,17 +29,17 @@ class _Kernel:
         self._bindings = {}
         self._resolutions = {}
 
-    def bind(self, type, expr):
-        """Binds the given type to the expression"""
-        self._bindings[qualify(type)] = expr
+    def bind(self, tipe, expr=None):
+        """Binds the given type to the expression, defaults to self"""
+        self._bindings[qualify(tipe)] = expr or tipe
 
-    def get(self, type):
+    def get(self, tipe):
         """
         Resolves and returns the evaluated expression for the given type.
         Raises `TypeUnboundError` if the type is not bound.
 
         """
-        name = qualify(type)
+        name = qualify(tipe)
         if name not in self._resolutions:
             if name not in self._bindings:
                 raise TypeUnboundError(name)
@@ -56,6 +56,16 @@ kernel = _Kernel()
 if __name__ == '__main__':
 
     from clay.tests import testif, testraises
+
+    class SelfBoundService:
+        pass
+
+    kernel.bind(SelfBoundService)
+
+    testif('binds to self-bound service if no expression provided',
+        isinstance(kernel.get(SelfBoundService), SelfBoundService),
+        True,
+        name=qualify(_Kernel.bind))
 
     class TestService:
         def __init__(self, repo_name):
