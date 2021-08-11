@@ -4,7 +4,7 @@ Classes and extensions to make iterables more fluent.
 
 """
 
-from collections import OrderedDict
+from collections import abc, OrderedDict
 
 from clay.models import Interface as _Interface
 from clay.utils import qualify as _qualify
@@ -14,56 +14,58 @@ class IEnumerable(_Interface):
     """Interface for enumerable objects"""
 
     # iterable is passed here to allow tuples
-    def __init__(self, iterable):
+    def __init__(self, iterable: abc.Iterable) -> None:
         self.raise_if_base(IEnumerable)
 
-    def copy(self):
+    def copy(self) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.copy))
 
-    def any(self, predicate=lambda x: True):
+    def any(self, predicate: abc.Callable=lambda x: True) -> bool:
         raise NotImplementedError(_qualify(self.any))
 
-    def first_or_default(self, default=None):
+    def first_or_default(self, default: object=None) -> object:
         raise NotImplementedError(_qualify(self.first_or_default))
 
-    def last_or_default(self, default=None):
+    def last_or_default(self, default: object=None) -> object:
         raise NotImplementedError(_qualify(self.last_or_default))
 
-    def group_by(self, property):
+    def group_by(self, property: str) -> abc.Hashable:
         raise NotImplementedError(_qualify(self.group_by))
 
-    def group_by_key(self, key_selector, element_selector=lambda x: x):
+    def group_by_key(self,
+            key_selector: abc.Callable,
+            element_selector: abc.Callable=lambda x: x) -> abc.Hashable:
         raise NotImplementedError(_qualify(self.group_by_key))
 
-    def order_by(self, key=None, reverse=False):
+    def order_by(self, key: abc.Callable=None, reverse: bool=False) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.order_by))
 
-    def select(self, selector):
+    def select(self, selector: abc.Callable) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.select))
 
-    def select_many(self, selector):
+    def select_many(self, selector: abc.Callable) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.select_many))
 
-    def skip(self, count):
+    def skip(self, count: int) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.skip))
 
-    def diff(self, other):
+    def diff(self, other: 'IEnumerable') -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.diff))
 
-    def distinct(self):
+    def distinct(self) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.distinct))
 
-    def where(self, predicate):
+    def where(self, predicate: abc.Callable) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.where))
 
-    def whereif(self, condition, predicate):
+    def whereif(self, condition: bool, predicate: abc.Callable) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.whereif))
 
     @property
-    def base(self):
+    def base(self) -> abc.Iterable:
         raise NotImplementedError('IEnumerable.base')
 
-def group_items(iterable, property):
+def group_items(iterable: abc.Iterable, property: str) -> abc.Hashable:
     grouped = OrderedDict()
     for each in iterable:
         if property in each:
@@ -74,7 +76,9 @@ def group_items(iterable, property):
             print('Could not group by {}: {}'.format(property, each))
     return grouped
 
-def group_items_by_key(iterable, key_selector, element_selector=lambda x: x):
+def group_items_by_key(iterable: abc.Iterable,
+        key_selector: abc.Callable,
+        element_selector: abc.Callable=lambda x: x) -> abc.Hashable:
     grouped = OrderedDict()
     for each in iterable:
         try:
@@ -86,7 +90,7 @@ def group_items_by_key(iterable, key_selector, element_selector=lambda x: x):
             print('Could not group by key or element selector: {}'.format(each))
     return grouped
 
-def extend(iterable=()):
+def extend(iterable: abc.Iterable=()):
     """Returns an instance of Enumerable using the given iterable"""
 
     if not isinstance(iterable, (list, set, tuple)):
@@ -103,11 +107,11 @@ def extend(iterable=()):
 
         """
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             """Returns the string representation of this Enumerable"""
             return '{}({})'.format(self.__class__.__name__, base(self))
 
-        def copy(self):
+        def copy(self) -> IEnumerable:
             """Returns a shallow copy of this Enumerable"""
             if base is tuple:
                 to_copy = base(list(self).copy())
@@ -115,11 +119,11 @@ def extend(iterable=()):
                 to_copy = base(self).copy()
             return Enumerable(to_copy)
 
-        def any(self, predicate=lambda x: True):
+        def any(self, predicate: abc.Callable=lambda x: True) -> bool:
             """Returns True if there are any items matching the predicate, False otherwise"""
             return any(map(predicate, self))
 
-        def first_or_default(self, default=None):
+        def first_or_default(self, default: object=None) -> object:
             """
             Returns the first item in this Enumerable or
             the default if this Enumerable is empty
@@ -127,7 +131,7 @@ def extend(iterable=()):
             """
             return next(iter(self), default)
 
-        def last_or_default(self, default=None):
+        def last_or_default(self, default: object=None) -> object:
             """
             Returns the last item in this Enumerable or
             the default if this Enumerable is empty
@@ -135,19 +139,21 @@ def extend(iterable=()):
             """
             return self[-1] if self else default
 
-        def group_by(self, property):
+        def group_by(self, property: str) -> abc.Hashable:
             """Groups items by the given property"""
             return group_items(self, property)
 
-        def group_by_key(self, key_selector, element_selector=lambda x: x):
+        def group_by_key(self,
+                key_selector: abc.Callable,
+                element_selector: abc.Callable=lambda x: x) -> abc.Hashable:
             """Groups items by the given key and element selectors"""
             return group_items_by_key(self, key_selector, element_selector)
 
-        def order_by(self, key=None, reverse=False):
+        def order_by(self, key: abc.Callable=None, reverse: bool=False) -> IEnumerable:
             """Returns items ordered by the given key selector"""
             return Enumerable(base(sorted(self, key=key, reverse=reverse)))
 
-        def select(self, selector):
+        def select(self, selector: abc.Callable) -> IEnumerable:
             """
             Returns a list of items projected into
             a new form using the selector function
@@ -155,7 +161,7 @@ def extend(iterable=()):
             """
             return Enumerable(base(map(selector, self)))
 
-        def select_many(self, selector):
+        def select_many(self, selector: abc.Callable) -> IEnumerable:
             """
             Projects items into a new form using the selector function
             and flattens the results into one list
@@ -163,26 +169,26 @@ def extend(iterable=()):
             """
             return Enumerable(base(sum(self.select(selector), [])))
 
-        def skip(self, count):
+        def skip(self, count: int) -> IEnumerable:
             """Skips count number of items and returns the result"""
             return Enumerable(base(list(self)[count:]))
 
-        def diff(self, other):
+        def diff(self, other: 'IEnumerable') -> IEnumerable:
             """
             Returns the set difference of this enumerable and another iterable
 
             """
             return Enumerable(base(set(self).difference(other)))
 
-        def distinct(self):
+        def distinct(self) -> IEnumerable:
             """Filters items down to distinct ones"""
             return Enumerable(base(set(self)))
 
-        def where(self, predicate):
+        def where(self, predicate: abc.Callable) -> IEnumerable:
             """Filters items based on the given predicate"""
             return Enumerable(base(filter(predicate, self)))
 
-        def whereif(self, condition, predicate):
+        def whereif(self, condition: bool, predicate: abc.Callable) -> IEnumerable:
             """Filters items based on the given condition and predicate"""
             if condition:
                 return self.where(predicate)
@@ -190,7 +196,7 @@ def extend(iterable=()):
                 return self
 
         @property
-        def base(self):
+        def base(self) -> abc.Iterable:
             """Base class for this Enumerable"""
             return base
 
@@ -200,12 +206,12 @@ class Queryable:
 
     """Used to delay iterable evaluation to improve performance"""
 
-    def __init__(self, iterable):
+    def __init__(self, iterable: abc.Iterable) -> None:
         """Initializes this queryable using the given iterable"""
         self._expr = iter(iterable)
         self._type = type(iterable)
 
-    def copy(self):
+    def copy(self) -> 'Queryable':
         """Returns a shallow copy of this queryable"""
         # create a copy of the source
         to_copy = list(self._expr).copy()
@@ -214,11 +220,11 @@ class Queryable:
         # return the copied queryable
         return Queryable(to_copy)
 
-    def any(self, predicate=lambda x: True):
+    def any(self, predicate: abc.Callable=lambda x: True) -> bool:
         """Returns True if there are any items matching the predicate, False otherwise"""
         return any(map(predicate, self._expr))
 
-    def first_or_default(self, default=None):
+    def first_or_default(self, default: object=None) -> object:
         """
         Returns the first item in this queryable or
         the default if this queryable is empty
@@ -226,7 +232,7 @@ class Queryable:
         """
         return next(self._expr, default)
 
-    def last_or_default(self, default=None):
+    def last_or_default(self, default: object=None) -> object:
         """
         Returns the last item in this queryable or
         the default if this queryable is empty
@@ -235,7 +241,7 @@ class Queryable:
         data = self.to_list()
         return data[-1] if data else default
 
-    def group_by(self, property):
+    def group_by(self, property: str) -> abc.Hashable:
         """Groups items by the given property"""
         grouped = group_items(self, property)
 
@@ -245,7 +251,9 @@ class Queryable:
 
         return grouped
 
-    def group_by_key(self, key_selector, element_selector=lambda x: x):
+    def group_by_key(self,
+            key_selector: abc.Callable,
+            element_selector: abc.Callable=lambda x: x) -> abc.Hashable:
         """Groups items by the given key and element selectors"""
         grouped = group_items_by_key(self, key_selector, element_selector)
 
@@ -255,17 +263,17 @@ class Queryable:
 
         return grouped
 
-    def order_by(self, key=None, reverse=False):
+    def order_by(self, key: abc.Callable=None, reverse: bool=False) -> 'Queryable':
         """Orders items by the given key selector"""
         self._expr = iter(sorted(self._expr, key=key, reverse=reverse))
         return self
 
-    def select(self, selector):
+    def select(self, selector: abc.Callable) -> 'Queryable':
         """Projects items into a new form using the selector function"""
         self._expr = map(selector, self._expr)
         return self
 
-    def select_many(self, selector):
+    def select_many(self, selector: abc.Callable) -> 'Queryable':
         """
         Projects items into a new form using the selector function
         and flattens the results into one list
@@ -274,7 +282,7 @@ class Queryable:
         self._expr = iter(sum(self.select(selector)._expr, []))
         return self
 
-    def skip(self, count):
+    def skip(self, count: int) -> 'Queryable':
         """Skips count number of items and returns the queryable"""
         for i in range(count):
             try:
@@ -283,56 +291,56 @@ class Queryable:
                 break
         return self
 
-    def diff(self, other):
+    def diff(self, other: 'Queryable') -> 'Queryable':
         """
         Returns the set difference of this queryable and another iterable
 
         """
         return self.where(lambda item: item not in other)
 
-    def distinct(self):
+    def distinct(self) -> 'Queryable':
         """Filters items down to distinct ones"""
         self._expr = iter(self._type(set(self._expr)))
         return self
 
-    def where(self, predicate):
+    def where(self, predicate: abc.Callable) -> 'Queryable':
         """Filters items based on the given predicate"""
         self._expr = filter(predicate, self._expr)
         return self
 
-    def whereif(self, condition, predicate):
+    def whereif(self, condition: bool, predicate: abc.Callable) -> 'Queryable':
         """Filters items based on the given condition and predicate"""
         if condition:
             return self.where(predicate)
         else:
             return self
 
-    def to_list(self):
+    def to_list(self) -> list:
         """Reduces the queryable expression to a list"""
         return list(self._expr)
 
-    def to_set(self):
+    def to_set(self) -> set:
         """Reduces the queryable expression to a set"""
         return set(self._expr)
 
-    def to_tuple(self):
+    def to_tuple(self) -> tuple:
         """Reduces the queryable expression to a tuple"""
         return tuple(self._expr)
 
-    def to_type(self):
+    def to_type(self) -> abc.Iterable:
         """Reduces the queryable expression to its type"""
         return self.type(self._expr)
 
-    def to_enum(self):
+    def to_enum(self) -> IEnumerable:
         """Reduces the queryable expression to an enumerable"""
         return extend(self.to_list())
 
     @property
-    def type(self):
+    def type(self) -> abc.Iterable:
         """Iterable type for this queryable"""
         return self._type
 
-def query(iterable=()):
+def query(iterable: abc.Iterable=()) -> Queryable:
     """Returns an instance of Queryable using the given iterable"""
     return Queryable(iterable)
 
