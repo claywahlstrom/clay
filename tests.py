@@ -1,4 +1,5 @@
 
+from collections import abc as _abc
 import inspect as _inspect
 
 from clay.text import is_capitalized as _is_cap, \
@@ -19,14 +20,19 @@ print()
 print('Running tests for "{}"...'.format(MODULE))
 print()
 
-def _show_success(expectation):
+def _show_success(expectation: str) -> None:
     print('Passed: {}'.format(expectation))
 
-def _show_failure(expectation, expected, actual):
+def _show_failure(expectation: str, expected: object, actual: object) -> None:
     print('Failed: {}. Expected {} but found {}' \
         .format(expectation, expected, actual))
 
-def testif(expectation, test_input, test_output, name=None, raises=None, transformer=lambda x: x):
+def testif(expectation: str,
+        test_input: object,
+        test_output: object,
+        name: str=None,
+        raises: BaseException=None,
+        transformer: _abc.Callable=lambda x: x) -> None:
     """
     Tests whether the expectation is valid by comparing the
     given test input to the test output. Test output may either
@@ -69,11 +75,11 @@ def testif(expectation, test_input, test_output, name=None, raises=None, transfo
         else:
             _show_failure(expectation, test_output, result)
 
-def testraises(raise_condition,
-        test_expression,
-        exception,
-        name=None,
-        transformer=lambda x: x):
+def testraises(raise_condition: str,
+        test_expression: _abc.Callable,
+        exception: BaseException,
+        name: str=None,
+        transformer: _abc.Callable=lambda x: x) -> None:
     """
     Tests if the expression raises the given exception when
     the condition is True. Shortcut to the `testif` function.
@@ -98,7 +104,7 @@ if __name__ == '__main__':
         lambda: testif('should pass', 0, 0, name=testif),
         None,
         raises=TypeError)
-    testif('Formats capitalized expectation with name correctly', 0, 0, name='testif')
+    testif('formats capitalized expectation with name correctly', 0, 0, name='testif')
     testif('testif passes test for equal values', 0, 0)
     print('The next test should fail')
     testif('testif passes test for unequal values', 0, 1)
