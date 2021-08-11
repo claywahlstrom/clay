@@ -4,9 +4,10 @@ Basic operations for lines, lists, and files
 
 """
 
-import io as _io
+from collections import abc
+import io
 
-def apply(function, vector):
+def apply(function: abc.Callable, vector: abc.Iterable) -> abc.Iterable:
     """
     Applies the function to the given vector and returns the result
     of the same type
@@ -14,7 +15,7 @@ def apply(function, vector):
     """
     return type(vector)(map(function, vector))
 
-def frange(start, stop, step):
+def frange(start: int, stop: int, step: float) -> abc.Generator:
     """
     Returns a generator that produces a stream of floats from
     start (inclusive) to stop (exclusive) by the given step
@@ -29,7 +30,7 @@ def frange(start, stop, step):
     for x in range(steps):
         yield round(start + x * step, digits)
 
-def join_lines(file, join_sep=', '):
+def join_lines(file: object, join_sep: str=', ') -> str:
     """
     Returns the lines of text from the given file (object or str)
     joined by the separator
@@ -43,7 +44,7 @@ def join_lines(file, join_sep=', '):
         raise TypeError(file)
     return fp.read().replace('\n', join_sep)
 
-def printall(items):
+def printall(items: abc.Iterable) -> None:
     """Prints each item from the given items iterable"""
     if isinstance(items, dict):
         for key, value in items.items():
@@ -52,7 +53,7 @@ def printall(items):
         for item in items:
             print(item)
 
-def printlines(content, lines=0, numbered=True):
+def printlines(content: str, lines: int=0, numbered: bool=True) -> None:
     """Prints the given content (list of str or str), w/ or w/o line numbers"""
     if not isinstance(content, (list, str)):
         raise TypeError('content must be of type str or list')
@@ -63,7 +64,7 @@ def printlines(content, lines=0, numbered=True):
 
     chunks = [line.rstrip() for line in content]
 
-    if not(lines):
+    if lines == 0:
         lines = len(chunks)
     chunks = chunks[:lines]
     for num, line in enumerate(chunks):
@@ -71,7 +72,7 @@ def printlines(content, lines=0, numbered=True):
             print(str(num).rjust(len(str(lines))), end=' ')
         print(line)
 
-def rmdup(lizt, show_output=False):
+def rmdup(lizt: abc.Iterable, show_output: bool=False) -> abc.Iterable:
     """Returns a non-duplicated version of the given list with order in tact"""
     len_before = len(lizt)
     new = []
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     from clay.tests import testif, testraises
     from clay.utils import qualify
 
-    TEST_FILE = _io.StringIO('h\ne\nl\nl\no')
+    TEST_FILE = io.StringIO('h\ne\nl\nl\no')
     TEST_LIST = ['h', 'e', 'l', 'l', 'o']
 
     testif('returns correct type (list)',
