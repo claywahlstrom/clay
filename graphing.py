@@ -5,7 +5,9 @@ Graphing: basic structures for visualizing data
 
 """
 
+from collections import abc as _abc
 import operator as _operator
+import io as _io
 import sys as _sys
 
 from clay.settings import CONSOLE_WIDTH
@@ -17,7 +19,11 @@ class Graph(object):
 
     SHORT_LENGTH = 30
 
-    def __init__(self, data, title=None, max_width=CONSOLE_WIDTH, sort=True):
+    def __init__(self,
+            data: _abc.Hashable,
+            title: str=None,
+            max_width: int=CONSOLE_WIDTH,
+            sort: bool=True) -> None:
         """Initializes this graph with the given data, title, width, and sort option"""
         if type(data) is _SortableDict:
             sd = data
@@ -43,13 +49,13 @@ class Graph(object):
         self.sd = sd
         self.title = title
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Returns the string representation of this graph"""
         if not self:
             return '%s()' % (self.__class__.__name__,)
         return '%s(%r)' % (self.__class__.__name__, list(self.sd.items()))
 
-    def build(self, limit=0, shorten_keys=False, with_count=False):
+    def build(self, limit: int=0, shorten_keys: bool=False, with_count: bool=False) -> None:
         """Builds the graph and prints it to stdout"""
         longest_key_len = max(map(lambda x: len(str(x)), self.sd.keys()))
         longest_value_len = max(map(lambda x: len(str(x)), self.sd.values()))
@@ -102,18 +108,17 @@ class Graph(object):
         self.using = using
         self.with_count = with_count
 
-    def sort_by(self, name, reverse=False):
+    def sort_by(self, name: str, reverse: bool=False) -> None:
         """
-        Sorts the graph data by the given name (column or count,
-        raises `ValueError` if other)
+        Sorts the graph data by the given name (column or count, raises `ValueError` if other)
 
         """
         if name not in ('column', 'count'):
             raise ValueError('name must be column or count')
         std = sorted(self.sd.items(), key=_operator.itemgetter(('column', 'count').index(name)), reverse=reverse)
         self.sd.clear()
-        for i,j in enumerate(std):
-            self.sd[j[0]] = j[-1]
+        for i in std:
+            self.sd[i[0]] = i[-1]
 
 class Histogram(Graph):
     """
@@ -128,8 +133,12 @@ class Histogram(Graph):
 
     """
 
-    def __init__(self, columns=None, data=None, title=None,
-            max_width=CONSOLE_WIDTH, sort=True):
+    def __init__(self,
+            columns: _abc.Iterable=None,
+            data: _abc.Iterable=None,
+            title: str=None,
+            max_width: int=CONSOLE_WIDTH,
+            sort: bool=True) -> None:
         """Initializes this histogram"""
         if columns is not None and type(columns) not in (tuple, list):
             raise TypeError('columns must be of type tuple')
@@ -148,7 +157,7 @@ class Histogram(Graph):
 
         super(Histogram, self).__init__(sd, title=title, max_width=max_width, sort=sort)
 
-def tabulate(dictionary, name=''):
+def tabulate(dictionary: _abc.Hashable, name: str='') -> None:
     """Prints a basic table from the given dictionary called `name`"""
     if not hasattr(dictionary, 'keys'):
         raise TypeError('dictionary must derive from type dict')
@@ -159,8 +168,13 @@ def tabulate(dictionary, name=''):
     for i in dictionary:
         print('{:{}} : {}'.format(i, largestlen, dictionary[i]))
 
-def tabulatef(func, start=-5, end=5, step=1, spacing=9,
-        precision=10, roundto=14, file=_sys.stdout):
+def tabulatef(func: _abc.Callable,
+        start: float=-5,
+        end: float=5,
+        step: float=1,
+        precision: int=10,
+        roundto: int=14,
+        file: _io.TextIOWrapper=_sys.stdout):
     """
     Prints a table of values from the given a function,
     bounds, step, and output location
@@ -189,7 +203,7 @@ def tabulatef(func, start=-5, end=5, step=1, spacing=9,
             print('domain error', file=file)
         i = round(i + step, 14)
 
-def test_function(x):
+def test_function(x: float) -> float:
     """Function used for testing"""
     return x ** (4 / 3) / float(x)
 
