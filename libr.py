@@ -36,7 +36,7 @@ class Essay(object):
 
     """
 
-    def __init__(self, source, line_start=1, line_sep='\n'):
+    def __init__(self, source: object, line_start: int=1, line_sep: str='\n') -> None:
         """Initializes this essay with the given source, line start, and line separator"""
         if line_start < 1:
             raise ValueError('line start must be >= 1')
@@ -66,21 +66,22 @@ class Essay(object):
             print(e)
             print('Could not remove the period exceptions from the text')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Returns the string representation of this essay"""
         preview = self.source[:20].replace('\n', '\\n')
-        return 'Essay(source={{{}...}}, line_start={})'.format(preview, self.line_start)
+        return '{}(source={{{}...}}, line_start={})'.format(
+            self.__class__.__name__, preview, self.line_start)
 
-    def are_paren_bal(self):
+    def are_paren_bal(self) -> bool:
         """Returns True if parentheses are balanced, False otherwise"""
         return self.text.count('(') == self.text.count(')')
 
-    def find_extraspace(self):
+    def find_extraspace(self) -> None:
         """Finds extra spaces, ex. ' .' and '  '"""
         print('Extraspace')
         print(_re.findall('(.{6}  .{6})|(.{6} \.[ \w\n]{6})', self.text))
 
-    def find_firstnlast(self, pdelim='\n'):
+    def find_firstnlast(self, pdelim: str='\n') -> None:
         """Simplifies long texts"""
         spl = self.text.split(pdelim)
         if spl.count('') > len(spl) / 2: # if half parsed incorrectly
@@ -96,49 +97,49 @@ class Essay(object):
                 print(p)
             print()
 
-    def find_midcaps(self):
+    def find_midcaps(self) -> None:
         """Finds unexpected capitals"""
         print('Mid caps')
         mids = list(filter(lambda sent: not('I' in sent),
                            list(_re.findall('\w+ [A-Z]+.{6}', self.text)))) # range for context
         print(mids)
 
-    def find_pronouns(self):
+    def find_pronouns(self) -> None:
         """Finds uncapitalized I's and prints the result"""
         print('Pronouns (I\'s)')
         print(_re.findall('.{6} i .{6}', self.text))
 
-    def find_topics(self):
+    def find_topics(self) -> None:
         """Finds topic sentences and prints the result"""
         print('Topic sentences')
         print(self.get_topics())
 
-    def find_wrongcaps(self):
+    def find_wrongcaps(self) -> None:
         """Displays unexpected capitals"""
         print('Possibly wrong caps')
         print(_re.findall('.{5}\. [a-z0-9].{5}', self.text))
 
-    def fix_quotes(self):
+    def fix_quotes(self) -> None:
         """Replaces curly quotes with straight ones"""
         self.text = replace_smart_quotes(self.text)
 
-    def fix_spaces(self):
+    def fix_spaces(self) -> None:
         """Replaces improper spacing"""
         self.text = self.text.replace('  ', ' ') # extra space
         self.text = self.text.replace(' .', '.') # period before
         self.text = self.text.replace('.  ', '. ') # space after
 
-    def get_paragraph_count(self):
+    def get_paragraph_count(self) -> None:
         """Returns # of paragraphs"""
         return len(self.text.strip().split('\n'))
 
-    def get_paren_citation(self, page_num=True, http_only=False):
+    def get_paren_citation(self, page_num: bool=True, http_only: bool=False) -> list:
         """
         Returns citations extracted from essay.
         Found using MLA parenthetical standards
 
         """
-        parens = _re.findall('\(.*\)', self.text) # prev. [self.text[self.starts[i]+1:self.ends[i]] for i in xrange(len(self.starts))]
+        parens = _re.findall('\(.*\)', self.text)
         parens = _rmdup(parens)
         if http_only:
             parens = [x for x in parens if 'http' in x]
@@ -146,19 +147,19 @@ class Essay(object):
             parens = [x for x in parens if x[-1].isalpha()] # if last of paren is not page num
         return parens
 
-    def get_period_count(self):
+    def get_period_count(self) -> int:
         """Returns # of periods"""
         return (self.text).count('.')
 
-    def get_sentence_count(self):
+    def get_sentence_count(self) -> int:
         """Returns # of sentences"""
         return len(_re.findall('\.\s', replace_smart_quotes(self.text).replace('"', '')))
 
-    def get_topics(self):
+    def get_topics(self) -> list:
         """Returns list of topic sentences"""
         return _re.findall('\n([A-Z][^\.!?]*[\.!?]) ', self.text)
 
-    def get_word_count(self, ignore_headings=True):
+    def get_word_count(self, ignore_headings: bool=True) -> int:
         """Returns # of words"""
         lines = self.text.split('\n')
         count = 0
@@ -169,7 +170,7 @@ class Essay(object):
                     count += len(line.split())
         return count
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Displays basic stats"""
         print(self)
         print('para', self.get_paragraph_count())
@@ -177,7 +178,7 @@ class Essay(object):
         print('sents', self.get_sentence_count())
         print('words', self.get_word_count())
 
-    def save_topics(self, filename='saved-topics.txt'):
+    def save_topics(self, filename: str='saved-topics.txt') -> None:
         """Saves the topic sentences to the given filename"""
         with open(filename, 'w') as f:
             f.write('\n'.join(self.get_topics()))
@@ -205,12 +206,12 @@ class Citation(object):
                 'publisher',
                 'site_name']
 
-    def __init__(self, link):
+    def __init__(self, link: str) -> None:
         """Initializes this citation"""
         self.link = link
         self.build_dict()
 
-    def build_dict(self):
+    def build_dict(self) -> None:
         """Sets up the variables"""
         req = _requests.get(self.link)
         page = req.content
@@ -248,7 +249,7 @@ class Citation(object):
         self.req = req
         self.page = page
 
-    def to_string(self):
+    def to_string(self) -> str:
         """Builds the citation string and stores it in the string member"""
         string = ''
         if 'author' in self.data.keys():
@@ -265,7 +266,7 @@ class Citation(object):
         string += COM_SP.join([self.data['date_retr'], self.data['url']]) + PER_SP[0]
         return string
 
-def define(words):
+def define(words) -> None:
     """Prints possible definitions for a word by using Cambridge's dictionary"""
     baseuri = 'http://dictionary.cambridge.org/dictionary/english/'
     inituri = baseuri + '?q=' + words.replace(' ','+')
@@ -280,7 +281,7 @@ def define(words):
     except:
         print('No definitions found on', inituri)
 
-def proper_title(title, ignore_acronyms=True):
+def proper_title(title: str, ignore_acronyms: bool=True) -> str:
     """Returns the title with proper casing"""
     words = title.split(' ')
     title = ' '.join(
@@ -288,7 +289,7 @@ def proper_title(title, ignore_acronyms=True):
             words))
     return title[0].upper() + title[1:]
 
-def proper_word(word, ignore_acronyms=True):
+def proper_word(word: str, ignore_acronyms: bool=True) -> str:
     """Returns the word with proper casing"""
     if word.isupper() and not ignore_acronyms:
         return word
@@ -296,7 +297,7 @@ def proper_word(word, ignore_acronyms=True):
         return word.capitalize()
     return word.lower()
 
-def replace_smart_quotes(text, encoding='utf8'):
+def replace_smart_quotes(text: str, encoding: str='utf8') -> str:
     """Replaces smart single and double quotes with straight ones"""
     encoded = text.encode(encoding)
     for single in (b'\x98', b'\x99'):
@@ -305,7 +306,7 @@ def replace_smart_quotes(text, encoding='utf8'):
             encoded = encoded.replace(b'\xe2\x80' + double, b'"')
     return encoded.decode(encoding)
 
-def sort_bib(filename):
+def sort_bib(filename: str) -> None:
     """
     Sorts a bibliography lexicographically, no stdout required.
     You need to sort quoted titles manually though
@@ -324,6 +325,7 @@ def sort_bib(filename):
 if __name__ == '__main__':
 
     from clay.tests import testif
+    from clay.utils import qualify
 
     with open(r'test_files\essay.txt') as fp:
         fread = fp.read()
@@ -345,10 +347,16 @@ if __name__ == '__main__':
 
     define('vector quantity')
 
-    testif('proper_word converts short word "hi" correctly',
-        proper_word('hello'), 'Hello')
-    testif('proper_word converts short word "a" correctly',
-        proper_word('a'), 'a')
-    testif('proper_title converts title correctly',
+    testif('converts title correctly',
         proper_title('the best hot dog on a stick'),
-        'The Best Hot Dog on a Stick')
+        'The Best Hot Dog on a Stick',
+        name=qualify(proper_title))
+
+    testif('converts short word "hi" correctly',
+        proper_word('hello'),
+        'Hello',
+        name=qualify(proper_word))
+    testif('converts short word "a" correctly',
+        proper_word('a'),
+        'a',
+        name=qualify(proper_word))
