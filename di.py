@@ -4,6 +4,8 @@ di: Dependency injection tools
 
 """
 
+from collections import abc
+
 from clay.guids import Guid
 from clay.utils import qualify
 
@@ -11,11 +13,11 @@ class TypeUnboundError(Exception):
 
     """Raised when a type is not bound"""
 
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name: str, *args, **kwargs) -> None:
         self.name = name
         super().__init__(repr(self), *args, **kwargs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Returns the string representation"""
         return self.name + ' not bound'
 
@@ -23,17 +25,17 @@ class _Kernel:
 
     """Used to set up bindings and track resolutions"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes this kernel"""
         self.__id = str(Guid.new())
         self._bindings = {}
         self._resolutions = {}
 
-    def bind(self, tipe, expr=None):
+    def bind(self, tipe: type, expr: abc.Callable=None) -> None:
         """Binds the given type to the expression, defaults to self"""
         self._bindings[qualify(tipe)] = expr or tipe
 
-    def get(self, tipe):
+    def get(self, tipe: type) -> object:
         """
         Resolves and returns the evaluated expression for the given type.
         Raises `TypeUnboundError` if the type is not bound.
@@ -47,7 +49,7 @@ class _Kernel:
         return self._resolutions[name]
 
     @property
-    def id(self):
+    def id(self) -> str:
         """The ID of this kernel"""
         return self.__id
 
@@ -68,7 +70,7 @@ if __name__ == '__main__':
         name=qualify(_Kernel.bind))
 
     class TestService:
-        def __init__(self, repo_name):
+        def __init__(self, repo_name) -> None:
             self.repo_name = repo_name
 
     testraises('type not bound',
