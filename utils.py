@@ -146,17 +146,22 @@ class Watch(object):
 
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
 
-    testif('human_hex converts integer 2700 correctly', human_hex(2700), 'a8c')
+    testif('converts integer 2700 correctly',
+        human_hex(2700),
+        'a8c',
+        name=qualify(human_hex))
 
     array = (1, 4, 16, 25)
-    testif('map_args returns correct type',
-        type(map_args(_map_args_test, array, z = 4)),
-        type(array))
-    testif('map_args returns correct values',
-        map_args(_map_args_test, array, z = 4),
-        (7, 10, 22, 31))
+    testif('returns correct type',
+        type(map_args(_map_args_test, array, z=4)),
+        type(array),
+        name=qualify(map_args))
+    testif('returns correct values',
+        map_args(_map_args_test, array, z=4),
+        (7, 10, 22, 31),
+        name=qualify(map_args))
 
     from tkinter import Button, _test
 
@@ -215,35 +220,44 @@ if __name__ == '__main__':
     celia.sort()
     testif('SortableDict sorts iterable correctly', celia, person_expected)
 
+    testraises('incorrect objs type',
+        lambda: Watch({'invalid': 'type'}),
+        TypeError,
+        name=qualify(Watch.__init__))
+    testraises('incorrect obj type',
+        lambda: Watch([None, 'valid_name', 123]),
+        TypeError,
+        name=qualify(Watch.__init__))
+
+    # watch test variables
     a = 'string'
     b = int(4)
     c = {}
-    testif('Watch raises TypeError for incorrect objs type',
-        lambda: Watch({'invalid': 'type'}),
-        None,
-        raises=TypeError)
-    testif('Watch raises TypeError for incorrect obj type',
-        lambda: Watch([None, 'valid_name', 123]),
-        None,
-        raises=TypeError)
+
     w = Watch(['a', 'b', 'c'])
-    testif('Watch is not watching d', w.is_watching('d'), False)
+    testif('returns false if not watching',
+        w.is_watching('d'),
+        False,
+        name=qualify(Watch.is_watching))
     print('before add')
     w.view()
     d = float(542.2)
     w.add('d')
-    testif('Watch is watching d', w.is_watching('d'), True)
+    testif('returns true if watching',
+        w.is_watching('d'),
+        True,
+        name=qualify(Watch.is_watching))
     print('after add')
     w.view()
     w.write_file(r'test_files\watch-test.txt')
 
-    testif('Watch raises TypeError when adding non-string type',
+    testraises('adding non-string type',
         lambda: w.add(None),
-        None,
-        raises=TypeError)
+        TypeError,
+        name=qualify(Watch.add))
     def test_function(x):
         return x
-    testif('Watch raises TypeError when adding callable string type',
+    testraises('adding callable string type',
         lambda: w.add('test_function'),
-        None,
-        raises=TypeError)
+        TypeError,
+        name=qualify(Watch.add))
