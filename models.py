@@ -5,8 +5,8 @@ Models for working with objects.
 """
 
 import abc as _abc
+from collections import abc as _cabc
 import collections as _collections
-import inspect as _inspect
 import uuid as _uuid
 
 from clay.time.dates import YMD_FMT
@@ -16,12 +16,12 @@ class Abstract:
     """Used to disable instantiation of this type"""
 
     @_abc.abstractmethod
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes this object"""
         if isinstance(self, Abstract):
             raise NotImplementedError('Cannot instantiate {} because it is abstract'.format(type(self)))
 
-    def raise_if_base(self, base):
+    def raise_if_base(self, base: type) -> None:
         """Raises NotImplementedError if the type of this object matches the base type"""
         if type(self) == base:
             raise NotImplementedError('Cannot instantiate {} because it is abstract'.format(type(self)))
@@ -33,11 +33,11 @@ class Serializable(Abstract):
 
     """Abstract class used to convert between Python and JSON types"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Always throws NotImplementedError because this class is abstract"""
         self.raise_if_base(Serializable)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Returns the string representation of this object"""
         self.verify_props()
 
@@ -46,12 +46,12 @@ class Serializable(Abstract):
             ', '.join(prop + '=' + repr(getattr(self, prop, None))
                 for prop in sorted(self.props)))
 
-    def verify_props(self):
+    def verify_props(self) -> None:
         """Verifies properties exist. Raises a runtime error if not found"""
         if not hasattr(self, 'props'):
             raise RuntimeError('{} must implement the props attribute'.format(self.__class__.__name__))
 
-    def to_json(self):
+    def to_json(self) -> dict:
         """Serializes this object to JSON"""
         self.verify_props()
         return {prop: getattr(self, prop, None) for prop in self.props}
@@ -60,24 +60,24 @@ class Anonymous(Serializable):
 
     """Used to initialize attributes using dictionaries and keyword arguments"""
 
-    def __init__(self, *initial_data, **kwargs):
+    def __init__(self, *initial_data, **kwargs) -> None:
         """Initializes this Anonymous"""
         self._props = _collections.OrderedDict()
         self.update(*initial_data, **kwargs)
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         """Returns True if key is a property of this Anonymous, False otherwise"""
         return key in self.props
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> object:
         """Gets the attribute with the given name"""
         return getattr(self, name)
 
-    def __setitem__(self, name, value):
+    def __setitem__(self, name: str, value: object) -> None:
         """Sets the attribute with the given name to value"""
         setattr(self, name, value)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: object) -> None:
         """Sets the attribute with the given name to value"""
         super().__setattr__(name, value)
 
@@ -85,7 +85,7 @@ class Anonymous(Serializable):
         if not name.startswith('_'):
             self._props[name] = type(value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: 'Anonymous') -> bool:
         """Returns True if this Anonymous is equal to other, False otherwise"""
         assert self.props == other.props
         for prop in self.props:
@@ -94,11 +94,11 @@ class Anonymous(Serializable):
         return True
 
     @property
-    def props(self):
+    def props(self) -> dict:
         """Returns the attributes for this Anonymous"""
         return self._props.copy()
 
-    def get(self, name, default=None):
+    def get(self, name: str, default: _cabc.Callable=None) -> object:
         """Gets the attribute with the given name. Defaults to None"""
         try:
             return getattr(self, name)
@@ -107,7 +107,7 @@ class Anonymous(Serializable):
         except:
             raise
 
-    def update(self, *initial_data, **kwargs):
+    def update(self, *initial_data, **kwargs) -> None:
         """Updates attributes using dictionaries and keyword arguments"""
         for param in initial_data:
             if not isinstance(param, dict):
@@ -117,7 +117,7 @@ class Anonymous(Serializable):
         # set props using kwargs
         self.__convert_data(kwargs)
 
-    def __convert_data(self, lookup):
+    def __convert_data(self, lookup: _cabc.Iterable) -> None:
         """Assigns the lookup keys and values to this Anonymous"""
         import datetime as dt
         for key in lookup:
@@ -130,7 +130,7 @@ class Anonymous(Serializable):
                     pass
             self[key] = value
 
-def json2model(data, model):
+def json2model(data: dict, model: type) -> Anonymous:
     """Deserializes the given data to an object of type model"""
 
     obj = model()
@@ -150,7 +150,7 @@ class Model(Anonymous):
 
     """Used to work with database models"""
 
-    def __init__(self, *initial_data, **kwargs):
+    def __init__(self, *initial_data, **kwargs) -> None:
         """Initializes this Model"""
 
         # set an initial ID value
@@ -162,7 +162,7 @@ class Model(Anonymous):
         if self.id is None:
             self.id = str(_uuid.uuid4())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Returns the string representation of this model"""
         self.verify_props()
 
