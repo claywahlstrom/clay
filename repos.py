@@ -4,12 +4,14 @@ Custom repositories
 
 """
 
+from collections import abc as _abc
 import datetime as _dt
 import json as _json
 import os as _os
 
-from clay.decors import obsolete
-from clay.linq import extend as _extend, \
+from clay.linq import IEnumerable, \
+    extend as _extend, \
+    Queryable, \
     query as _query
 from clay.lists import rmdup as _rmdup
 from clay.models import Model as _Model, \
@@ -22,16 +24,16 @@ class RecordNotFoundError(Exception):
 
 class IRepository(_Abstract):
 
-    def read(self):
+    def read(self) -> object:
         raise NotImplementedError('read')
 
-    def write(self):
+    def write(self) -> None:
         raise NotImplementedError('write')
 
 class BaseRepository(_Abstract):
     """Base repository for working with databases"""
 
-    def __init__(self, name, empty):
+    def __init__(self, name: str, empty: str) -> None:
         """
         Intializes this repository with the given name
         and empty database structure
@@ -44,21 +46,21 @@ class BaseRepository(_Abstract):
         self.clear()
         self._update_context()
 
-    def _ensure_connected(self):
+    def _ensure_connected(self) -> None:
         """Ensures the database has been read from the disk"""
         if not self.has_read:
             _ = self.read()
 
-    def _update_context(self):
+    def _update_context(self) -> None:
         """Updates the context to be the current database snapshot"""
         self.__context = self._db.copy()
 
-    def clear(self):
+    def clear(self) -> None:
         """Sets the database to the empty structure"""
         self._db = self.__empty
         self._update_context()
 
-    def create(self, force=False, write=True):
+    def create(self, force: bool=False, write: bool=True) -> bool:
         """
         Creates this database if it does not exist and returns
         a boolean of whether it was successful or not. Use force=True
@@ -74,11 +76,11 @@ class BaseRepository(_Abstract):
             self.write()
         return True
 
-    def exists(self):
+    def exists(self) -> bool:
         """Returns True if the database exists, False otherwise"""
         return _os.path.exists(self.__name)
 
-    def read(self):
+    def read(self) -> object:
         """
         Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
@@ -94,17 +96,17 @@ class BaseRepository(_Abstract):
         self.__has_read = True
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The name of this repository"""
         return self.__name
 
     @property
-    def empty(self):
+    def empty(self) -> object:
         """An empty structure for this repository"""
         return self.__empty
 
     @property
-    def has_read(self):
+    def has_read(self) -> bool:
         """
         Returns True if read has been called for this database,
         False otherwise
@@ -113,7 +115,7 @@ class BaseRepository(_Abstract):
         return self.__has_read
 
     @property
-    def has_context_changed(self):
+    def has_context_changed(self) -> bool:
         """
         Returns True if the database context has changed since last
         read/write, False otherwise
@@ -124,7 +126,7 @@ class BaseRepository(_Abstract):
 class JsonRepository(BaseRepository, IRepository):
     """Wrapper for working with JSON databases"""
 
-    def prune(self, predicate):
+    def prune(self, predicate: _abc.Callable) -> None:
         """
         Prunes entities from the database based on the given predicate
         function
@@ -144,19 +146,19 @@ class JsonRepository(BaseRepository, IRepository):
         if modified:
             self.write()
 
-    def write(self):
+    def write(self) -> None:
         """Writes this database to the disk"""
         with open(self.name, 'w') as fd:
             _json.dump(self.db, fd)
         self._update_context()
 
     @property
-    def db(self):
+    def db(self) -> object:
         """Returns the database for this repository"""
         return self._db
 
     @db.setter
-    def db(self, value):
+    def db(self, value: object) -> None:
         """Sets this database to the given value"""
         if not isinstance(value, (dict, list)):
             raise TypeError('db must be a JSON serializable of base type dict or list')
@@ -165,47 +167,47 @@ class JsonRepository(BaseRepository, IRepository):
 class ListRepository(JsonRepository):
     """Wrapper for working with list databases"""
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         """Initializes this list repository"""
         super().__init__(name, [])
 
-    def uniquify(self):
+    def uniquify(self) -> None:
         """Removes duplicates from the database"""
         self.db = _rmdup(self.db) # remove duplicates
 
 class CrudRepository(ListRepository):
     """Wrapper for working with CRUD databases"""
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         """Initializes this CRUD repository under the given file name"""
         super().__init__(name)
         self.__model = object
         self.clear_index()
 
-    def clear(self):
+    def clear(self) -> None:
         """Sets the database to the empty structure and clears the index"""
         self._db = _extend(self.empty)
         self.clear_index()
 
-    def build_index(self):
+    def build_index(self) -> None:
         """Builds the index for this CrudRepository to speed up access times"""
         for model in self._db:
             model_id = model['id']
             if model_id is not None and model_id not in self.__index:
                 self.__index[model_id] = model
 
-    def clear_index(self):
+    def clear_index(self) -> None:
         """Clears the index for this CrudRepository"""
         self.__index = {}
 
-    def add_column(self, name, default_value=None):
+    def add_column(self, name: str, default_value: object=None) -> None:
         """Adds a column with the given name and default value"""
         for entity in self.read():
             if name in entity:
                 raise RuntimeWarning('column "{}" already exists'.format(name))
             entity[name] = default_value
 
-    def drop_column(self, name):
+    def drop_column(self, name: str) -> None:
         """Drops a column with the given name"""
         if self.read().any(lambda entity: entity.get(name) is not None):
             print('Data from column {} will be lost.'.format(name))
@@ -217,11 +219,11 @@ class CrudRepository(ListRepository):
             if name in entity:
                 del entity[name]
 
-    def __pk_not_found(self, pk):
+    def __pk_not_found(self, pk: str) -> None:
         """Raises a RecordNotFoundError for a primary key"""
         raise RecordNotFoundError('{}: pk "{}" not found'.format(self.name, pk))
 
-    def _ensure_exists(self, pk):
+    def _ensure_exists(self, pk: str) -> None:
         """Ensures the given primary key exists"""
         if isinstance(self.read(), list) and self.get(pk) is None:
             model = self.model()
@@ -233,7 +235,7 @@ class CrudRepository(ListRepository):
             # make sure the model exists
             self.insert(model)
 
-    def get(self, pk):
+    def get(self, pk: str) -> _abc.Hashable:
         """Gets the model with the given primary key"""
         self._ensure_connected()
 
@@ -249,18 +251,18 @@ class CrudRepository(ListRepository):
 
         return model
 
-    def create_if_not_exists(self, pk):
+    def create_if_not_exists(self, pk: str) -> None:
         """Creates the given primary key if it does not exist"""
         self._ensure_exists(pk)
 
-    def _insert_model(self, model):
+    def _insert_model(self, model: _abc.Hashable) -> None:
         """Inserts this model into the repository and the index"""
         # insert the model
         self._db.append(model)
         # insert the model into the index
         self.__index[model['id']] = model
 
-    def _remove_model(self, model):
+    def _remove_model(self, model: _abc.Hashable) -> None:
         """Removes this model from the repository and the index"""
         # remove the model
         try:
@@ -276,7 +278,7 @@ class CrudRepository(ListRepository):
         # remove the model from the index
         del self.__index[model['id']]
 
-    def insert(self, model):
+    def insert(self, model: _abc.Hashable) -> None:
         """Inserts the given model into this repository"""
         self._ensure_connected()
 
@@ -289,12 +291,12 @@ class CrudRepository(ListRepository):
         # append the model
         self._insert_model(model)
 
-    def insert_range(self, models):
+    def insert_range(self, models: _abc.Iterable) -> None:
         """Inserts the given models into this repository"""
         for model in models:
             self.insert(model)
 
-    def delete(self, pk):
+    def delete(self, pk: str) -> None:
         """Deletes the given primary key from this repository"""
         self._ensure_connected()
 
@@ -306,7 +308,7 @@ class CrudRepository(ListRepository):
         else:
             self.__pk_not_found(pk)
 
-    def update(self, model):
+    def update(self, model: _abc.Hashable) -> None:
         """Updates the model by inferring the primary key"""
 
         # infer pk from model
@@ -327,7 +329,7 @@ class CrudRepository(ListRepository):
 
         print('{}: pk "{}" updated'.format(self.name, pk))
 
-    def update_prop(self, pk, prop, value):
+    def update_prop(self, pk: str, prop: str, value: object) -> None:
         """
         Updates the value of the property for the given primary
         key within this repository
@@ -343,7 +345,7 @@ class CrudRepository(ListRepository):
 
         model[prop] = value
 
-    def read(self, fetch_if_read=False):
+    def read(self, fetch_if_read: bool=False) -> IEnumerable:
         """
         Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
@@ -363,7 +365,7 @@ class CrudRepository(ListRepository):
 
         return self._db
 
-    def read_queryable(self, fetch_if_read=False):
+    def read_queryable(self, fetch_if_read: bool=False) -> Queryable:
         """
         Reads data from the disk into the database.
         Creates the database if it doesn't already exist.
@@ -371,7 +373,7 @@ class CrudRepository(ListRepository):
         """
         return _query(self.read(fetch_if_read=fetch_if_read))
 
-    def write(self, name=None):
+    def write(self, name: str=None) -> None:
         """Writes this database to the disk"""
         # create a copy of the repo
         models = self._db.copy()
@@ -391,19 +393,19 @@ class CrudRepository(ListRepository):
 
         self._update_context()
 
-    def set_model(self, model: _Model):
+    def set_model(self, model: _Model) -> None:
         """Sets the model type for this repository"""
         if not issubclass(model, _Model):
             raise TypeError('model must of base type clay.models.Model')
         self.__model = model
 
     @property
-    def model(self) -> type:
+    def model(self) -> _Model:
         """Returns the model type for this repository"""
         return self.__model
 
     @property
-    def is_model_based(self):
+    def is_model_based(self) -> bool:
         """Returns True if this repository is model-based, False otherwise"""
         return self.model != object
 
@@ -411,11 +413,11 @@ class UserRepository(CrudRepository):
 
     """Used to manage a repository of users"""
 
-    def __init__(self, file='users.json'):
+    def __init__(self, file: str='users.json') -> None:
         """Initializes this user repository"""
         super().__init__(file)
 
-    def prune(self, date_prop, date_format, days=30):
+    def prune(self, date_prop: str, date_format: str, days: float=30) -> None:
         """Prunes users based on the database date if the date is days old"""
         modified = False
         for model in self.read():
@@ -433,20 +435,20 @@ class UserWhitelist(object):
 
     """Used to whilelist users for secret access"""
 
-    def __init__(self, file):
+    def __init__(self, file: _abc.Iterable) -> None:
         """Initializes this user whitelist"""
         self.__file = file
         self.__users = []
 
-    def get_file(self):
+    def get_file(self) -> _abc.Iterable:
         """Returns the file for this whitelist"""
         return self.__file
 
-    def get_users(self):
+    def get_users(self) -> list:
         """Returns the users in this whitelist"""
         return self.__users
 
-    def is_authorized(self, user):
+    def is_authorized(self, user: str) -> bool:
         """
         Returns True if the given user is authorized
         by this whitelist, False otherwise
@@ -454,7 +456,7 @@ class UserWhitelist(object):
         """
         return user in self.__users
 
-    def read(self):
+    def read(self) -> None:
         """Reads data from the disk into the database"""
         users = []
         for line in self.__file:
@@ -462,8 +464,8 @@ class UserWhitelist(object):
                 users.append(line.strip())
         self.__users = users
 
-    file = property(get_file)
-    users = property(get_users)
+    file: _abc.Iterable = property(get_file)
+    users: list = property(get_users)
 
 if __name__ == '__main__':
 
