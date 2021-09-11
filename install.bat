@@ -1,4 +1,4 @@
 title Installing dependencies...
-pip install bs4 matplotlib requests winsound
+pip install bs4 matplotlib requests
 title Done
 pause
