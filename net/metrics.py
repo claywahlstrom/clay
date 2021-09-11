@@ -25,21 +25,21 @@ class BarMetric(_Serializable):
     def props(self):
         return {'name': str, 'percent': float, 'color': str, 'direction': int}
 
-    def to_html(self):
-        """Returns this bar metric as HTML for a view"""
+    def to_html(self, include_label=True):
+        """Returns this bar metric with or without label as HTML for a view"""
 
-        def indicate(direction):
-            if direction > 0:
-                return '(+)'
-            elif direction == 0:
-                return '(0)'
-            else: # direction < 0
-                return '(-)'
-
-        indicator = ' ' + indicate(self.direction) if self.direction is not None else ''
-        label = """<label for="{0}">{0} : {1}%{2}</label>""" \
-            .format(self.name, self.percent, indicator)
-        span = """<span id="{}" style="width: {}%; height: 7px; background-color: {}"></span>""" \
+        if include_label:
+            if self.direction is not None:
+                indicator = ' ' + ('(+)' if self.direction > 0
+                    else '(0)' if self.direction == 0
+                    else '(-)') # if self.direction < 0
+            else:
+                indicator = ''
+            label = """<label for="{0}">{0} : {1}%{2}</label>""" \
+                .format(self.name, self.percent, indicator)
+        else:
+            label = ''
+        span = """<span id="{}" style="width: {}%; height: 7px; background-color: {};"></span>""" \
             .format(self.name, self.percent, self.color)
 
         return label + span
