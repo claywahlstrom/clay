@@ -52,31 +52,31 @@ if __name__ == '__main__':
     testif('converts bar to HTML correctly (defaults)',
         BarMetric().to_html(),
         '<label for="BarMetric">BarMetric : 0%</label>' + \
-        '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000"></span>',
+        '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000;"></span>',
         name=qualify(BarMetric.to_html))
 
     testif('converts bar to HTML correctly (name)',
         BarMetric(name='Countdown').to_html(),
         '<label for="Countdown">Countdown : 0%</label>' + \
-        '<span id="Countdown" style="width: 0%; height: 7px; background-color: #000000"></span>',
+        '<span id="Countdown" style="width: 0%; height: 7px; background-color: #000000;"></span>',
         name=qualify(BarMetric.to_html))
 
     testif('converts bar to HTML correctly (percent)',
         BarMetric(percent=54.3).to_html(),
         '<label for="BarMetric">BarMetric : 54.3%</label>' + \
-        '<span id="BarMetric" style="width: 54.3%; height: 7px; background-color: #000000"></span>',
+        '<span id="BarMetric" style="width: 54.3%; height: 7px; background-color: #000000;"></span>',
         name=qualify(BarMetric.to_html))
 
     color_tests = [
         (
             BarMetric(color='#aabbcc').to_html(),
             '<label for="BarMetric">BarMetric : 0%</label>' + \
-            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #aabbcc"></span>'
+            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #aabbcc;"></span>'
         ),
         (
             BarMetric(color='red').to_html(),
             '<label for="BarMetric">BarMetric : 0%</label>' + \
-            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: red"></span>'
+            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: red;"></span>'
         )
     ]
 
@@ -89,17 +89,17 @@ if __name__ == '__main__':
         (
             BarMetric(direction=1).to_html(),
             '<label for="BarMetric">BarMetric : 0% (+)</label>' + \
-            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000"></span>'
+            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000;"></span>'
         ),
         (
             BarMetric(direction=0).to_html(),
             '<label for="BarMetric">BarMetric : 0% (0)</label>' + \
-            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000"></span>'
+            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000;"></span>'
         ),
         (
             BarMetric(direction=-1).to_html(),
             '<label for="BarMetric">BarMetric : 0% (-)</label>' + \
-            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000"></span>'
+            '<span id="BarMetric" style="width: 0%; height: 7px; background-color: #000000;"></span>'
         )
     ]
 
