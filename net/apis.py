@@ -26,11 +26,12 @@ class BaseSocketApiClient(_Abstract):
 
     """Used to create a socket API client"""
 
-    def __init__(self, ip_addr, port):
+    def __init__(self, ip_addr, port, use_ssl=False):
         """Initializes this socket API client"""
         self.raise_if_base(BaseSocketApiClient)
         self.__ip_addr = ip_addr
         self.__port = port
+        self.__use_ssl = use_ssl
 
     @property
     def ip_addr(self):
@@ -43,18 +44,25 @@ class BaseSocketApiClient(_Abstract):
         return self.__port
 
     @property
+    def use_ssl(self):
+        """Whether or not to use SSL"""
+        return self.__use_ssl
+
+    @property
     def url(self):
         """The URL of the socket API"""
-        return 'http://{}:{}'.format(self.ip_addr, self.port)
+        return 'http{}://{}:{}'.format('s' if self.use_ssl else '',
+            self.ip_addr,
+            self.port)
 
 class BaseLocalhostApiClient(BaseSocketApiClient):
 
     """Used to create a localhost API client"""
 
-    def __init__(self, port):
+    def __init__(self, port, ip_addr=_LOCALHOST, use_ssl=False):
         """Initializes this localhost API client"""
         self.raise_if_base(BaseLocalhostApiClient)
-        super().__init__(_LOCALHOST, port)
+        super().__init__(ip_addr, port, use_ssl=use_ssl)
 
 class PollenApiClient(object):
 
