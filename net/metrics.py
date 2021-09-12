@@ -49,6 +49,11 @@ if __name__ == '__main__':
     from clay.tests import testif
     from clay.utils import qualify
 
+    testif('excludes label if not included',
+        BarMetric(percent=54.3).to_html(include_label=False),
+        '<span id="BarMetric" style="width: 54.3%; height: 7px; background-color: #000000;"></span>',
+        name=qualify(BarMetric.to_html))
+
     testif('converts bar to HTML correctly (defaults)',
         BarMetric().to_html(),
         '<label for="BarMetric">BarMetric : 0%</label>' + \
