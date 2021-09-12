@@ -147,7 +147,13 @@ def extend(iterable: abc.Iterable=()):
                 key_selector: abc.Callable,
                 element_selector: abc.Callable=lambda x: x) -> abc.Hashable:
             """Groups items by the given key and element selectors"""
-            return group_items_by_key(self, key_selector, element_selector)
+            grouped = group_items_by_key(self, key_selector, element_selector)
+
+            # convert the groups to enumerables
+            for group in grouped:
+                grouped[group] = extend(grouped[group])
+
+            return grouped
 
         def order_by(self, key: abc.Callable=None, reverse: bool=False) -> IEnumerable:
             """Returns items ordered by the given key selector"""
