@@ -188,7 +188,13 @@ def extend(iterable: abc.Iterable=()):
 
         def distinct(self) -> IEnumerable:
             """Filters items down to distinct ones"""
-            return Enumerable(base(set(self)))
+            try:
+                return Enumerable(base(set(self)))
+            except TypeError:
+                for i, item in enumerate(self):
+                    while self.count(item) > 1:
+                        self.pop(i)
+                return self
 
         def where(self, predicate: abc.Callable) -> IEnumerable:
             """Filters items based on the given predicate"""
@@ -454,9 +460,13 @@ if __name__ == '__main__':
         extend([1, 2, 2, 3]).diff([1, 2]),
         [3],
         name=_qualify(IEnumerable.diff))
-    testif('returns correct results',
+    testif('returns correct results (int items)',
         extend([1, 2, 2, 3]).distinct(),
         [1, 2, 3],
+        name=_qualify(IEnumerable.distinct))
+    testif('returns correct results (dict items)',
+        extend([{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]).distinct(),
+        [{'num': 1}, {'num': 2}, {'num': 3}],
         name=_qualify(IEnumerable.distinct))
 
     test_iterable = [{'num': 1}, {'num': 2}, {'num': 2}, {'num': 3}]
