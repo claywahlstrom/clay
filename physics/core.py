@@ -1,6 +1,6 @@
 
 """
-physics: goodies ranging from mechanics to electromagnetism
+core: goodies ranging from mechanics to ideal gas theory
 
 """
 
