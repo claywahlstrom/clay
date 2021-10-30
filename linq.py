@@ -52,6 +52,9 @@ class IEnumerable(_Interface):
     def diff(self, other: 'IEnumerable') -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.diff))
 
+    def intersect(self, other: 'IEnumerable') -> 'IEnumerable':
+        raise NotImplementedError(_qualify(self.intersect))
+
     def distinct(self) -> 'IEnumerable':
         raise NotImplementedError(_qualify(self.distinct))
 
@@ -181,10 +184,17 @@ def extend(iterable: abc.Iterable=()):
 
         def diff(self, other: 'IEnumerable') -> IEnumerable:
             """
-            Returns the set difference of this enumerable and another iterable
+            Returns the set difference of this enumerable and another enumerable
 
             """
             return Enumerable(base(set(self).difference(other)))
+
+        def intersect(self, other: 'IEnumerable') -> IEnumerable:
+            """
+            Returns the intersection of this enumerable and another enumerable
+
+            """
+            return self.where(lambda item: item in other)
 
         def distinct(self) -> IEnumerable:
             """Filters items down to distinct ones"""
@@ -305,10 +315,17 @@ class Queryable:
 
     def diff(self, other: 'Queryable') -> 'Queryable':
         """
-        Returns the set difference of this queryable and another iterable
+        Returns the set difference of this queryable and another queryable
 
         """
         return self.where(lambda item: item not in other)
+
+    def intersect(self, other: 'Queryable') -> 'Queryable':
+        """
+        Returns the intersection of this queryable and another queryable
+
+        """
+        return self.where(lambda item: item in other)
 
     def distinct(self) -> 'Queryable':
         """Filters items down to distinct ones"""
@@ -460,6 +477,10 @@ if __name__ == '__main__':
         extend([1, 2, 2, 3]).diff([1, 2]),
         [3],
         name=_qualify(IEnumerable.diff))
+    testif('returns correct results',
+        extend([1, 2, 2, 3]).intersect([1, 2]),
+        [1, 2, 2],
+        name=_qualify(IEnumerable.intersect))
     testif('returns correct results (int items)',
         extend([1, 2, 2, 3]).distinct(),
         [1, 2, 3],
@@ -529,6 +550,10 @@ if __name__ == '__main__':
         query([1, 2, 2, 3]).diff([1, 2]).to_list(),
         [3],
         name=_qualify(Queryable.diff))
+    testif('returns correct results',
+        query([1, 2, 2, 3]).intersect([1, 2]).to_list(),
+        [1, 2, 2],
+        name=_qualify(Queryable.intersect))
     testif('returns correct results',
         query([1, 2, 2, 3]).distinct().to_list(),
         [1, 2, 3],
