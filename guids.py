@@ -10,6 +10,9 @@ class Guid(_uuid.UUID):
 
     FMT_LENS = (8, 4, 4, 4, 12)
 
+    # stores newly generated instances
+    _generated = set()
+
     def __repr__(self) -> str:
         """Returns the string representation of this Guid"""
         return '{{{}}}'.format(self)
@@ -17,7 +20,13 @@ class Guid(_uuid.UUID):
     @staticmethod
     def new() -> 'Guid':
         """Returns a new Guid instance"""
-        return Guid(str(_uuid.uuid4()))
+        new_guid = Guid(str(_uuid.uuid4()))
+        # generate a new Guid while it is not unique
+        while new_guid in Guid._generated:
+            new_guid = Guid(str(_uuid.uuid4()))
+        # add new Guid to generated set
+        Guid._generated.add(new_guid)
+        return new_guid
 
     @staticmethod
     def is_valid(guid: str) -> bool:
@@ -118,3 +127,12 @@ if __name__ == '__main__':
         Guid.empty(),
         Guid(str(Guid.empty())),
         name=qualify(Guid.__eq__))
+
+    guids = [Guid.new() for _ in range(1000)]
+    actual_len = len(guids)
+    expected_len = len(set(guids))
+
+    testif('Generates unique guids in bulk',
+        actual_len,
+        expected_len,
+        name=qualify(Guid.new))
