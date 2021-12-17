@@ -12,7 +12,6 @@ import json as _json
 import math as _math
 import os as _os
 import re as _re
-import requests as _requests
 from subprocess import call as _call
 import sys as _sys
 import time as _time
@@ -423,6 +422,15 @@ def parse_raw_headers(raw_headers: str) -> dict:
         key, value = header.split(': ')
         headers[key] = value
     return headers
+
+def select_text(soup: _BS, selector: str) -> list:
+    """
+    Returns a list of selected text values from elements found in
+    soup using the selector
+
+    """
+    elems = soup.select(selector)
+    return [elem.getText() for elem in elems]
 
 class TagFinder(object):
     """

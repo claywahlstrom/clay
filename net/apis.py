@@ -15,7 +15,9 @@ import requests as _requests
 
 from clay.models import Abstract as _Abstract
 from clay.net import settings as net_settings
+from clay.net.core import select_text
 from clay.net.sockets import LOCALHOST as _LOCALHOST
+from clay.utils import SortableDict
 
 DEF_COUNTRY = 'usa'
 DEF_CITY    = 'vancouver'
@@ -63,6 +65,27 @@ class BaseLocalhostApiClient(BaseSocketApiClient):
         """Initializes this localhost API client"""
         self.raise_if_base(BaseLocalhostApiClient)
         super().__init__(ip_addr, port, use_ssl=use_ssl)
+
+class NationalTodayApiClient:
+
+    """Used to get data from nationaltoday.com(tm)"""
+
+    def __init__(self) -> None:
+        """Initializes this national today API client"""
+        pass
+
+    def get_holidays(self, today: _dt.date=_dt.date.today()) -> list:
+        """Gets the list of holidays for the given today"""
+        req = _requests.get('https://nationaltoday.com/what-is-today/', headers=net_settings.HEADERS)
+        soup = _BS(req.content, 'html.parser')
+        titles = select_text(soup, 'h3[class="holiday-title"]')
+        links = [element.attrs.get('href') for element in soup.select('.day-card .title-box a')]
+
+        mappings = SortableDict()
+        for title, link in zip(titles, links):
+            mappings[title] = link
+        mappings.sort(key=lambda title: title.lower())
+        return mappings
 
 class PollenApiClient(object):
 
@@ -426,6 +449,10 @@ if __name__ == '__main__':
     from clay import settings
     from clay.tests import testraises
     from clay.utils import qualify
+
+    national_today_client = NationalTodayApiClient()
+    holidays = national_today_client.get_holidays()
+    print('holidays today:', holidays)
 
     p = PollenApiClient('weather text', 98684)
     with open(os.path.join(settings.LOGS_DIR, 'net-core-pollen.log'), 'w') as pollen_log:
