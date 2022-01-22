@@ -32,7 +32,7 @@ class Logger:
             prefix = now.strftime(self.log_fmt) + ' '
         else:
             prefix = ''
-        with open(self.filename, 'a+') as fp:
+        with open(self.filename, 'a+', encoding='utf-8') as fp:
             fp.write(prefix + message + end)
         self._last_end = end
         print('Logged message "{}..." for {}'.format(message[:20], self.name))
