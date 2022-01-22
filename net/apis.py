@@ -76,14 +76,14 @@ class NationalTodayApiClient:
 
     def get_holidays(self, today: _dt.date=_dt.date.today()) -> list:
         """Gets the list of holidays for the given today"""
-        req = _requests.get('https://nationaltoday.com/what-is-today/', headers=net_settings.HEADERS)
+        req = _requests.get('https://nationaltoday.com/what-is-today/')
         soup = _BS(req.content, 'html.parser')
         titles = select_text(soup, 'h3[class="holiday-title"]')
         links = [element.attrs.get('href') for element in soup.select('.day-card .title-box a')]
 
         mappings = SortableDict()
         for title, link in zip(titles, links):
-            mappings[title] = link
+            mappings[title.strip()] = link.strip()
         mappings.sort(key=lambda title: title.lower())
         return mappings
 
