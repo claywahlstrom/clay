@@ -235,7 +235,7 @@ def extend_months(date: dt.date, months: int) -> dt.date:
 
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
     from clay.utils import qualify
 
     date_range_repr_tests = [
@@ -251,16 +251,16 @@ if __name__ == '__main__':
     ]
 
     for test in date_range_repr_tests:
-        testif('Returns correct string representation for (start: {}, end: {})'.format(test[0], test[1]),
+        testif('returns correct string representation for (start: {}, end: {})'.format(test[0], test[1]),
             DateRange(test[0], test[1]).__repr__(today=dt.date(2020, 6, 2)),
             test[2],
             name=qualify(DateRange.__repr__))
 
     for weekday in (-1, 7):
-        testif('Raises ValueError if weekday invalid (weekday = {})'.format(weekday),
+        testraises('raises ValueError if weekday invalid (weekday = {})'.format(weekday),
             lambda: days_to_mail(weekday),
-            None,
-            raises=ValueError)
+            ValueError,
+            name=qualify(days_to_mail))
 
     days_to_mail_tests = [
         (0, 2),
@@ -273,28 +273,27 @@ if __name__ == '__main__':
     ]
 
     for test in days_to_mail_tests:
-        testif('Returns correct days for weekday {}'.format(test[0]),
+        testif('returns correct days for weekday {}'.format(test[0]),
             days_to_mail(test[0]),
             test[1],
             name=qualify(days_to_mail))
 
-    testif('Raises TypeError when extending invalid type',
+    testraises('raises TypeError when extending invalid type',
         lambda: extend_date(None),
-        None,
-        name=qualify(extend_date),
-        raises=TypeError)
+        TypeError,
+        name=qualify(extend_date))
 
-    testif('Returns correct datetime',
+    testif('returns correct datetime',
         Date.todatetime(dt.date(2019, 4, 22)),
         dt.datetime(2019, 4, 22),
         name=qualify(Date.todatetime))
 
-    testif('Returns correct date for last year',
+    testif('returns correct date for last year',
         extend_date(dt.date(2019, 4, 22)).last_year(),
         dt.date(2018, 1, 1),
         name=qualify(Date.last_year))
 
-    testif('Returns correct date for this year',
+    testif('returns correct date for this year',
         extend_date(dt.date(2019, 4, 22)).this_year(),
         dt.date(2019, 1, 1),
         name=qualify(Date.this_year))
@@ -313,12 +312,12 @@ if __name__ == '__main__':
     ]
 
     for test in this_quarter_tests:
-        testif('Returns correct date ({})'.format(test[0]),
+        testif('returns correct date ({})'.format(test[0]),
             extend_date(test[0]).this_quarter(),
             test[1],
             name=qualify(Date.this_quarter))
 
-    testif('Returns correct date for this month',
+    testif('returns correct date for this month',
         extend_date(dt.date(2019, 4, 22)).this_month(),
         dt.date(2019, 4, 1),
         name=qualify(Date.this_month))
@@ -333,7 +332,7 @@ if __name__ == '__main__':
     ]
 
     for test in this_week_tests:
-        testif('Returns correct date ({}, reference {})'.format(test[0], test[1]),
+        testif('returns correct date ({}, reference {})'.format(test[0], test[1]),
             extend_date(test[0]).this_week(test[1]),
             test[2],
             name=qualify(Date.this_week))
@@ -344,7 +343,7 @@ if __name__ == '__main__':
     ]
 
     for test in next_month_advance_tests:
-        testif('Returns correct advance date ({})'.format(test[0]),
+        testif('returns correct advance date ({})'.format(test[0]),
             extend_date(test[0]).next_month(),
             test[1],
             name=qualify(Date.next_month))
@@ -355,7 +354,7 @@ if __name__ == '__main__':
     ]
 
     for test in next_month_rollover_tests:
-        testif('Returns correct rollover date ({})'.format(test[0]),
+        testif('returns correct rollover date ({})'.format(test[0]),
             extend_date(test[0]).next_month(),
             test[1],
             name=qualify(Date.next_month))
@@ -374,7 +373,7 @@ if __name__ == '__main__':
     ]
 
     for test in next_quarter_tests:
-        testif('Returns correct date ({})'.format(test[0]),
+        testif('returns correct date ({})'.format(test[0]),
             extend_date(test[0]).next_quarter(),
             test[1],
             name=qualify(Date.next_quarter))
@@ -385,7 +384,7 @@ if __name__ == '__main__':
     ]
 
     for test in next_week_tests:
-        testif('Returns correct date ({})'.format(test[0]),
+        testif('returns correct date ({})'.format(test[0]),
             extend_date(test[0]).next_week(),
             test[1],
             name=qualify(Date.next_week))
@@ -399,46 +398,46 @@ if __name__ == '__main__':
 
     sunday = dt.date(2020, 5, 31)
     for test in next_week2_tests:
-        testif('Returns correct date ({}, reference {})'.format(sunday, test[0]),
+        testif('returns correct date ({}, reference {})'.format(sunday, test[0]),
             extend_date(sunday).next_week2(test[0]),
             test[1],
             name=qualify(Date.next_week2))
 
-    testif('Returns correct advance date',
+    testif('returns correct advance date',
         extend_date(dt.date(2020, 5, 30)).next_day(),
         dt.date(2020, 5, 31),
         name=qualify(Date.next_day))
 
-    testif('Returns correct rollover date',
+    testif('returns correct rollover date',
         extend_date(dt.date(2020, 5, 31)).next_day(),
         dt.date(2020, 6, 1),
         name=qualify(Date.next_day))
 
-    testif('Returns correct date if no months',
+    testif('returns correct date if no months',
         extend_months(dt.date(2022, 2, 18), 0),
         dt.date(2022, 2, 18),
         name=qualify(extend_months))
-    testif('Returns correct date if this year',
+    testif('returns correct date if this year',
         extend_months(dt.date(2022, 2, 18), 8),
         dt.date(2022, 10, 18),
         name=qualify(extend_months))
-    testif('Returns correct date if next year rollover',
+    testif('returns correct date if next year rollover',
         extend_months(dt.date(2022, 2, 18), 11),
         dt.date(2023, 1, 18),
         name=qualify(extend_months))
-    testif('Returns correct date if next year',
+    testif('returns correct date if next year',
         extend_months(dt.date(2022, 2, 18), 12),
         dt.date(2023, 2, 18),
         name=qualify(extend_months))
-    testif('Returns correct date if more than one year',
+    testif('returns correct date if more than one year',
         extend_months(dt.date(2022, 4, 7), 14),
         dt.date(2023, 6, 7),
         name=qualify(extend_months))
-    testif('Returns correct date if two years',
+    testif('returns correct date if two years',
         extend_months(dt.date(2022, 4, 7), 24),
         dt.date(2024, 4, 7),
         name=qualify(extend_months))
-    testif('Returns correct date if more than two years',
+    testif('returns correct date if more than two years',
         extend_months(dt.date(2022, 8, 3), 29),
         dt.date(2025, 1, 3),
         name=qualify(extend_months))
