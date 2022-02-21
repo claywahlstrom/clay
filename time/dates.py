@@ -215,6 +215,24 @@ def extend_date(date) -> Date:
         raise TypeError('date must of base type datetime.date')
     return Date(date.year, date.month, date.day)
 
+def extend_months(date: dt.date, months: int) -> dt.date:
+    """Extends the given date by the given number of months"""
+
+    # store modifiable year and month
+    year = date.year
+    month = date.month
+
+    # add months
+    month += months
+
+    # perform rollovers
+    while month > 12:
+        year += 1
+        month -= 12
+
+    # create date
+    return dt.date(year, month, date.day)
+
 if __name__ == '__main__':
 
     from clay.tests import testif
@@ -395,3 +413,32 @@ if __name__ == '__main__':
         extend_date(dt.date(2020, 5, 31)).next_day(),
         dt.date(2020, 6, 1),
         name=qualify(Date.next_day))
+
+    testif('Returns correct date if no months',
+        extend_months(dt.date(2022, 2, 18), 0),
+        dt.date(2022, 2, 18),
+        name=qualify(extend_months))
+    testif('Returns correct date if this year',
+        extend_months(dt.date(2022, 2, 18), 8),
+        dt.date(2022, 10, 18),
+        name=qualify(extend_months))
+    testif('Returns correct date if next year rollover',
+        extend_months(dt.date(2022, 2, 18), 11),
+        dt.date(2023, 1, 18),
+        name=qualify(extend_months))
+    testif('Returns correct date if next year',
+        extend_months(dt.date(2022, 2, 18), 12),
+        dt.date(2023, 2, 18),
+        name=qualify(extend_months))
+    testif('Returns correct date if more than one year',
+        extend_months(dt.date(2022, 4, 7), 14),
+        dt.date(2023, 6, 7),
+        name=qualify(extend_months))
+    testif('Returns correct date if two years',
+        extend_months(dt.date(2022, 4, 7), 24),
+        dt.date(2024, 4, 7),
+        name=qualify(extend_months))
+    testif('Returns correct date if more than two years',
+        extend_months(dt.date(2022, 8, 3), 29),
+        dt.date(2025, 1, 3),
+        name=qualify(extend_months))
