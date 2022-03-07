@@ -74,10 +74,19 @@ class NationalTodayApiClient:
         """Initializes this national today API client"""
         pass
 
-    def get_holidays(self, today: _dt.date=_dt.date.today()) -> list:
-        """Gets the list of holidays for the given today"""
+    def get_today(self) -> list:
+        """Gets the list of holidays for today"""
         req = _requests.get('https://nationaltoday.com/what-is-today/')
-        soup = _BS(req.content, 'html.parser')
+        return self._get_mappings(req.content)
+
+    def get_tomorrow(self) -> list:
+        """Gets the list of holidays for tomorrow"""
+        req = _requests.get('https://nationaltoday.com/what-is-tomorrow/')
+        return self._get_mappings(req.content)
+
+    def _get_mappings(self, request_content: bytes) -> dict:
+        """Gets a mapping of holidays to links using the request content"""
+        soup = _BS(request_content, 'html.parser')
         titles = select_text(soup, 'h3[class="holiday-title"]')
         links = [element.attrs.get('href') for element in soup.select('.day-card .title-box a')]
 
@@ -451,8 +460,8 @@ if __name__ == '__main__':
     from clay.utils import qualify
 
     national_today_client = NationalTodayApiClient()
-    holidays = national_today_client.get_holidays()
-    print('holidays today:', holidays)
+    print('holidays today:', national_today_client.get_today())
+    print('holidays tomorrow:', national_today_client.get_tomorrow())
 
     p = PollenApiClient('weather text', 98684)
     with open(os.path.join(settings.LOGS_DIR, 'net-core-pollen.log'), 'w') as pollen_log:
