@@ -8,6 +8,7 @@ Default WIDTH is 80 characters for IDLE and 100 for shell.
 
 from collections import abc
 import pprint
+import re
 
 from clay.env import is_idle as _is_idle
 
@@ -123,9 +124,21 @@ def remove_padding_many(strings: abc.Iterable) -> abc.Iterable:
     """
     return type(strings)(map(remove_padding, strings))
 
+def split_seps(string: str, seps: abc.Iterable) -> abc.Iterable:
+    """
+    Returns a list of strings split by the given separators.
+    Inspired by https://datagy.io/python-split-string-multiple-delimiters/
+
+    """
+    if len(string) == 0:
+        return ['']
+    if len(seps) == 0:
+        raise ValueError('seps must have at least one item')
+    return re.split(r'|'.join(map(re.escape, seps)), string)
+
 if __name__ == '__main__':
 
-    from clay.tests import testif
+    from clay.tests import testif, testraises
     from clay.utils import qualify
 
     print('Box Art Examples:')
@@ -174,3 +187,20 @@ if __name__ == '__main__':
         remove_padding_many([' remove spaces  from padded   test string  ', ' my  string']),
         ['remove spaces from padded test string', 'my string'],
         name=qualify(remove_padding_many))
+
+    testraises('returns single item if no separators',
+        lambda: split_seps('string', []),
+        ValueError,
+        name=qualify(split_seps))
+    testif('ignores empty strings',
+        split_seps('', ['=']),
+        [''],
+        name=qualify(split_seps))
+    testif('splits correctly if one separator given',
+        split_seps('string1=string2', ['=']),
+        ['string1', 'string2'],
+        name=qualify(split_seps))
+    testif('splits correctly if more than one separator given',
+        split_seps('string1^string2?string3@string4^string5', ['^', '?', '@']),
+        ['string1', 'string2', 'string3', 'string4', 'string5'],
+        name=qualify(split_seps))
