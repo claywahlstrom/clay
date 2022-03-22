@@ -141,17 +141,6 @@ def pause(launcher_only=False):
     if not launcher_only or env.is_launcher():
         input('\nPress enter to continue . . . ')
 
-def randomize(filename):
-    """Randomizes the given filename with random bytes"""
-    # get file length
-    length = _os.path.getsize(filename)
-    # get random bytes
-    rand = _os.urandom(length)
-    # open file
-    with open(filename, 'wb') as fp:
-        # write randoms
-        fp.write(rand)
-
 def ren(src, dst):
     """Renames src to dst and prints the status of the operation"""
     try:
