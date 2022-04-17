@@ -41,6 +41,10 @@ class Date(dt.date):
         """Returns the given date converted to a datetime"""
         return dt.datetime(date.year, date.month, date.day)
 
+    def to_ymd_str(self) -> str:
+        """Returns the given date as year, month, day string"""
+        return self.strftime(YMD_FMT)
+
     #region Last
 
     def last_year(self) -> 'Date':
@@ -155,7 +159,7 @@ class Date(dt.date):
         """Returns the next week's date given a datetime"""
         return extend_date(Date.todatetime(self) + dt.timedelta(days=7))
 
-    def next_week2(self, reference) -> 'Date':
+    def next_week2(self, reference: dt.date) -> 'Date':
         """Returns the next week's occurrence of the reference date"""
         return extend_date(self.this_week(reference)).next_week()
 
