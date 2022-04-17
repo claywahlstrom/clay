@@ -9,6 +9,7 @@ import datetime as _dt
 import json as _json
 import os as _os
 
+from clay.decors import obsolete
 from clay.linq import IEnumerable, \
     extend as _extend, \
     Queryable, \
@@ -207,8 +208,10 @@ class CrudRepository(ListRepository):
                 raise RuntimeWarning('column "{}" already exists'.format(name))
             entity[name] = default_value
 
+    @obsolete
     def drop_column(self, name: str) -> None:
         """Drops a column with the given name"""
+
         if self.read().any(lambda entity: entity.get(name) is not None):
             print('Data from column {} will be lost.'.format(name))
             sure = input('Are you sure (y/n)? ').lower() == 'y'
