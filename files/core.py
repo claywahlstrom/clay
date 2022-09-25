@@ -238,7 +238,9 @@ def randomize(filename: str):
 def randomize_dir(directory: str, confirmed: bool=False):
     """Recursively randomizes files in the given directory. Requires confirmation"""
     # return early if not confirmed
-    if not confirmed: return
+    if not confirmed:
+        print('Must confirm randomize dir')
+        return
     # otherwise, walk and randomize
     for root, dirs, files in _os.walk(directory):
         for file in files:
