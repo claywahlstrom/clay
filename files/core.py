@@ -134,6 +134,10 @@ class File(object):
         """Returns the size of this file"""
         return _os.path.getsize(self.name)
 
+    def mtime(self):
+        """Returns the modification time of this file"""
+        return _os.stat(self.name).st_mtime
+
     def switch_lf(self):
         """
         Switches the linefeed type from a Posix machine to
