@@ -219,8 +219,8 @@ def extend_date(date) -> Date:
         raise TypeError('date must of base type datetime.date')
     return Date(date.year, date.month, date.day)
 
-def extend_months(date: dt.date, months: int) -> dt.date:
-    """Extends the given date by the given number of months"""
+def add_months(date: dt.date, months: int) -> dt.date:
+    """Returns a new date with the given number of months added"""
 
     # store modifiable year and month
     year = date.year
@@ -229,7 +229,10 @@ def extend_months(date: dt.date, months: int) -> dt.date:
     # add months
     month += months
 
-    # perform rollovers
+    # perform rollbacks and rollovers
+    while month <= 0:
+        year -= 1
+        month += 12
     while month > 12:
         year += 1
         month -= 12
@@ -417,31 +420,47 @@ if __name__ == '__main__':
         dt.date(2020, 6, 1),
         name=qualify(Date.next_day))
 
+    testif('returns correct date if more than two years ago',
+        add_months(dt.date(2022, 2, 18), -29),
+        dt.date(2019, 9, 18),
+        name=qualify(add_months))
+    testif('returns correct date if two years ago',
+        add_months(dt.date(2022, 2, 18), -24),
+        dt.date(2020, 2, 18),
+        name=qualify(add_months))
+    testif('returns correct date if last year rollover',
+        add_months(dt.date(2022, 2, 18), -2),
+        dt.date(2021, 12, 18),
+        name=qualify(add_months))
+    testif('returns correct date if last month',
+        add_months(dt.date(2022, 2, 18), -1),
+        dt.date(2022, 1, 18),
+        name=qualify(add_months))
     testif('returns correct date if no months',
-        extend_months(dt.date(2022, 2, 18), 0),
+        add_months(dt.date(2022, 2, 18), 0),
         dt.date(2022, 2, 18),
-        name=qualify(extend_months))
+        name=qualify(add_months))
     testif('returns correct date if this year',
-        extend_months(dt.date(2022, 2, 18), 8),
+        add_months(dt.date(2022, 2, 18), 8),
         dt.date(2022, 10, 18),
-        name=qualify(extend_months))
+        name=qualify(add_months))
     testif('returns correct date if next year rollover',
-        extend_months(dt.date(2022, 2, 18), 11),
+        add_months(dt.date(2022, 2, 18), 11),
         dt.date(2023, 1, 18),
-        name=qualify(extend_months))
+        name=qualify(add_months))
     testif('returns correct date if next year',
-        extend_months(dt.date(2022, 2, 18), 12),
+        add_months(dt.date(2022, 2, 18), 12),
         dt.date(2023, 2, 18),
-        name=qualify(extend_months))
+        name=qualify(add_months))
     testif('returns correct date if more than one year',
-        extend_months(dt.date(2022, 4, 7), 14),
+        add_months(dt.date(2022, 4, 7), 14),
         dt.date(2023, 6, 7),
-        name=qualify(extend_months))
+        name=qualify(add_months))
     testif('returns correct date if two years',
-        extend_months(dt.date(2022, 4, 7), 24),
+        add_months(dt.date(2022, 4, 7), 24),
         dt.date(2024, 4, 7),
-        name=qualify(extend_months))
+        name=qualify(add_months))
     testif('returns correct date if more than two years',
-        extend_months(dt.date(2022, 8, 3), 29),
+        add_months(dt.date(2022, 8, 3), 29),
         dt.date(2025, 1, 3),
-        name=qualify(extend_months))
+        name=qualify(add_months))
