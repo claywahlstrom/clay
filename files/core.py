@@ -82,7 +82,7 @@ class File(object):
             pass
 
     def get_char_count(self, char):
-        """Returns the count occurence of char in this file"""
+        """Returns the count occurrence of char in this file"""
         with open(self.name) as fp:
             fcount = fp.read().count(char)
         return fcount

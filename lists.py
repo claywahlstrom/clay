@@ -25,7 +25,7 @@ def frange(start: int, stop: int, step: float) -> abc.Generator:
         assert step < 0, 'step must agree with start and stop'
     elif stop > start:
         assert step > 0, 'step must agree with start and stop'
-    digits = len(str(step)) - 2 # - 2 to account for "0."
+    digits = max(0, len(str(step)) - 2) # - 2 to account for "0."
     steps = abs(int(round((stop - start) / step, digits)))
     for x in range(steps):
         yield round(start + x * step, digits)
