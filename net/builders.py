@@ -63,7 +63,7 @@ class WeatherPollenApiUrlBuilder(UrlBuilder):
         """Initializes this builder"""
         super().__init__('https://api.weather.com/v2/indices/pollen/daypart/7day')
         self.base_url = self.with_query_params({
-            'apiKey': '6532d6454b8aa370768e63d6ba5a832e',
+            'apiKey': 'e1f10a1e78da46f5b10a1e78da96f525', # was 6532d6454b8aa370768e63d6ba5a832e
             'format': 'json',
             'language': 'en-US'
         }).build()
