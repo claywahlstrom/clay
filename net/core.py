@@ -660,10 +660,14 @@ class WebDocument(object):
         response = urllib.request.urlopen(request)
         return response.read()
 
+    def get_soup(self, headers=None):
+        soup = _BS(self.get_html(headers=headers), 'html.parser')
+        return soup
+
     def get_title(self, headers=None):
         """Returns the title of this web document"""
         from clay.net.core import get_title
-        soup = _BS(self.get_html(headers=headers), 'html.parser')
+        soup = get_soup(self.uri, headers=headers)
         return get_title(soup)
 
     @property

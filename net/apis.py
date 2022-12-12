@@ -7,6 +7,7 @@ Net APIs
 import collections as _collections
 import datetime as _dt
 import json as _json
+import re as _re
 import sys as _sys
 import time as _time
 
@@ -15,7 +16,7 @@ import requests as _requests
 
 from clay.models import Abstract as _Abstract
 from clay.net import settings as net_settings
-from clay.net.core import select_text
+from clay.net.core import select_text, WebDocument
 from clay.net.sockets import LOCALHOST as _LOCALHOST
 from clay.utils import SortableDict
 
@@ -450,13 +451,112 @@ class ZipCodeNotSupportedError(Exception):
         string += ' ' + zipcodes
         return string
 
+class YtVidApiClient:
+
+    """API client for data on Youtube(tm) videos"""
+
+    def __init__(self, vid_id: str) -> None:
+        """Initializes this API client"""
+        self.vid_id = vid_id
+        self._soup = WebDocument('https://youtube.com/watch?v=' + self.vid_id).get_soup()
+        self._duration = None
+        self._title = None
+        self._channel_name = None
+        self._view_count = None
+        self._publish_date = None
+        self._short_desc = None
+        self._long_desc = None
+
+    def _get_metadata(self, node, selection: str) -> str:
+        string = '[not avail.]'
+        if node is not None:
+            strings = node.select(selection)
+            if len(strings) > 0:
+                string = strings[0]['content']
+        return string
+
+    def get_duration(self) -> str:
+        """Returns the duration for this video"""
+        if self._duration is not None:
+            return self._duration
+        content = self._get_metadata(self._soup.html.head, 'meta[itemprop=duration]')
+        found = _re.findall('(\d+)M(\d+)S', content)
+        m, s = found[0] if len(found) > 0 else ('0', '0')
+        m_int, s_int = int(m), int(s)
+        h_int = 0
+        while m_int > 60:
+            h_int += 1
+            m_int -= 60
+        self._duration = '{:0>2d}:{:0>2d}:{:0>2d}'.format(h_int, m_int, s_int)
+        return self._duration
+
+    def get_title(self) -> str:
+        """Returns the title for this video"""
+        if self._title is not None:
+            return self._title
+        self._title = self._get_metadata(self._soup.html.head, 'meta[itemprop=name]')
+        return self._title
+
+    def get_channel_name(self) -> str:
+        """Returns the channel name for this video"""
+        if self._channel_name is not None:
+            return self._channel_name
+        self._channel_name = self._get_metadata(self._soup.html.head, 'link[itemprop=name]')
+        return self._channel_name
+
+    def get_view_count(self) -> int:
+        """Returns the view count for this video"""
+        if self._view_count is not None:
+            return self._view_count
+        self._view_count = int(self._get_metadata(self._soup.html.head, 'meta[itemprop=interactionCount]'))
+        return self._view_count
+
+    def get_publish_date(self) -> str:
+        """Returns the publish date for this video"""
+        if self._publish_date is not None:
+            return self._publish_date
+        self._publish_date = self._get_metadata(self._soup.html.head, 'meta[itemprop=datePublished]')
+        return self._publish_date
+
+    def get_short_desc(self) -> str:
+        """Returns the short description for this video"""
+        if self._short_desc is not None:
+            return self._short_desc
+        self._short_desc = self._get_metadata(self._soup.html.head, 'meta[name=description]')
+        return self._short_desc
+
+    def get_long_desc(self) -> str:
+        """Returns the long description for this video"""
+        if self._long_desc is not None:
+            return self._long_desc
+        text = self._soup.html.body.select('script')[0].getText()
+        start = text[text.index('shortDescription') + len('shortDescription": '):]
+        end = start[:start.index('","')]
+
+        replaces = {
+            'â\x9e\x94': '=>',
+            '\\n': '\n',
+            'â': '-',
+            '\\"': '"',
+            '\\u0026': '&',
+        }
+
+        for old, new in replaces.items():
+            end = end.replace(old, new)
+
+        self._long_desc = end
+        return self._long_desc
+
+    # TODO: expand to gather macro markers
+    # body script key name: macroMarkersListItemRenderer
+
 if __name__ == '__main__':
 
     import os
     import traceback
 
     from clay import settings
-    from clay.tests import testraises
+    from clay.tests import testif, testraises
     from clay.utils import qualify
 
     national_today_client = NationalTodayApiClient()
@@ -497,3 +597,41 @@ if __name__ == '__main__':
 
     sun = SunTimesApiClient()
     print('sunset tonight is', sun.get_sunset())
+
+    yt_vid = YtVidApiClient('0HoogBke26M')
+    testif('returns correct video duration',
+        yt_vid.get_duration(),
+        '00:03:22',
+        name=qualify(YtVidApiClient.get_duration))
+    testif('returns correct video title',
+        yt_vid.get_title(),
+        'T-Rex Entry Scene (Jurassic Park) ● 8K HDR ● DTS X',
+        name=qualify(YtVidApiClient.get_title))
+    testif('returns correct video channel name',
+        yt_vid.get_channel_name(),
+        '4K Clips And Trailers',
+        name=qualify(YtVidApiClient.get_channel_name))
+    testif('returns correct video view count',
+        yt_vid.get_view_count() > 4.1e6,
+        True,
+        name=qualify(YtVidApiClient.get_view_count))
+    testif('returns correct video publish date',
+        yt_vid.get_publish_date(),
+        '2020-08-24',
+        name=qualify(YtVidApiClient.get_publish_date))
+    testif('returns correct video short description',
+        yt_vid.get_short_desc(),
+        'Play, save & stream 4K movie videos free on PC with 5KPlayer: ' + \
+        'https://www.5kplayer.com/video-music-player/index.htm?ttref=20714' + \
+        '-----------------------I DO NO...',
+        name=qualify(YtVidApiClient.get_short_desc))
+    testif('returns correct video long description',
+        yt_vid.get_long_desc(),
+        'Play, save & stream 4K movie videos free on PC with 5KPlayer: \n' + \
+        'https://www.5kplayer.com/video-music-player/index.htm?ttref=20714\n' + \
+        '\n' + \
+        '-----------------------\n' + \
+        'I DO NOT OWN THIS CLIP\n' + \
+        'All rights owned by Universal Pictures\n' + \
+        'https://www.youtube.com/universalpictures',
+        name=qualify(YtVidApiClient.get_long_desc))
