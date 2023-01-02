@@ -6,6 +6,7 @@ Dates
 
 import datetime as dt
 
+from clay.decors import obsolete
 from clay.time.base import BaseDateTimeRange
 
 # date formats
@@ -29,6 +30,125 @@ WEEKDAYS = [
 ]
 WEEKDAYS_SHORT = ['M', 'TU', 'W', 'TH', 'F', 'SA', 'SU']
 
+def conv_date_to_datetime(date: dt.date) -> dt.datetime:
+    """Returns the given date converted to a datetime"""
+    return dt.datetime(date.year, date.month, date.day)
+
+def get_first_of_year_last(date: dt.date) -> dt.date:
+    """Returns the last year's date given a date or datetime"""
+    return dt.date(date.year - 1, 1, 1)
+
+def get_first_of_year(date: dt.date) -> dt.date:
+    """Returns this year's date given a date or datetime"""
+    return dt.date(date.year, 1, 1)
+
+def get_first_of_year_next(date: dt.date) -> dt.date:
+    """Returns the next year's date given a date or datetime"""
+    return dt.date(date.year + 1, 1, 1)
+
+def get_first_of_quarter(date: dt.date) -> dt.date:
+    """
+    Returns this quarter's date given a date or datetime.
+    Quarters are on the 1st, 4th, 7th, and 10th months
+
+    """
+
+    month = date.month
+
+    if month <= 3:
+        month = 1
+    elif month <= 6:
+        month = 4
+    elif month <= 9:
+        month = 7
+    elif month <= 12:
+        month = 10
+
+    return dt.date(date.year, month, 1)
+
+def get_first_of_quarter_next(date: dt.date) -> dt.date:
+    """
+    Returns the next quarter's date.
+    Quarters are on the 1st, 4th, 7th, and 10th months
+
+    """
+
+    # store references to this date
+    year = date.year
+    month = date.month
+    day = date.day
+
+    # if after Oct 1st
+    if day > 1 and month >= 10:
+        # push to new year's
+        year += 1
+        month = 1
+    # otherwise
+    if date.year == year:
+        # if after the 1st
+        if day > 1:
+            # push to next month
+            month += 1
+
+        # set up 2-month look-ahead
+        plus2 = month + 2
+        # check quarter conditions using look-ahead
+        if plus2 >= 10:
+            month = 10
+        elif plus2 >= 7:
+            month = 7
+        elif plus2 >= 4:
+            month = 4
+        else:
+            month = 1
+
+    return dt.date(year, month, 1)
+
+def get_first_of_month(date: dt.date) -> dt.date:
+    """Returns first of month given a date or datetime"""
+    return dt.date(date.year, date.month, 1)
+
+def get_first_of_month_next(date: dt.date) -> dt.date:
+    """Returns the 1st of the next month's date given a date"""
+    year = date.year
+    month = date.month + 1
+
+    if month > 12:
+        year += 1
+        month = 1
+
+    return dt.date(year, month, 1)
+
+def get_this_week(date: dt.date, reference: dt.date) -> dt.date:
+    """Returns this week's date given a reference date"""
+    now = conv_date_to_datetime(date)
+    reference = conv_date_to_datetime(reference)
+
+    if reference > now:
+        sign = 1
+    elif reference == now:
+        sign = 0
+    else: # reference < self
+        sign = -1
+
+    return (now + sign * dt.timedelta(days=abs(now - reference).days % 7)).date()
+
+def get_next_week(date: dt.date) -> dt.datetime:
+    """Returns the next week's date given a datetime"""
+    return (conv_date_to_datetime(date) + dt.timedelta(days=7)).date()
+
+def get_next_week_with_ref(date: dt.date, reference: dt.date) -> dt.datetime:
+    """Returns the next week's occurrence of the reference date"""
+    return get_next_week(get_this_week(date, reference))
+
+def get_next_day_midnight(date: dt.date) -> dt.date:
+    """Returns midnight of the next day"""
+    return (conv_date_to_datetime(date) + dt.timedelta(days=1)).date()
+
+def get_ymd_str(date: dt.date) -> str:
+    """Returns the given date as year, month, day string"""
+    return date.strftime(YMD_FMT)
+
 class Date(dt.date):
 
     """
@@ -36,17 +156,20 @@ class Date(dt.date):
 
     """
 
+    @obsolete
     @staticmethod
     def todatetime(date) -> dt.datetime:
         """Returns the given date converted to a datetime"""
         return dt.datetime(date.year, date.month, date.day)
 
+    @obsolete
     def to_ymd_str(self) -> str:
         """Returns the given date as year, month, day string"""
         return self.strftime(YMD_FMT)
 
     #region Last
 
+    @obsolete
     def last_year(self) -> 'Date':
         """Returns the last year's date given a date or datetime"""
         return Date(self.year - 1, 1, 1)
@@ -55,10 +178,12 @@ class Date(dt.date):
 
     #region This
 
+    @obsolete
     def this_year(self) -> 'Date':
         """Returns this year's date given a date or datetime"""
         return Date(self.year, 1, 1)
 
+    @obsolete
     def this_quarter(self) -> 'Date':
         """
         Returns this quarter's date given a date or datetime.
@@ -79,10 +204,12 @@ class Date(dt.date):
 
         return Date(self.year, month, 1)
 
+    @obsolete
     def this_month(self) -> 'Date':
         """Returns this month's date given a date or datetime"""
         return Date(self.year, self.month, 1)
 
+    @obsolete
     def this_week(self, reference) -> 'Date':
         """Returns this week's date given a reference date"""
         now = Date.todatetime(self)
@@ -100,10 +227,12 @@ class Date(dt.date):
 
     #region Next
 
+    @obsolete
     def next_year(self) -> 'Date':
         """Returns the next year's date given a date or datetime"""
         return Date(self.year + 1, 1, 1)
 
+    @obsolete
     def next_month(self) -> 'Date':
         """Returns the 1st of the next month's date given a date"""
         year = self.year
@@ -117,6 +246,7 @@ class Date(dt.date):
 
         return Date(year, month, 1)
 
+    @obsolete
     def next_quarter(self) -> 'Date':
         """
         Returns the next quarter's date.
@@ -155,14 +285,17 @@ class Date(dt.date):
 
         return Date(year, month, 1)
 
+    @obsolete
     def next_week(self) -> 'Date':
         """Returns the next week's date given a datetime"""
         return extend_date(Date.todatetime(self) + dt.timedelta(days=7))
 
+    @obsolete
     def next_week2(self, reference: dt.date) -> 'Date':
         """Returns the next week's occurrence of the reference date"""
         return extend_date(self.this_week(reference)).next_week()
 
+    @obsolete
     def next_day(self) -> 'Date':
         """Returns midnight of the next day"""
         return extend_date(Date.todatetime(self) + dt.timedelta(days=1))
@@ -213,6 +346,7 @@ def days_to_mail(weekday: int) -> int:
         # return the usual
         return usually
 
+@obsolete
 def extend_date(date) -> Date:
     """Extends the given date using the `Date` type"""
     if not isinstance(date, dt.date):
@@ -285,25 +419,25 @@ if __name__ == '__main__':
             test[1],
             name=qualify(days_to_mail))
 
-    testraises('raises TypeError when extending invalid type',
-        lambda: extend_date(None),
-        TypeError,
-        name=qualify(extend_date))
+    # testraises('raises TypeError when extending invalid type',
+    #     lambda: extend_date(None),
+    #     TypeError,
+    #     name=qualify(extend_date))
 
-    testif('returns correct datetime',
-        Date.todatetime(dt.date(2019, 4, 22)),
-        dt.datetime(2019, 4, 22),
-        name=qualify(Date.todatetime))
+    # testif('returns correct datetime',
+    #     Date.todatetime(dt.date(2019, 4, 22)),
+    #     dt.datetime(2019, 4, 22),
+    #     name=qualify(Date.todatetime))
 
     testif('returns correct date for last year',
-        extend_date(dt.date(2019, 4, 22)).last_year(),
+        get_first_of_year_last(dt.date(2019, 4, 22)),
         dt.date(2018, 1, 1),
-        name=qualify(Date.last_year))
+        name=qualify(get_first_of_year_last))
 
     testif('returns correct date for this year',
-        extend_date(dt.date(2019, 4, 22)).this_year(),
+        get_first_of_year(dt.date(2019, 4, 22)),
         dt.date(2019, 1, 1),
-        name=qualify(Date.this_year))
+        name=qualify(get_first_of_year))
 
     this_quarter_tests = [
         (dt.date(2019, 1, 1), dt.date(2019, 1, 1)),
@@ -320,14 +454,14 @@ if __name__ == '__main__':
 
     for test in this_quarter_tests:
         testif('returns correct date ({})'.format(test[0]),
-            extend_date(test[0]).this_quarter(),
+            get_first_of_quarter(test[0]),
             test[1],
-            name=qualify(Date.this_quarter))
+            name=qualify(get_first_of_quarter))
 
     testif('returns correct date for this month',
-        extend_date(dt.date(2019, 4, 22)).this_month(),
+        get_first_of_month(dt.date(2019, 4, 22)),
         dt.date(2019, 4, 1),
-        name=qualify(Date.this_month))
+        name=qualify(get_first_of_month))
 
     this_week_tests = [
         (dt.date(2020, 5, 31), dt.date(2020, 5, 31), dt.date(2020, 5, 31)),
@@ -340,9 +474,9 @@ if __name__ == '__main__':
 
     for test in this_week_tests:
         testif('returns correct date ({}, reference {})'.format(test[0], test[1]),
-            extend_date(test[0]).this_week(test[1]),
+            get_this_week(test[0], test[1]),
             test[2],
-            name=qualify(Date.this_week))
+            name=qualify(get_this_week))
 
     next_month_advance_tests = [
         (dt.date(2020, 11, 1), dt.date(2020, 12, 1)),
@@ -351,9 +485,9 @@ if __name__ == '__main__':
 
     for test in next_month_advance_tests:
         testif('returns correct advance date ({})'.format(test[0]),
-            extend_date(test[0]).next_month(),
+            get_first_of_month_next(test[0]),
             test[1],
-            name=qualify(Date.next_month))
+            name=qualify(get_first_of_month_next))
 
     next_month_rollover_tests = [
         (dt.date(2020, 12, 1), dt.date(2021, 1, 1)),
@@ -362,9 +496,9 @@ if __name__ == '__main__':
 
     for test in next_month_rollover_tests:
         testif('returns correct rollover date ({})'.format(test[0]),
-            extend_date(test[0]).next_month(),
+            get_first_of_month_next(test[0]),
             test[1],
-            name=qualify(Date.next_month))
+            name=qualify(get_first_of_month_next))
 
     next_quarter_tests = [
         (dt.date(2019, 1, 1), dt.date(2019, 1, 1)),
@@ -381,9 +515,9 @@ if __name__ == '__main__':
 
     for test in next_quarter_tests:
         testif('returns correct date ({})'.format(test[0]),
-            extend_date(test[0]).next_quarter(),
+            get_first_of_quarter_next(test[0]),
             test[1],
-            name=qualify(Date.next_quarter))
+            name=qualify(get_first_of_quarter_next))
 
     next_week_tests = [
         (dt.date(2020, 5, 24), dt.date(2020, 5, 31)),
@@ -392,9 +526,9 @@ if __name__ == '__main__':
 
     for test in next_week_tests:
         testif('returns correct date ({})'.format(test[0]),
-            extend_date(test[0]).next_week(),
+            get_next_week(test[0]),
             test[1],
-            name=qualify(Date.next_week))
+            name=qualify(get_next_week))
 
     next_week2_tests = [
         (dt.date(2020, 5, 31), dt.date(2020, 6, 7)),
@@ -406,19 +540,19 @@ if __name__ == '__main__':
     sunday = dt.date(2020, 5, 31)
     for test in next_week2_tests:
         testif('returns correct date ({}, reference {})'.format(sunday, test[0]),
-            extend_date(sunday).next_week2(test[0]),
+            get_next_week_with_ref(sunday, test[0]),
             test[1],
-            name=qualify(Date.next_week2))
+            name=qualify(get_next_week_with_ref))
 
-    testif('returns correct advance date',
-        extend_date(dt.date(2020, 5, 30)).next_day(),
+    testif('returns correct next day midnight date',
+        get_next_day_midnight(dt.date(2020, 5, 30)),
         dt.date(2020, 5, 31),
-        name=qualify(Date.next_day))
+        name=qualify(get_next_day_midnight))
 
     testif('returns correct rollover date',
-        extend_date(dt.date(2020, 5, 31)).next_day(),
+        get_next_day_midnight(dt.date(2020, 5, 31)),
         dt.date(2020, 6, 1),
-        name=qualify(Date.next_day))
+        name=qualify(get_next_day_midnight))
 
     testif('returns correct date if more than two years ago',
         add_months(dt.date(2022, 2, 18), -29),
