@@ -119,6 +119,14 @@ def get_first_of_month_next(date: dt.date) -> dt.date:
 
     return dt.date(year, month, 1)
 
+def get_last_of_month(date: dt.date) -> dt.date:
+    """Returns last of month given a date"""
+    return get_first_of_month_next(date) - dt.timedelta(days=1)
+
+def get_end_of_year(date: dt.date) -> dt.date:
+    """Returns end of year given a date"""
+    return dt.date(date.year, 12, 31)
+
 def get_this_week(date: dt.date, reference: dt.date) -> dt.date:
     """Returns this week's date given a reference date"""
     now = conv_date_to_datetime(date)
@@ -477,6 +485,33 @@ if __name__ == '__main__':
             get_this_week(test[0], test[1]),
             test[2],
             name=qualify(get_this_week))
+
+    last_of_month_tests = [
+        (dt.date(2020, 1, 1), dt.date(2020, 1, 31)),
+        (dt.date(2019, 2, 1), dt.date(2019, 2, 28)),
+        (dt.date(2020, 2, 1), dt.date(2020, 2, 29)),
+        (dt.date(2020, 3, 12), dt.date(2020, 3, 31)),
+        (dt.date(2020, 3, 31), dt.date(2020, 3, 31)),
+    ]
+
+    for test in last_of_month_tests:
+        testif('returns correct date ({})'.format(test[0]),
+            get_last_of_month(test[0]),
+            test[1],
+            name=qualify(get_last_of_month))
+
+    end_of_year_tests = [
+        (dt.date(2022, 1, 1), dt.date(2022, 12, 31)),
+        (dt.date(2022, 6, 1), dt.date(2022, 12, 31)),
+        (dt.date(2022, 12, 31), dt.date(2022, 12, 31)),
+        (dt.date(2023, 1, 1), dt.date(2023, 12, 31)),
+    ]
+
+    for test in end_of_year_tests:
+        testif('returns correct date ({})'.format(test[0]),
+            get_end_of_year(test[0]),
+            test[1],
+            name=qualify(get_end_of_year))
 
     next_month_advance_tests = [
         (dt.date(2020, 11, 1), dt.date(2020, 12, 1)),
