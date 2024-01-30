@@ -86,6 +86,12 @@ def rmdup(lizt: abc.Iterable, show_output: bool=False) -> abc.Iterable:
 
     return new
 
+def sample(data, rate=26):
+    """Takes samples of data at the given rate"""
+    for i, item in enumerate(data):
+        if i % rate == 0:
+            yield item
+
 if __name__ == '__main__':
 
     from clay.tests import testif, testraises
@@ -141,3 +147,20 @@ if __name__ == '__main__':
     testif('rmdup removes duplicates correctly',
         rmdup(TEST_LIST),
         ['h', 'e', 'l', 'o'])
+
+    testraises('rate=0',
+        lambda: list(sample(range(10, 120 + 1), 0)),
+        ZeroDivisionError,
+        name=qualify(sample))
+    testif('returns empty if no data',
+        list(sample([])),
+        [],
+        name=qualify(sample))
+    testif('returns correct numbers (rate=26)',
+        list(sample(range(10, 120 + 1))),
+        [10, 36, 62, 88, 114],
+        name=qualify(sample))
+    testif('returns correct numbers (rate=15)',
+        list(sample(range(9, 65), rate=15)),
+        [9, 24, 39, 54],
+        name=qualify(sample))
