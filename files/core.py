@@ -224,27 +224,29 @@ def fix_quotes(filename):
     finally:
         if fp: fp.close()
 
-def randomize(filename: str):
-    """Randomizes the given filename with random bytes"""
+def _randomize_file(filename: str):
+    """Helps randomize the given filename with random bytes"""
     # get file length
     length = _os.path.getsize(filename)
     # get random bytes
     rand = _os.urandom(length)
+    print('Randomizing:', filename)
     # open file
     with open(filename, 'wb') as fp:
         # write random bytes
         fp.write(rand)
 
-def randomize_dir(directory: str, confirmed: bool=False):
-    """Recursively randomizes files in the given directory. Requires confirmation"""
-    # return early if not confirmed
-    if not confirmed:
-        print('Must confirm randomize dir')
-        return
-    # otherwise, walk and randomize
-    for root, dirs, files in _os.walk(directory):
-        for file in files:
-            randomize(_os.path.join(root, file))
+def randomize(filename_or_directory: str):
+    """Recursively randomizes a file, or files in the given directory"""
+    if _os.path.isdir(filename_or_directory):
+        directory = filename_or_directory
+        # otherwise, walk and randomize
+        for root, dirs, files in _os.walk(directory):
+            for file in files:
+                _randomize_file(_os.path.join(root, file))
+    else:
+        filename = filename_or_directory
+        _randomize_file(filename)
 
 def save(text, name='saved-text.txt', append_epoch=True):
     """Saves the given text to the file with sequential numbering"""
