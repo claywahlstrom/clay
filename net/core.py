@@ -340,6 +340,22 @@ class HtmlBuilder(object):
     """Used to build HTML markup"""
 
     INDENT = '    ' # 4 spaces
+    SELF_CLOSING_TAGS = [
+        'area',
+        'base',
+        'br',
+        'col',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'link',
+        'meta',
+        'param',
+        'source',
+        'track',
+        'wbr'
+    ]
 
     def __init__(self, debug=False):
         """Initializes this builder"""
@@ -362,13 +378,13 @@ class HtmlBuilder(object):
 
     def add_charset(self, charset='utf-8'):
         """Adds the meta charset tag to this builder"""
-        self.add_tag('meta', self_closing=True, attrs={'charset': charset})
+        self.add_tag('meta', attrs={'charset': charset})
 
     def add_nl(self):
         """Adds the newline character to this builder"""
         self.__html += '\n'
 
-    def add_tag(self, tag, text='', self_closing=False, attrs={}):
+    def add_tag(self, tag, text='', attrs={}):
         """Adds the tag with options to this builder"""
         if self.debug:
             print('processing', tag, 'indent', self.indent)
@@ -377,13 +393,13 @@ class HtmlBuilder(object):
         for attr in attrs:
             self.__html += ' ' + attr + '="' + attrs[attr] + '"'
 
-        if self_closing:
+        if tag in HtmlBuilder.SELF_CLOSING_TAGS:
             self.__html += ' /'
         else:
             self.indent += 1
 
         self.__html += '>'
-        if text:
+        if tag not in HtmlBuilder.SELF_CLOSING_TAGS and len(text) > 0:
             self.__html += text
             self.close_tag(tag, has_text=True)
         self.add_nl()
@@ -792,6 +808,13 @@ if __name__ == '__main__':
         print('ANCHORS', file=fa_log)
         print(find_anchors(TEST_LINK, headers=HEADERS, internal=False), file=fa_log)
     print('Done')
+
+    html_builder = HtmlBuilder()
+    html_builder.add_tag('meta', text='ignore', attrs={'name': 'atem'})
+    testif('closes self-closing tag and ignores text correctly',
+        html_builder.build(),
+        '<meta name="atem" />\n',
+        name=qualify(HtmlBuilder.add_tag))
 
     testif('parses headers correctly',
         parse_raw_headers("""Host: example.com
