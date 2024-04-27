@@ -2,7 +2,7 @@
 
 ## Description
 
-My personal package for doing all things Python 3.
+My personal package to make things easier in Python 3.10
 
 ## Supported Systems
 
@@ -19,7 +19,7 @@ My personal package for doing all things Python 3.
 ## Installation
 
 - Clone repository to local folder
-- Move local folder to site packages folder (e.g. `C:\Program Files\Python38\Lib\site-packages`)
+- Move local folder to site packages folder (e.g. `C:\Users\[Username]\AppData\Local\Programs\Python\Python310\Lib\site-packages`)
 - Run `install.bat` to install dependencies
 - Run `setup.bat` to set up setting files
 - Update setting files to match your configuration
