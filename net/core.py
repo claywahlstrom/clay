@@ -683,7 +683,7 @@ class WebDocument(object):
     def get_title(self, headers=None):
         """Returns the title of this web document"""
         from clay.net.core import get_title
-        soup = get_soup(self.uri, headers=headers)
+        soup = self.get_soup(headers=headers)
         return get_title(soup)
 
     @property
@@ -768,12 +768,12 @@ if __name__ == '__main__':
             'results': {
                 'course_list': [
                     {
-                        'title': 'CSE 142 Computer Programming I (4) NW, QSR',
+                        'title': 'CSE 142 Computer Programming I (4) NSc, RSN',
                         'description': None,
                         'instructor': None
                     },
                     {
-                        'title': 'CSE 143 Computer Programming II (5) NW, QSR',
+                        'title': 'CSE 143 Computer Programming II (5) NSc, RSN',
                         'description': None,
                         'instructor': None
                     }
@@ -788,7 +788,7 @@ if __name__ == '__main__':
             'results': {
                 'course_list': [
                     {
-                        'title': 'CSE 142 Computer Programming I (4) NW, QSR',
+                        'title': 'CSE 142 Computer Programming I (4) NSc, RSN',
                         'description': 'Basic programming-in-the-small abilities '
                         'and concepts including procedural programming (methods, '
                         'parameters, return, values), basic control structures '
@@ -830,7 +830,7 @@ Connection: keep-alive"""),
         name=qualify(parse_raw_headers))
 
     we1 = TagFinder('https://thebestschools.org/rankings/20-best-music-conservatories-u-s/')
-    testif('best music school list contains 21 elements', len(we1.find('h3')), 21)
+    testif('best music school list contains 20 elements', len(we1.find('h3')), 20)
     we2 = TagFinder(TEST_LINK)
     we2.find('a')
     with open(_os.path.join(LOGS_DIR, 'net-core-tagfinder.log'), 'w') as tf_log:
