@@ -617,7 +617,7 @@ if __name__ == '__main__':
         name=qualify(YtVidApiClient.get_view_count))
     testif('returns correct video publish date',
         yt_vid.get_publish_date(),
-        '2020-08-24',
+        '2020-08-24T05:30:00-07:00',
         name=qualify(YtVidApiClient.get_publish_date))
     testif('returns correct video short description',
         yt_vid.get_short_desc(),
