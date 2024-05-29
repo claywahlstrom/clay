@@ -6,9 +6,8 @@ Database helpers
 
 from clay.linq import extend
 from clay.models import Abstract, Model
-from clay.text import uncapitalize
+from clay.text import uncapitalize, consume_next
 from clay.utils import qualify
-from clay_common.strings import consume_next
 
 db_repos = extend([])
 

@@ -136,6 +136,12 @@ def split_seps(string: str, seps: abc.Iterable) -> abc.Iterable:
         raise ValueError('seps must have at least one item')
     return re.split(r'|'.join(map(re.escape, seps)), string)
 
+def consume_next(string: str, chars: str) -> str:
+    """Returns the string advanced to the next occurrence of the given chars"""
+    if not isinstance(chars, str):
+        raise TypeError('chars must be of type str')
+    return string[string.index(chars) + len(chars):] if chars in string else ''
+
 if __name__ == '__main__':
 
     from clay.tests import testif, testraises
@@ -188,7 +194,7 @@ if __name__ == '__main__':
         ['remove spaces from padded test string', 'my string'],
         name=qualify(remove_padding_many))
 
-    testraises('returns single item if no separators',
+    testraises('given no separators',
         lambda: split_seps('string', []),
         ValueError,
         name=qualify(split_seps))
@@ -204,3 +210,28 @@ if __name__ == '__main__':
         split_seps('string1^string2?string3@string4^string5', ['^', '?', '@']),
         ['string1', 'string2', 'string3', 'string4', 'string5'],
         name=qualify(split_seps))
+
+    testraises('chars not of type str (array)',
+        lambda: consume_next('test string', []),
+        TypeError,
+        name=qualify(consume_next))
+    testraises('chars not of type str (int)',
+        lambda: consume_next('test string', 0),
+        TypeError,
+        name=qualify(consume_next))
+    testif('returns empty string if not found',
+        consume_next('test string', 'empty'),
+        '',
+        name=qualify(consume_next))
+    testif('returns correct string (end of string)',
+        consume_next('test string', 'ng'),
+        '',
+        name=qualify(consume_next))
+    testif('returns correct string (middle of string)',
+        consume_next('test string', 'st '),
+        'string',
+        name=qualify(consume_next))
+    testif('returns correct string (beginning of string)',
+        consume_next('test string', 't'),
+        'est string',
+        name=qualify(consume_next))
