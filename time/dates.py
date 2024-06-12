@@ -157,6 +157,14 @@ def get_ymd_str(date: dt.date) -> str:
     """Returns the given date as year, month, day string"""
     return date.strftime(YMD_FMT)
 
+def get_today_ymd(fmt: str=YMD_FMT) -> str:
+    """Returns today's date in given format (default YYYY/MM/DD)"""
+    return dt.date.today().strftime(fmt)
+
+def get_tmw_ymd(fmt: str=YMD_FMT) -> str:
+    """Returns tomorrow's date in given format (default YYYY/MM/DD)"""
+    return (dt.datetime.today() + dt.timedelta(days=1)).strftime(fmt)
+
 class Date(dt.date):
 
     """
@@ -633,3 +641,6 @@ if __name__ == '__main__':
         add_months(dt.date(2022, 8, 3), 29),
         dt.date(2025, 1, 3),
         name=qualify(add_months))
+
+    print('today ymd', get_today_ymd())
+    print('tmw ymd', get_tmw_ymd())
