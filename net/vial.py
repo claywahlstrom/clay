@@ -89,6 +89,21 @@ class Html(clay.models.Static):
         and attributes `attrs`"""
         return Html.input(name, type, value=value, attrs=attrs)
 
+    @staticmethod
+    def error(message: str, name: str='', visible: bool=True) -> str:
+        """Returns markup for form errors using a red span tag"""
+        if not message:
+            return ''
+        if name:
+            name = ' id="{}-validation"'.format(name)
+        visibility = ' display: none;' if not visible else ''
+        return '<span class="error"{} style="color: red;{}">{}</span><br />'.format(name, visibility, message)
+
+    @staticmethod
+    def validation(name: str) -> str:
+        """Returns markup for required fields using the error template"""
+        return Html.error('*{} is a required field.'.format(name), name, visible=False)
+
 def json_code_result(status_code, data=None):
     """Returns a `flask.Response` object with the given status code and data"""
     data = data or {}
@@ -185,3 +200,28 @@ if __name__ == '__main__':
         Html.text('testName'),
         '<input type="text" id="testName" name="testName" value="" />',
         name=qualify(Html.text))
+
+    testif('returns correct HTML string (no message)',
+        Html.error(''),
+        '',
+        name=qualify(Html.error))
+    testif('returns correct HTML string (message, no name)',
+        Html.error('invalid input'),
+        '<span class="error" style="color: red;">invalid input</span><br />',
+        name=qualify(Html.error))
+    testif('returns correct HTML string (message, name)',
+        Html.error('invalid input', 'nametag'),
+        '<span class="error" id="nametag-validation" style="color: red;">invalid input</span><br />',
+        name=qualify(Html.error))
+    testif('returns correct HTML string (message, name, visible)',
+        Html.error('invalid input', 'nametag'),
+        '<span class="error" id="nametag-validation" style="color: red;">invalid input</span><br />',
+        name=qualify(Html.error))
+    testif('returns correct HTML string (message, name, not visible)',
+        Html.error('invalid input', 'nametag', visible=False),
+        '<span class="error" id="nametag-validation" style="color: red; display: none;">invalid input</span><br />',
+        name=qualify(Html.error))
+    testif('returns correct HTML string',
+        Html.validation('nametag'),
+        '<span class="error" id="nametag-validation" style="color: red; display: none;">*nametag is a required field.</span><br />',
+        name=qualify(Html.validation))
