@@ -5,6 +5,7 @@ Dates
 """
 
 import datetime as dt
+import math
 
 from clay.decors import obsolete
 from clay.time.base import BaseDateTimeRange
@@ -29,6 +30,11 @@ WEEKDAYS = [
     'Friday', 'Saturday', 'Sunday'
 ]
 WEEKDAYS_SHORT = ['M', 'TU', 'W', 'TH', 'F', 'SA', 'SU']
+
+def get_next_weekdays(date: dt.date, n: int):
+    """Returns a list of day names n number of days out from date"""
+    wkdy = date.weekday()
+    return (WEEKDAYS * math.ceil((wkdy + n) / 6))[wkdy:wkdy + n]
 
 def conv_date_to_datetime(date: dt.date) -> dt.datetime:
     """Returns the given date converted to a datetime"""
@@ -394,6 +400,19 @@ if __name__ == '__main__':
 
     from clay.tests import testif, testraises
     from clay.utils import qualify
+
+    testif('returns correct weekdays (n=0)',
+        get_next_weekdays(dt.date(2024, 7, 13), 0),
+        [],
+        name=qualify(get_next_weekdays))
+    testif('returns correct weekdays (n=1)',
+        get_next_weekdays(dt.date(2024, 7, 13), 1),
+        ['Saturday'],
+        name=qualify(get_next_weekdays))
+    testif('returns correct weekdays (n=5)',
+        get_next_weekdays(dt.date(2024, 7, 13), 5),
+        ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday'],
+        name=qualify(get_next_weekdays))
 
     date_range_repr_tests = [
         # start, end, expected repr
