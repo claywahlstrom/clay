@@ -8,6 +8,24 @@ from collections import abc as _abc
 import collections as _collections
 import sys as _sys
 
+def compare(first: object, second: object) -> int:
+    """Returns 1 if first > second, 0 if first == second, -1 if first < second"""
+    # handle nullable cases first
+    if first is not None and second is None:
+        return 1
+    elif first is None and second is None:
+        return 0
+    elif first is None and second is not None:
+        return -1
+
+    # handle value cases second
+    if first > second:
+        return 1
+    elif first == second:
+        return 0
+    else: # first < second
+        return -1
+
 def human_hex(dec: int) -> hex:
     """
     Converts decimal values to human readable hex.
@@ -147,6 +165,22 @@ class Watch(object):
 if __name__ == '__main__':
 
     from clay.tests import testif, testraises
+    from clay.utils import qualify
+
+    for (first, second, result) in [
+        # nullable tests
+        (None, None, 0),
+        (2, None, 1),
+        (None, 2, -1),
+        # value tests
+        (2, 2, 0),
+        (2, 0, 1),
+        (0, 2, -1)
+    ]:
+        testif('Returns correct for first={}, second={}'.format(first, second),
+            compare(first, second),
+            result,
+            name=qualify(compare))
 
     testif('converts integer 2700 correctly',
         human_hex(2700),
