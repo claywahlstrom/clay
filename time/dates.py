@@ -4,8 +4,11 @@ Dates
 
 """
 
+from collections.abc import Callable
 import datetime as dt
 import math
+import os
+import traceback
 
 from clay.decors import obsolete
 from clay.time.base import BaseDateTimeRange
@@ -396,6 +399,40 @@ def add_months(date: dt.date, months: int) -> dt.date:
     # create date
     return dt.date(year, month, date.day)
 
+class NonceDailyRule:
+
+    """
+    Allows an expression to be run once per day.
+
+    """
+
+    def __init__(self, filename: str, lambda_expr: Callable) -> None:
+        """Initializes this NonceRule using filename and lambda expression"""
+        self.filename = filename
+        self.lambda_expr = lambda_expr
+
+    def get_name(self) -> str:
+        """Returns the name of this NonceRule from the filename"""
+        return os.path.splitext(os.path.basename(self.filename))[0]
+
+    def do_expr(self) -> None:
+        """Evaluates the expression if it is a new day"""
+        print('Running NonceRule {}'.format(self.get_name()))
+        with open(self.filename) as fp:
+            last_date = fp.read()
+        now = get_today_ymd()
+        if now != last_date:
+            try:
+                self.lambda_expr()
+                with open(self.filename, 'w') as fp:
+                    fp.write(now)
+            except:
+                # log exception
+                traceback.print_exc()
+            print('Done')
+        else:
+            print('Already run on: {}'.format(last_date))
+
 if __name__ == '__main__':
 
     from clay.tests import testif, testraises
@@ -663,3 +700,14 @@ if __name__ == '__main__':
 
     print('today ymd', get_today_ymd())
     print('tmw ymd', get_tmw_ymd())
+
+    nonce_noext = NonceDailyRule(r'C:\alerts\jersey', lambda: print('Running jersey alert'))
+    testif('returns correct name',
+        nonce_noext.get_name(),
+        'jersey',
+        name=qualify(NonceDailyRule.get_name))
+    nonce_wext = NonceDailyRule(r'C:\alerts\jersey.txt', lambda: print('Running jersey alert'))
+    testif('returns correct name',
+        nonce_wext.get_name(),
+        'jersey',
+        name=qualify(NonceDailyRule.get_name))
