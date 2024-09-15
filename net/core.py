@@ -439,6 +439,16 @@ def parse_raw_headers(raw_headers: str) -> dict:
         headers[key] = value
     return headers
 
+def select_attr(table: list, attr: str, values: list) -> list:
+    """Returns a list of results from td cells where attr matches values"""
+    results = []
+    for row in table:
+        result = {}
+        for value in values:
+            result[value] = row.select_one('td[{}="{}"]'.format(attr, value))
+        results.append(result)
+    return results
+
 def select_text(soup: _BS, selector: str) -> list:
     """
     Returns a list of selected text values from elements found in
