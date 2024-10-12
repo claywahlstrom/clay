@@ -136,6 +136,12 @@ def split_seps(string: str, seps: abc.Iterable) -> abc.Iterable:
         raise ValueError('seps must have at least one item')
     return re.split(r'|'.join(map(re.escape, seps)), string)
 
+def consume_until(string: str, chars: str) -> str:
+    """Return the string up until the next occurrence of the given chars"""
+    if not isinstance(chars, str):
+        raise TypeError('chars must be of type str')
+    return string[:string.index(chars)] if chars in string else ''
+
 def consume_next(string: str, chars: str) -> str:
     """Returns the string advanced to the next occurrence of the given chars"""
     if not isinstance(chars, str):
@@ -210,6 +216,23 @@ if __name__ == '__main__':
         split_seps('string1^string2?string3@string4^string5', ['^', '?', '@']),
         ['string1', 'string2', 'string3', 'string4', 'string5'],
         name=qualify(split_seps))
+
+    testraises('chars not of type str (array)',
+        lambda: consume_until('test string', []),
+        TypeError,
+        name=qualify(consume_until))
+    testraises('chars not of type str (int)',
+        lambda: consume_until('test string', 0),
+        TypeError,
+        name=qualify(consume_until))
+    testif('returns empty string if not found',
+        consume_until('test string', 'empty'),
+        '',
+        name=qualify(consume_until))
+    testif('returns correct string',
+        consume_until('test string', 'string'),
+        'test ',
+        name=qualify(consume_until))
 
     testraises('chars not of type str (array)',
         lambda: consume_next('test string', []),
