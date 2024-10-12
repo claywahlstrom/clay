@@ -79,6 +79,12 @@ class SortableDict(_collections.OrderedDict):
         for key in part:
             self[key] = copy[key]
 
+def stringify_values(dictionary: dict, stringer=lambda x: str(x)) -> dict:
+    """Converts dictionary values to their string representation."""
+    for key, value in dictionary.items():
+        dictionary[key] = list(map(stringer, value))
+    return dictionary
+
 class Watch(object):
     """
     Holds a list of objects to display. Mainly used for tracking variables
