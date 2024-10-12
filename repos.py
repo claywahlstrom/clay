@@ -229,10 +229,8 @@ class CrudRepository(ListRepository):
     def _ensure_exists(self, pk: str) -> None:
         """Ensures the given primary key exists"""
         if isinstance(self.read(), list) and self.get(pk) is None:
+            # get new model
             model = self.model()
-            if not self.is_model_based:
-                model = model.to_json()
-
             # set the ID of the model
             model['id'] = pk
             # make sure the model exists
