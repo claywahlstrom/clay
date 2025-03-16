@@ -396,8 +396,31 @@ def add_months(date: dt.date, months: int) -> dt.date:
         year += 1
         month -= 12
 
+    days_in_month = {
+        1: 31,
+        2: 28,
+        3: 31,
+        4: 30,
+        5: 31,
+        6: 30,
+        7: 31,
+        8: 31,
+        9: 30,
+        10: 31,
+        11: 30,
+        12: 31
+    }
+
     # create date
-    return dt.date(year, month, date.day)
+    try:
+        return dt.date(year, month, date.day)
+    except ValueError:
+        # handle case month has less than 31 days
+        day = days_in_month[month]
+        # if it is leap year and February
+        if year % 4 == 0 and month == 2:
+            day += 1 # handle leap day
+        return dt.date(year, month, day)
 
 class NonceDailyRule:
 
