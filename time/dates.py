@@ -10,7 +10,6 @@ import math
 import os
 import traceback
 
-from clay.decors import obsolete
 from clay.time.base import BaseDateTimeRange
 
 # date formats
@@ -178,159 +177,6 @@ def get_tmw_ymd(fmt: str=YMD_FMT) -> str:
     """Returns tomorrow's date in given format (default YYYY/MM/DD)"""
     return (dt.datetime.today() + dt.timedelta(days=1)).strftime(fmt)
 
-class Date(dt.date):
-
-    """
-    Provides extension methods to the `datetime.date` type
-
-    """
-
-    @obsolete
-    @staticmethod
-    def todatetime(date) -> dt.datetime:
-        """Returns the given date converted to a datetime"""
-        return dt.datetime(date.year, date.month, date.day)
-
-    @obsolete
-    def to_ymd_str(self) -> str:
-        """Returns the given date as year, month, day string"""
-        return self.strftime(YMD_FMT)
-
-    #region Last
-
-    @obsolete
-    def last_year(self) -> 'Date':
-        """Returns the last year's date given a date or datetime"""
-        return Date(self.year - 1, 1, 1)
-
-    #endregion
-
-    #region This
-
-    @obsolete
-    def this_year(self) -> 'Date':
-        """Returns this year's date given a date or datetime"""
-        return Date(self.year, 1, 1)
-
-    @obsolete
-    def this_quarter(self) -> 'Date':
-        """
-        Returns this quarter's date given a date or datetime.
-        Quarters are on the 1st, 4th, 7th, and 10th months
-
-        """
-
-        month = self.month
-
-        if month <= 3:
-            month = 1
-        elif month <= 6:
-            month = 4
-        elif month <= 9:
-            month = 7
-        elif month <= 12:
-            month = 10
-
-        return Date(self.year, month, 1)
-
-    @obsolete
-    def this_month(self) -> 'Date':
-        """Returns this month's date given a date or datetime"""
-        return Date(self.year, self.month, 1)
-
-    @obsolete
-    def this_week(self, reference) -> 'Date':
-        """Returns this week's date given a reference date"""
-        now = Date.todatetime(self)
-
-        if reference > self:
-            sign = 1
-        elif reference == self:
-            sign = 0
-        else: # reference < self
-            sign = -1
-
-        return extend_date(now + sign * dt.timedelta(days=abs(self - reference).days % 7))
-
-    #endregion
-
-    #region Next
-
-    @obsolete
-    def next_year(self) -> 'Date':
-        """Returns the next year's date given a date or datetime"""
-        return Date(self.year + 1, 1, 1)
-
-    @obsolete
-    def next_month(self) -> 'Date':
-        """Returns the 1st of the next month's date given a date"""
-        year = self.year
-        month = self.month
-        day = self.day
-
-        month += 1
-        if month > 12:
-            year += 1
-            month = 1
-
-        return Date(year, month, 1)
-
-    @obsolete
-    def next_quarter(self) -> 'Date':
-        """
-        Returns the next quarter's date.
-        Quarters are on the 1st, 4th, 7th, and 10th months
-
-        """
-
-        # store references to this date
-        year = self.year
-        month = self.month
-        day = self.day
-
-        # if after Oct 1st
-        if day > 1 and month >= 10:
-            # push to new year's
-            year += 1
-            month = 1
-        # otherwise
-        if self.year == year:
-            # if after the 1st
-            if day > 1:
-                # push to next month
-                month += 1
-
-            # set up 2-month look-ahead
-            plus2 = month + 2
-            # check quarter conditions using look-ahead
-            if plus2 >= 10:
-                month = 10
-            elif plus2 >= 7:
-                month = 7
-            elif plus2 >= 4:
-                month = 4
-            else:
-                month = 1
-
-        return Date(year, month, 1)
-
-    @obsolete
-    def next_week(self) -> 'Date':
-        """Returns the next week's date given a datetime"""
-        return extend_date(Date.todatetime(self) + dt.timedelta(days=7))
-
-    @obsolete
-    def next_week2(self, reference: dt.date) -> 'Date':
-        """Returns the next week's occurrence of the reference date"""
-        return extend_date(self.this_week(reference)).next_week()
-
-    @obsolete
-    def next_day(self) -> 'Date':
-        """Returns midnight of the next day"""
-        return extend_date(Date.todatetime(self) + dt.timedelta(days=1))
-
-    #endregion
-
 class DateRange(BaseDateTimeRange):
 
     """Stores a range of dates for easy comparison"""
@@ -374,13 +220,6 @@ def days_to_mail(weekday: int) -> int:
     else:
         # return the usual
         return usually
-
-@obsolete
-def extend_date(date) -> Date:
-    """Extends the given date using the `Date` type"""
-    if not isinstance(date, dt.date):
-        raise TypeError('date must of base type datetime.date')
-    return Date(date.year, date.month, date.day)
 
 def add_months(date: dt.date, months: int) -> dt.date:
     """Returns a new date with the given number of months added"""
@@ -517,16 +356,6 @@ if __name__ == '__main__':
             days_to_mail(test[0]),
             test[1],
             name=qualify(days_to_mail))
-
-    # testraises('raises TypeError when extending invalid type',
-    #     lambda: extend_date(None),
-    #     TypeError,
-    #     name=qualify(extend_date))
-
-    # testif('returns correct datetime',
-    #     Date.todatetime(dt.date(2019, 4, 22)),
-    #     dt.datetime(2019, 4, 22),
-    #     name=qualify(Date.todatetime))
 
     testif('returns correct date for last year',
         get_first_of_year_last(dt.date(2019, 4, 22)),
